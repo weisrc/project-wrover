@@ -1,0 +1,566 @@
+
+AVRA   Ver. 1.4.2 main.asm Tue Feb  6 23:51:10 2024
+
+
+         ;
+         ; avr.asm
+         ;
+         ; Created: 2/2/2024 10:30:15 AM
+         ; Author : 2136016
+         ;
+         
+          .list
+         
+         ; equates used by term io
+          .equ FCPU_L = 1000000 ;used by termio rtn 
+          .equ BAUD = 4800    ;desired baud rate
+         
+          .dseg
+         
+          .cseg
+         
+C:000000 c01f      reset: rjmp main
+C:000001 c0ac      int0_echo: rjmp sonar_echo0
+C:000002 c0c1      int1_echo: rjmp sonar_echo1
+          .org $06
+C:000006 c063      timer1_overflow: rjmp sonar_update
+          .org $0d
+C:00000d c0cc      int2_echo: rjmp sonar_echo2
+         
+          .org $20
+         
+          main:
+C:000020 e50f          ldi R16, low(RAMEND) ; initiate the stack
+C:000021 bf0d      	out SPL, R16
+C:000022 e002      	ldi R16, high(RAMEND)
+C:000023 bf0e          out SPH, R16
+         
+C:000024 d0f4      	rcall lcd_init
+C:000025 d133      	rcall serial_init
+C:000026 d039      	rcall sonar_init
+C:000027 d0db      	rcall motor_init
+C:000028 d0ca      	rcall timer_init
+         
+C:000029 9478      	sei
+         
+          loop:
+         
+C:00002a e005      	ldi r16, 5
+C:00002b d019      	rcall delay
+         
+C:00002c 9100 0065 	lds r16, SONAR_DELTA0H
+C:00002e d13d      	rcall serial_print_hex
+C:00002f 9100 0064 	lds r16, SONAR_DELTA0L
+C:000031 d13a      	rcall serial_print_hex
+C:000032 e200      	ldi r16, ' '
+C:000033 d130      	rcall serial_write
+         
+C:000034 9100 006b 	lds r16, SONAR_DELTA1H
+C:000036 d135      	rcall serial_print_hex
+C:000037 9100 006a 	lds r16, SONAR_DELTA1L
+C:000039 d132      	rcall serial_print_hex
+C:00003a e200      	ldi r16, ' '
+C:00003b d128      	rcall serial_write
+         
+C:00003c 9100 0071 	lds r16, SONAR_DELTA2H
+C:00003e d12d      	rcall serial_print_hex
+C:00003f 9100 0070 	lds r16, SONAR_DELTA2L
+C:000041 d12a      	rcall serial_print_hex
+         
+C:000042 e00d      	ldi r16, CR
+C:000043 d120      	rcall serial_write
+         
+C:000044 cfe5      	rjmp loop
+         
+         
+         
+         
+          .include "utils.inc"
+          .equ DELAY_50 = 12340
+         
+         ; delay subroutine
+          delay:
+C:000045 930f      	push r16
+          delay_head:
+C:000046 e390      	ldi r25, high(DELAY_50)
+C:000047 e384      	ldi r24, low(DELAY_50)
+          delay_loop:
+C:000048 9701      	sbiw r25:r24, 1
+C:000049 f7f1      	brne delay_loop
+C:00004a 950a      	dec r16
+C:00004b f7d1      	brne delay_head
+C:00004c 910f      	pop r16
+C:00004d 9508      	ret
+         
+         
+         ; (r16) -> (r16)
+          nibble_to_hex:
+C:00004e 300a      	cpi r16, 10
+C:00004f f008      	brlo nibble_to_hex_ret
+C:000050 5f09      	subi r16, -('A' - '0' - 10)
+          nibble_to_hex_ret:
+C:000051 5d00      	subi r16, -'0'
+C:000052 9508      	ret
+         
+         ; (r16) -> (r16 msd, r17 lsd)
+          byte_to_hex:
+C:000053 2f10      	mov r17, r16
+C:000054 9506      	lsr r16
+C:000055 9506      	lsr r16
+C:000056 9506      	lsr r16
+C:000057 9506      	lsr r16
+C:000058 dff5      	rcall nibble_to_hex
+C:000059 930f      	push r16
+C:00005a 2f01      	mov r16, r17
+C:00005b 700f      	andi r16, $0f
+C:00005c dff1      	rcall nibble_to_hex
+C:00005d 2f10      	mov r17, r16
+C:00005e 910f      	pop r16
+C:00005f 9508      	ret
+          .include "sonar.inc"
+         
+         
+          .equ TRIGGER = PD4
+         
+          .dseg
+         
+D:000060    SONAR_START0L: .byte 1
+D:000061    SONAR_START0H: .byte 1
+D:000062    SONAR_END0L: .byte 1
+D:000063    SONAR_END0H: .byte 1
+D:000064    SONAR_DELTA0L: .byte 1
+D:000065    SONAR_DELTA0H: .byte 1
+         
+D:000066    SONAR_START1L: .byte 1
+D:000067    SONAR_START1H: .byte 1
+D:000068    SONAR_END1L: .byte 1
+D:000069    SONAR_END1H: .byte 1
+D:00006a    SONAR_DELTA1L: .byte 1
+D:00006b    SONAR_DELTA1H: .byte 1
+         
+D:00006c    SONAR_START2L: .byte 1
+D:00006d    SONAR_START2H: .byte 1
+D:00006e    SONAR_END2L: .byte 1
+D:00006f    SONAR_END2H: .byte 1
+D:000070    SONAR_DELTA2L: .byte 1
+D:000071    SONAR_DELTA2H: .byte 1
+         
+          .cseg
+         
+          sonar_init:
+C:000060 930f      	push r16
+         
+C:000061 b70b      	in r16, GICR
+C:000062 6e00      	ori r16, (1 << INT0) | (1 << INT1) | (1 << INT2) ; init bus and int0 and int1
+C:000063 bf0b      	out GICR, r16
+         
+C:000064 b705      	in r16, MCUCR
+C:000065 6005      	ori r16, (1 << ISC00) | (1 << ISC10) ; any logical change
+C:000066 bf05      	out MCUCR, r16
+         
+C:000067 9a8c      	sbi DDRD, TRIGGER
+         
+C:000068 910f      	pop r16
+C:000069 9508      	ret
+         
+          sonar_update:
+C:00006a 930f      	push r16
+C:00006b b70f      	in r16, SREG
+C:00006c 930f      	push r16
+         
+C:00006d d011      	rcall sonar_compute
+         
+C:00006e b706      	in r16, EMCUCR
+C:00006f 6001      	ori r16, 1 << ISC2
+C:000070 bf06      	out EMCUCR, r16 ; set ISC2 to rising edge
+         
+C:000071 9a94      	sbi PORTD, TRIGGER
+C:000072 0000      	nop
+C:000073 0000      	nop
+C:000074 0000      	nop
+C:000075 0000      	nop
+C:000076 0000      	nop
+C:000077 0000      	nop
+C:000078 0000      	nop
+C:000079 0000      	nop
+C:00007a 9894      	cbi PORTD, TRIGGER
+         
+C:00007b 910f      	pop r16
+C:00007c bf0f      	out SREG, r16
+C:00007d 910f      	pop r16
+C:00007e 9518      	reti
+         
+          sonar_compute:
+C:00007f 930f      	push r16
+C:000080 931f      	push r17
+         
+C:000081 9100 0062 	lds r16, SONAR_END0L
+C:000083 9110 0060 	lds r17, SONAR_START0L
+C:000085 1b01      	sub r16, r17
+C:000086 9300 0064 	sts SONAR_DELTA0L, r16
+C:000088 9100 0063 	lds r16, SONAR_END0H
+C:00008a 9110 0061 	lds r17, SONAR_START0H
+C:00008c 0b01      	sbc r16, r17
+C:00008d 9300 0065 	sts SONAR_DELTA0H, r16
+         
+C:00008f 9100 0068 	lds r16, SONAR_END1L
+C:000091 9110 0066 	lds r17, SONAR_START1L
+C:000093 1b01      	sub r16, r17
+C:000094 9300 006a 	sts SONAR_DELTA1L, r16
+C:000096 9100 0069 	lds r16, SONAR_END1H
+C:000098 9110 0067 	lds r17, SONAR_START1H
+C:00009a 0b01      	sbc r16, r17
+C:00009b 9300 006b 	sts SONAR_DELTA1H, r16
+         
+C:00009d 9100 006e 	lds r16, SONAR_END2L
+C:00009f 9110 006c 	lds r17, SONAR_START2L
+C:0000a1 1b01      	sub r16, r17
+C:0000a2 9300 0070 	sts SONAR_DELTA2L, r16
+C:0000a4 9100 006f 	lds r16, SONAR_END2H
+C:0000a6 9110 006d 	lds r17, SONAR_START2H
+C:0000a8 0b01      	sbc r16, r17
+C:0000a9 9300 0071 	sts SONAR_DELTA2H, r16
+         
+C:0000ab 911f      	pop r17
+C:0000ac 910f      	pop r16
+C:0000ad 9508      	ret
+         
+         ; ********************************
+         ; ECHO0 ISR
+         ; ********************************
+         
+          sonar_echo0:
+C:0000ae 930f      	push r16
+C:0000af b70f      	in r16, SREG
+C:0000b0 930f      	push r16
+C:0000b1 9b82      	sbis PIND, PD2
+C:0000b2 c007      	rjmp sonar_echo0_low
+          sonar_echo0_high:
+C:0000b3 b50c      	in r16, TCNT1L
+C:0000b4 9300 0060 	sts SONAR_START0L, r16
+C:0000b6 b50d      	in r16, TCNT1H
+C:0000b7 9300 0061 	sts SONAR_START0H, r16
+C:0000b9 c006      	rjmp sonar_echo0_end
+          sonar_echo0_low:
+C:0000ba b50c      	in r16, TCNT1L
+C:0000bb 9300 0062 	sts SONAR_END0L, r16
+C:0000bd b50d      	in r16, TCNT1H
+C:0000be 9300 0063 	sts SONAR_END0H, r16
+          sonar_echo0_end:
+C:0000c0 910f      	pop r16
+C:0000c1 bf0f      	out SREG, r16
+C:0000c2 910f      	pop r16
+C:0000c3 9518      	reti
+         
+         ; ********************************
+         ; ECHO1 ISR
+         ; ********************************
+         
+          sonar_echo1:
+C:0000c4 930f      	push r16
+C:0000c5 b70f      	in r16, SREG
+C:0000c6 930f      	push r16
+C:0000c7 9b83      	sbis PIND, PD3
+C:0000c8 c007      	rjmp sonar_echo1_low
+          sonar_echo1_high:
+C:0000c9 b50c      	in r16, TCNT1L
+C:0000ca 9300 0066 	sts SONAR_START1L, r16
+C:0000cc b50d      	in r16, TCNT1H
+C:0000cd 9300 0067 	sts SONAR_START1H, r16
+C:0000cf c006      	rjmp sonar_echo1_end
+          sonar_echo1_low:
+C:0000d0 b50c      	in r16, TCNT1L
+C:0000d1 9300 0068 	sts SONAR_END1L, r16
+C:0000d3 b50d      	in r16, TCNT1H
+C:0000d4 9300 0069 	sts SONAR_END1H, r16
+          sonar_echo1_end:
+C:0000d6 910f      	pop r16
+C:0000d7 bf0f      	out SREG, r16
+C:0000d8 910f      	pop r16
+C:0000d9 9518      	reti
+         
+         ; ********************************
+         ; ECHO2 ISR
+         ; ********************************
+         
+          sonar_echo2:
+C:0000da 930f      	push r16
+C:0000db b70f      	in r16, SREG
+C:0000dc 930f      	push r16
+C:0000dd 9b28      	sbis PINE, PE0
+C:0000de c00a      	rjmp sonar_echo2_low
+          sonar_echo2_high:
+C:0000df b50c      	in r16, TCNT1L
+C:0000e0 9300 006c 	sts SONAR_START2L, r16
+C:0000e2 b50d      	in r16, TCNT1H
+C:0000e3 9300 006d 	sts SONAR_START2H, r16
+         
+C:0000e5 b706      	in r16, EMCUCR
+C:0000e6 7f0e      	andi r16, ~(1 << ISC2)
+C:0000e7 bf06      	out EMCUCR, r16 ; set ISC2 to falling edge
+         
+C:0000e8 c006      	rjmp sonar_echo2_end
+          sonar_echo2_low:
+C:0000e9 b50c      	in r16, TCNT1L
+C:0000ea 9300 006e 	sts SONAR_END2L, r16
+C:0000ec b50d      	in r16, TCNT1H
+C:0000ed 9300 006f 	sts SONAR_END2H, r16
+          sonar_echo2_end:
+C:0000ef 910f      	pop r16
+C:0000f0 bf0f      	out SREG, r16
+C:0000f1 910f      	pop r16
+C:0000f2 9518      	reti
+          .include "timer.inc"
+          .equ TIMER_TOP = $8000
+         
+          timer_init:
+C:0000f3 930f      	push r16
+         
+C:0000f4 b50f      	in r16, TCCR1A
+C:0000f5 6a02      	ori r16, (1 << COM1A1) | (1 << COM1B1) | (1 << WGM11) ; mode 14, fast pwm, ICR1 as TOP
+C:0000f6 bd0f      	out TCCR1A, r16
+         
+C:0000f7 b50e      	in r16, TCCR1B
+C:0000f8 6109      	ori r16, (1 << CS10) | (1 << WGM13) | (1 << WGM12) ; mode 14: fast pwm, no prescaling
+C:0000f9 bd0e      	out TCCR1B, r16
+         
+C:0000fa e800      	ldi r16, high(TIMER_TOP)
+C:0000fb bd05      	out ICR1H, r16 ; write high first, p. 105
+C:0000fc e000      	ldi r16, low(TIMER_TOP)
+C:0000fd bd04      	out ICR1L, r16
+         
+C:0000fe b709      	in r16, TIMSK ; enable overflow interrupt
+C:0000ff 6800      	ori r16, 1 << TOIE1
+C:000100 bf09      	out TIMSK, r16
+         
+C:000101 910f      	pop r16
+C:000102 9508      	ret
+          .include "motor.inc"
+          .equ MOTOR0_PWM = PD5
+          .equ MOTOR1_PWM = PE2
+         
+          .equ MOTOR0_REV = PD6
+          .equ MOTOR1_REV = PD7
+          .equ MOTOR_MODE = PORTD
+         
+          .cseg
+         
+          motor_init:
+C:000103 930f      	push r16
+         
+C:000104 9a8d      	sbi DDRD, MOTOR0_PWM
+C:000105 9a32      	sbi DDRE, MOTOR1_PWM
+         
+C:000106 9a8e      	sbi DDRD, MOTOR0_REV
+C:000107 9a8f      	sbi DDRD, MOTOR1_REV
+         
+C:000108 e400      	ldi r16, $40
+C:000109 d003      	rcall motor0_speed
+C:00010a 9896      	cbi MOTOR_MODE, MOTOR0_REV
+         	
+C:00010b 910f      	pop r16
+C:00010c 9508      	ret
+         
+          motor0_speed:
+C:00010d 930f      	push r16
+C:00010e bd0b      	out OCR1AH, r16
+C:00010f 2700      	clr r16
+C:000110 bd0a      	out OCR1AL, r16
+C:000111 910f      	pop r16
+C:000112 9508      	ret
+         
+         
+          motor1_speed:
+C:000113 930f      	push r16
+C:000114 bd09      	out OCR1BH, r16
+C:000115 2700      	clr r16
+C:000116 bd08      	out OCR1BL, r16
+C:000117 910f      	pop r16
+C:000118 9508      	ret
+          .include "lcd.inc"
+         
+         
+          .equ LCD_DB = PORTA
+          .equ LCD_CTL = PORTC
+         
+          .equ LCD_DB_DD = DDRA
+          .equ LCD_CTL_DD = DDRC
+         
+          .equ LCD_RS = 1 << PC1
+          .equ LCD_EN = 1 << PC0
+         
+          .equ LCD_FN = $20
+          .equ LCD_FN_8BIT = $10
+          .equ LCD_FN_2LINE = $80
+          .equ LCD_FN_FONT = $40
+         
+          .equ LCD_DIS = $08
+          .equ LCD_DIS_ON = $04
+          .equ LCD_DIS_CURSOR = $02
+          .equ LCD_DIS_BLINK = $01
+         
+          .equ LCD_CLEAR = $01
+         
+          .equ LCD_ENTRY = $04
+          .equ LCD_ENTRY_INC = $02
+          .equ LCD_ENTRY_SHIFT = $01
+         
+          .dseg
+         
+          .cseg
+         
+          lcd_init:
+C:000119 930f      	push r16
+         
+C:00011a ef0f      	ldi r16, $ff
+C:00011b bb0a      	out LCD_DB_DD, r16
+         
+C:00011c b304      	in r16, LCD_CTL_DD
+C:00011d 6003      	ori r16, LCD_RS | LCD_EN
+C:00011e bb04      	out LCD_CTL_DD, r16 
+         
+C:00011f e001      	ldi r16, 1
+C:000120 df24      	rcall delay
+         
+C:000121 ef00      	ldi r16, LCD_FN | LCD_FN_8BIT | LCD_FN_2LINE | LCD_FN_FONT
+C:000122 d00c      	rcall lcd_command
+C:000123 d00b      	rcall lcd_command
+         
+C:000124 e00f      	ldi r16, LCD_DIS | LCD_DIS_ON | LCD_DIS_CURSOR | LCD_DIS_BLINK
+C:000125 d009      	rcall lcd_command
+         
+C:000126 d029      	rcall lcd_clear_command
+         
+C:000127 e006      	ldi r16, LCD_ENTRY | LCD_ENTRY_INC
+C:000128 d006      	rcall lcd_command
+         
+C:000129 e001      	ldi r16, 1
+C:00012a df1a      	rcall delay
+         
+C:00012b e401      	ldi r16, 'A'
+C:00012c d010      	rcall lcd_write
+         
+C:00012d 910f      	pop r16
+C:00012e 9508      	ret
+         
+         
+          lcd_command:
+C:00012f 930f      	push r16
+C:000130 bb0b      	out LCD_DB, r16
+C:000131 b305      	in r16, LCD_CTL
+C:000132 6001      	ori r16, LCD_EN
+C:000133 7f0d      	andi r16, ~LCD_RS
+C:000134 bb05      	out LCD_CTL, r16
+C:000135 0000      	nop
+C:000136 0000      	nop
+C:000137 0000      	nop
+C:000138 7f0e      	andi r16, ~LCD_EN
+C:000139 bb05      	out LCD_CTL, r16
+C:00013a d00f      	rcall lcd_wait
+C:00013b 910f      	pop r16
+C:00013c 9508      	ret
+         
+          lcd_write:
+C:00013d 930f      	push r16
+C:00013e bb0b      	out LCD_DB, r16
+C:00013f b305      	in r16, LCD_CTL
+C:000140 6003      	ori r16, LCD_EN | LCD_RS
+C:000141 bb05      	out LCD_CTL, r16
+C:000142 0000      	nop
+C:000143 0000      	nop
+C:000144 0000      	nop
+C:000145 7f0e      	andi r16, ~LCD_EN
+C:000146 bb05      	out LCD_CTL, r16
+C:000147 d002      	rcall lcd_wait
+C:000148 910f      	pop r16
+C:000149 9508      	ret
+         
+          lcd_wait:
+C:00014a 930f      	push r16
+C:00014b e00f      	ldi r16, 15
+          lcd_wait_loop:
+C:00014c 950a      	dec r16
+C:00014d f3f1      	breq lcd_wait_loop
+C:00014e 910f      	pop r16
+C:00014f 9508      	ret
+         
+          lcd_clear_command:
+C:000150 930f      	push r16
+C:000151 e001      	ldi r16, LCD_CLEAR
+C:000152 dfdc      	rcall lcd_command
+          lcd_clear_command_wait:
+C:000153 e208      	ldi r16, 40
+C:000154 dff5      	rcall lcd_wait
+C:000155 950a      	dec r16
+C:000156 f3e1      	breq lcd_clear_command_wait
+C:000157 910f      	pop r16
+C:000158 9508      	ret
+          .include "serial.inc"
+         ; Wei Heng Jiang
+         ; serial.inc
+         ; 
+         ;
+         
+          .equ FCPU = 1000000
+          .equ SERIAL_BAUD = 4800
+          .equ SERIAL_UBRR = (FCPU / 16 / SERIAL_BAUD) - 1
+         
+          .equ LF = $0a
+          .equ CR = $0d
+         
+          serial_init:
+C:000159 930f      	push r16
+C:00015a e000      	ldi r16, high(SERIAL_UBRR)
+C:00015b bd00      	out UBRRH, r16
+C:00015c e00c      	ldi r16, low(SERIAL_UBRR)
+C:00015d b909      	out UBRRL, r16
+         
+C:00015e e108      	ldi r16, (1 << RXEN) | (1 << TXEN)
+C:00015f b90a      	out UCSRB, r16
+         
+C:000160 e806      	ldi r16, (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0) ; 8-bit
+C:000161 bd00      	out UCSRC, r16
+         
+C:000162 910f      	pop r16
+C:000163 9508      	ret
+         
+          serial_write:
+C:000164 9b5d      	sbis UCSRA, UDRE
+C:000165 cffe      	rjmp serial_write
+C:000166 b90c      	out UDR, r16
+C:000167 9508      	ret
+         
+          serial_read:
+C:000168 9b5f      	sbis UCSRA, RXC
+C:000169 cffe      	rjmp serial_read
+C:00016a b10c      	in r16, UDR
+C:00016b 9508      	ret
+         
+          serial_print_hex:
+C:00016c 930f      	push r16
+C:00016d 931f      	push r17
+C:00016e dee4      	rcall byte_to_hex
+C:00016f dff4      	rcall serial_write
+C:000170 2f01      	mov r16, r17
+C:000171 dff2      	rcall serial_write
+C:000172 911f      	pop r17
+C:000173 910f      	pop r16
+C:000174 9508      	ret
+          .exit
+Used memory blocks:
+   code      :  Start = 0x0000, End = 0x0002, Length = 0x0003 (3 words), Overlap=N
+   code      :  Start = 0x0006, End = 0x0006, Length = 0x0001 (1 word), Overlap=N
+   code      :  Start = 0x000D, End = 0x000D, Length = 0x0001 (1 word), Overlap=N
+   code      :  Start = 0x0020, End = 0x005F, Length = 0x0040 (64 words), Overlap=N
+   code      :  Start = 0x0060, End = 0x0102, Length = 0x00A3 (163 words), Overlap=N
+   code      :  Start = 0x0103, End = 0x0118, Length = 0x0016 (22 words), Overlap=N
+   code      :  Start = 0x0119, End = 0x0174, Length = 0x005C (92 words), Overlap=N
+   data      :  Start = 0x0060, End = 0x0071, Length = 0x0012 (18 bytes), Overlap=N
+
+
+Segment usage:
+   Code      :       346 words (692 bytes)
+   Data      :        18 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
