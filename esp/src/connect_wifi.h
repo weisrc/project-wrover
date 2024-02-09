@@ -2,8 +2,6 @@
 #include <WiFi.h>
 #include "serial_utils.h"
 
-using namespace std;
-
 int printWiFiTable()
 {
     WiFi.mode(WIFI_STA);
