@@ -32,6 +32,7 @@ public:
     Serdes(char *data)
     {
         original = data;
+        reset();
     }
 
     size_t size()
@@ -173,8 +174,8 @@ public:
             case SD_BYTE:
             case SD_SHORT:
             case SD_INT:
-                // type = static_cast<SerdesType>(c);
-                // limit = head + 0;
+                type = (SerdesType)c;
+                limit = head + c;
                 break;
             case SD_START:
                 level++;
@@ -193,8 +194,14 @@ public:
         case SD_BYTE:
         case SD_SHORT:
         case SD_INT:
-            if (head == limit)
-                type = SD_START;
+            if (head != limit)
+                return false;
+            if (level == 0)
+            {
+                deserialize();
+                return true;
+            }
+            type = SD_START;
             break;
         }
 
