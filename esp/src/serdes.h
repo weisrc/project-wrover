@@ -29,29 +29,36 @@ private:
     size_t level;
 
 public:
+    /*
+    @param data the buffer, its lifetime must superseed the Serdes instance
+    */
     Serdes(char *data)
     {
         original = data;
         reset();
     }
 
+    // Get the size of the buffer
     size_t size()
     {
         return head - original;
     }
 
+    // Set the mode to serialize
     void serialize()
     {
         mode = SD_SERIALIZE;
         reset();
     }
 
+    // Set the mode to deserialize
     void deserialize()
     {
         mode = SD_DESERIALIZE;
         reset();
     }
 
+    // Reset the states
     void reset()
     {
         head = original;
@@ -60,6 +67,7 @@ public:
         level = 0;
     }
 
+    // Serialize or deserialize a cstring.
     void string(char *&data)
     {
         if (mode == SD_SERIALIZE)
@@ -89,6 +97,7 @@ public:
         }
     }
 
+    // Serialize or deserialize a value (char, short, int, long, float, double)
     template <typename T>
     void value(T &data)
     {
@@ -113,6 +122,9 @@ public:
         }
     }
 
+    /*
+    Start a new container or expect one if deserializing.
+    */
     void start()
     {
         if (mode == SD_SERIALIZE)
@@ -129,6 +141,10 @@ public:
         }
     }
 
+    /*
+    Stop the current container or expect it to end if deserializing.
+    @param withError if true, the buffer will be marked as invalid
+    */
     bool stop(bool withError = false)
     {
         if (mode == SD_SERIALIZE)
@@ -150,16 +166,20 @@ public:
         }
     }
 
-    bool shouldEndArray()
-    {
-        return *head == SD_STOP;
-    }
-
+    /* 
+    Ok checks if the buffer is valid
+    @return true if the buffer is valid
+    */
     bool ok()
     {
         return mode != SD_ERROR;
     }
 
+    /* 
+    Append a character to the buffer
+    @param c the character to append
+    @return true if the buffer is ready to be deserialized
+    */
     bool append(char c)
     {
 
