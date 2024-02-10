@@ -2,9 +2,21 @@
 #include "WiFi.h"
 #include "context.h"
 
-void checkNetworkScan(Context* ctx)
+String jsonString(String str)
 {
-    if (!ctx->networkScanPending)
+    str.replace("\\", "\\\\");
+    str.replace("\b", "\\b");
+    str.replace("\f", "\\f");
+    str.replace("\n", "\\n");
+    str.replace("\r", "\\r");
+    str.replace("\t", "\\t");
+    str.replace("\"", "\\\"");
+    return "\"" + str + "\"";
+}
+
+void checkNetworkScan()
+{
+    if (!ctx.networkScanPending)
         return;
 
     auto value = WiFi.scanComplete();
@@ -15,32 +27,34 @@ void checkNetworkScan(Context* ctx)
         break;
     case WIFI_SCAN_FAILED:
     {
-        JsonDocument reply;
-        reply[EVENT_TYPE_FIELD] = REPLY_NETWORK_SCAN;
-        reply[EVENT_OK_FIELD] = false;
-        ctx->sendEvent(reply);
-        ctx->networkScanPending = false;
+        ctx.sendEvent(R"({"type":"wifi.scan","ok":false})");
+        ctx.networkScanPending = false;
+        break;
     }
     default:
     {
-        JsonDocument reply;
-        reply[EVENT_TYPE_FIELD] = REPLY_NETWORK_SCAN;
-        reply[EVENT_OK_FIELD] = true;
-        JsonDocument networksDoc;
-        JsonArray networks = networksDoc.to<JsonArray>();
-
-        for (int i = 0; i < value; i++)
+        ctx.send(R"({"type":"wifi.scan","ok":true,"networks":[)");
+        
+        for (int i = 0; i < value & 8; i++)
         {
-            JsonDocument network;
-            network["ssid"] = WiFi.SSID(i);
-            network["type"] = WiFi.encryptionType(i);
-            network["bssid"] = WiFi.BSSID(i);
-            network["rssi"] = WiFi.RSSI(i);
-            networks.add(network);
+            if (i)
+                ctx.send(",");
+            ctx.send(R"({"ssid":)");
+            ctx.send(jsonString(WiFi.SSID(i)));
+            ctx.send(R"(,"type":)");
+            ctx.send(String(WiFi.encryptionType(i)));
+            ctx.send(R"(,"bssid":)");
+            ctx.send(jsonString(WiFi.BSSIDstr(i)));
+            ctx.send(R"(,"rssi":)");
+            ctx.send(String(WiFi.RSSI(i)));
+            ctx.send(R"(,"channel":)");
+            ctx.send(String(WiFi.channel(i)));
+            ctx.send("}");
         }
-        reply["networks"] = networks;
-        ctx->sendEvent(reply);
-        ctx->networkScanPending = false;
+        ctx.send("]}");
+        ctx.endEvent();
+        ctx.networkScanPending = false;
+        break;
     }
     }
 }

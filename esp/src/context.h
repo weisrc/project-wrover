@@ -1,29 +1,20 @@
 #pragma once
 #include <Arduino.h>
 #include <list>
-#include <ArduinoJson.h>
+#include <WiFi.h>
 
-using namespace std;
+#define REQUEST_NETWORK_SCAN "requestNetworkScan"
+#define REPLY_NETWORK_SCAN "replyNetworkScan"
+#define BEGIN_WIFI "beginWiFi"
 
-const static char *EVENT_TYPE_FIELD PROGMEM = "type";
-const static char *EVENT_OK_FIELD PROGMEM = "ok";
-const static char *EVENT_RESULT_FIELD PROGMEM = "result";
-const static char *EVENT_ERROR_FIELD PROGMEM = "error";
-
-const static char *REQUEST_NETWORK_SCAN PROGMEM = "requestNetworkScan";
-const static char *REPLY_NETWORK_SCAN PROGMEM = "replyNetworkScan";
-const static char *BEGIN_WIFI PROGMEM = "beginWiFi";
-
-const static char *REQUEST_WIFI_STATUS PROGMEM = "requestWiFiStatus";
-const static char *REPLY_WIFI_STATUS PROGMEM = "replyWiFiStatus";
-const static char *WIFI_STATUS_CHANGE PROGMEM = "wiFiStatusChange";
-const static char *DISCONNECT_WIFI PROGMEM = "disconnectWiFi";
-const static char *BEGIN_WEB_SERVER PROGMEM = "beginWebServer";
+#define REQUEST_WIFI_STATUS "requestWiFiStatus"
+#define REPLY_WIFI_STATUS "replyWiFiStatus"
+#define WIFI_STATUS_CHANGE "wiFiStatusChange"
+#define DISCONNECT_WIFI "disconnectWiFi"
+#define BEGIN_WEB_SERVER "beginWebServer"
 
 class Context
 {
-private:
-    list<JsonDocument> eventQueue = {};
 
 public:
     bool networkScanPending = false;
@@ -34,25 +25,27 @@ public:
         lastWiFiStatus = WiFi.status();
     }
 
-    bool hasEvents()
+    void sendEvent(String event)
     {
-        return eventQueue.size() > 0;
+        if (Serial.availableForWrite())
+        {
+            Serial.println(event);
+        }
     }
-
-    JsonDocument nextEvent()
+    void send(String event)
     {
-        JsonDocument event = eventQueue.front();
-        eventQueue.pop_front();
-        return event;
+        if (Serial.availableForWrite())
+        {
+            Serial.print(event);
+        }
     }
-
-    void queueEvent(JsonDocument event)
+    void endEvent()
     {
-        eventQueue.push_back(event);
-    }
-
-    void sendEvent(JsonDocument event)
-    {
-        serializeJson(event, Serial);
+        if (Serial.availableForWrite())
+        {
+            Serial.println();
+        }
     }
 };
+
+Context ctx;

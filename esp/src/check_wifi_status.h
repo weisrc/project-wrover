@@ -1,18 +1,20 @@
 #pragma once
-#include "WiFi.h"
+#include <WiFi.h>
 #include "context.h"
 
-void checkWiFiStatus(Context* ctx)
+void checkWiFiStatus()
 {
     auto status = WiFi.status();
 
-    if (status == ctx->lastWiFiStatus)
+    if (status == ctx.lastWiFiStatus)
         return;
 
-    ctx->lastWiFiStatus = status;
+    ctx.lastWiFiStatus = status;
 
-    JsonDocument event;
-    event[EVENT_TYPE_FIELD] = WIFI_STATUS_CHANGE;
-    event[EVENT_RESULT_FIELD] = status;
-    ctx->sendEvent(event);
+    // JsonDocument event;
+    // event["type"] = WIFI_STATUS_CHANGE;
+    // event["ok"] = status;
+    // ctx1.sendEvent(event);
+
+    Serial.println("WiFi status changed");
 }

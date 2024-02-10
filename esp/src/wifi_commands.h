@@ -3,22 +3,21 @@
 
 #include "context.h"
 
-void requestNetworkScan(Context* ctx)
+void requestNetworkScan()
 {
-    WiFi.scanDelete();
     WiFi.scanNetworks(true, true);
-    ctx->networkScanPending = true;
+    ctx.networkScanPending = true;
 }
 
-void beginWiFi(Context* ctx, JsonDocument event)
+void beginWiFi(String command)
 {
-    const String method = event["method"].as<String>();
-    const String ssid = event["ssid"].as<String>();
+    const String method = nextWord(command);
+    const String ssid = nextWord(command);
 
     if (method == "open")
         WiFi.begin(ssid);
     else if (method == "psk")
-        WiFi.begin(ssid, event["psk"].as<String>());
+        WiFi.begin(ssid, nextWord(command));
     else if (method == "peap")
         WiFi.begin(ssid, WPA2_AUTH_PEAP,
                    event["id"].as<String>(),
@@ -26,9 +25,9 @@ void beginWiFi(Context* ctx, JsonDocument event)
                    event["pass"].as<String>());
 }
 
-void requestWiFiStatus(Context* ctx) {
+void requestWiFiStatus() {
     JsonDocument reply;
-    reply[EVENT_TYPE_FIELD] = REPLY_WIFI_STATUS;
-    reply[EVENT_RESULT_FIELD] = WiFi.status();
-    ctx->sendEvent(reply);
+    reply["type"] = REPLY_WIFI_STATUS;
+    reply["ok"] = WiFi.status();
+    ctx.sendEvent(reply);
 }
