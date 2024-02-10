@@ -17,6 +17,12 @@ enum SerdesType
     SD_INT = sizeof(int)
 };
 
+/*
+Serdes: Serialize and Deserialize
+It is designed such that any receiver can determine when a message ends.
+When deserializing, the strings are not copied. They remain in the buffer.
+The structure is somewhat similar to JSON, but without records.
+*/
 class Serdes
 {
 private:

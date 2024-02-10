@@ -1,6 +1,5 @@
 #include <Arduino.h>
 // #include <ESPAsyncWebServer.h>
-#include <ArduinoJson.h>
 
 #include "context.h"
 #include "check_network_scan.h"
