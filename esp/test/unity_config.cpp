@@ -20,7 +20,9 @@ void setup()
     RUN_TEST(serdesShouldDeserializeStringArray);
     
     RUN_TEST(serdesShouldAppendInt);
-    
+    RUN_TEST(serdesShouldAppendString);
+    RUN_TEST(serdesShouldAppendStringArray);
+
     UNITY_END();
 }
 

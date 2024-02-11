@@ -6,7 +6,7 @@ void serdesShouldSerializeChar(void)
 {
   char data[10];
   char value = 'a';
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.serialize();
   serdes.value(value);
   TEST_ASSERT_EQUAL(SD_BYTE, data[0]);
@@ -18,7 +18,7 @@ void serdesShouldSerializeInt(void)
 {
   char data[10];
   int value = 0x01020304;
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.serialize();
   serdes.value(value);
   TEST_ASSERT_EQUAL(SD_INT, data[0]);
@@ -33,7 +33,7 @@ void serdesShouldSerializeString(void)
 {
   char data[10];
   char *value = "hello";
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.serialize();
   serdes.string(value);
   TEST_ASSERT_EQUAL(SD_START, data[0]);
@@ -50,7 +50,7 @@ void serdesShouldSerializeStringArray(void)
 {
   char data[32];
   char *value[] = {"hi", "bob"};
-  Serdes serdes(data);
+  Serdes serdes(data, 32);
   serdes.serialize();
   serdes.start();
   for (int i = 0; i < 2; i++)

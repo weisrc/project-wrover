@@ -6,7 +6,7 @@ void serdesShouldDeserializeChar(void)
 {
   char data[10] = {SD_BYTE, 'c'};
   char value = 'a';
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.deserialize();
   serdes.value(value);
   TEST_ASSERT_EQUAL('c', value);
@@ -18,7 +18,7 @@ void serdesShouldDeserializeInt(void)
 {
   char data[10] = {SD_INT, 0x04, 0x03, 0x02, 0x01};
   int value = 0;
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.deserialize();
   serdes.value(value);
   TEST_ASSERT_EQUAL(0x01020304, value);
@@ -30,7 +30,7 @@ void serdesShouldDeserializeString(void)
 {
   char data[10] = {SD_START, 'h', 'e', 'l', 'l', 'o', SD_STOP};
   char *value = "this should be overwritten by deserialize()";
-  Serdes serdes(data);
+  Serdes serdes(data, 10);
   serdes.deserialize();
   serdes.string(value);
   TEST_ASSERT_EQUAL_STRING("hello", value);
@@ -41,7 +41,7 @@ void serdesShouldDeserializeString(void)
 void serdesShouldDeserializeStringArray(void)
 {
   char data[32] = {SD_START, SD_START, 'h', 'i', SD_STOP, SD_START, 'b', 'o', 'b', SD_STOP, SD_STOP};
-  Serdes serdes(data);
+  Serdes serdes(data, 32);
 
   serdes.deserialize();
   serdes.start();

@@ -5,7 +5,8 @@ enum SerdesMode
 {
     SD_SERIALIZE,
     SD_DESERIALIZE,
-    SD_ERROR
+    SD_UNEXPECTED,
+    SD_OOM,
 };
 
 enum SerdesType
@@ -25,22 +26,86 @@ The structure is somewhat similar to JSON, but without records.
 */
 class Serdes
 {
-private:
+protected:
     char *original;
     char *head;
+    char *skip;
     char *limit;
 
     SerdesMode mode;
     SerdesType type;
     size_t level;
 
+    void write(char c)
+    {
+        if (head < limit)
+        {
+            *head = c;
+            head++;
+        }
+        else
+        {
+            mode = SD_OOM;
+        }
+    }
+
+    char read()
+    {
+        char c;
+        if (head < limit)
+        {
+            c = *head;
+            head++;
+        }
+        else
+        {
+            mode = SD_OOM;
+        }
+        return c;
+    }
+
+    void write(void *data, size_t size)
+    {
+        if (head + size < limit)
+        {
+            memcpy(head, data, size);
+            head += size;
+        }
+        else
+        {
+            mode = SD_OOM;
+        }
+    }
+
+    void read(void *data, size_t size)
+    {
+        if (head + size < limit)
+        {
+            memcpy(data, head, size);
+            head += size;
+        }
+        else
+        {
+            mode = SD_OOM;
+        }
+    }
+
+    char expect(SerdesType t)
+    {
+        char c = read();
+        if (c != t)
+            mode = SD_UNEXPECTED;
+        return c == t;
+    }
+
 public:
     /*
     @param data the buffer, its lifetime must superseed the Serdes instance
     */
-    Serdes(char *data)
+    Serdes(char *data, size_t size)
     {
         original = data;
+        limit = data + size;
         reset();
     }
 
@@ -68,7 +133,7 @@ public:
     void reset()
     {
         head = original;
-        limit = original;
+        skip = original;
         type = SD_START;
         level = 0;
     }
@@ -80,26 +145,16 @@ public:
         {
             start();
             while (*data)
-            {
-                *head = *data;
-                head++;
-                data++;
-            }
+                write(*(data++));
             stop();
         }
         else if (mode == SD_DESERIALIZE)
         {
-            if (*head != SD_START)
-            {
-                mode = SD_ERROR;
+            if (!expect(SD_START))
                 return;
-            }
-
-            head++;
             data = head;
-            while (*head != SD_STOP)
-                head++;
-            head++;
+            while (read() != SD_STOP)
+                continue;
         }
     }
 
@@ -109,22 +164,15 @@ public:
     {
         if (mode == SD_SERIALIZE)
         {
-            *head = sizeof(T);
-            head++;
-            memcpy(head, &data, sizeof(T));
-            head += sizeof(T);
+            write(sizeof(T));
+            write(&data, sizeof(T));
         }
         else if (mode == SD_DESERIALIZE)
         {
-            if (*head != sizeof(T))
-            {
-                mode = SD_ERROR;
+            if (!expect((SerdesType)sizeof(T)))
                 return;
-            }
 
-            head++;
-            memcpy(&data, head, sizeof(T));
-            head += sizeof(T);
+            read(&data, sizeof(T));
         }
     }
 
@@ -134,16 +182,12 @@ public:
     void start()
     {
         if (mode == SD_SERIALIZE)
-        {
-            *head = SD_START;
-            head++;
-        }
+            write(SD_START);
+
         else if (mode == SD_DESERIALIZE)
         {
-            if (*head == SD_START)
-                head++;
-            else
-                mode = SD_ERROR;
+            if (!expect(SD_START))
+                return;
         }
     }
 
@@ -155,33 +199,32 @@ public:
     {
         if (mode == SD_SERIALIZE)
         {
-            *head = SD_STOP;
-            head++;
+            write(SD_STOP);
             return true;
         }
         else if (mode == SD_DESERIALIZE)
         {
-            if (*head == SD_STOP)
-            {
+            if (*head == SD_STOP) {
                 head++;
                 return true;
             }
+
             if (withError)
-                mode = SD_ERROR;
+                mode = SD_UNEXPECTED;
             return false;
         }
     }
 
-    /* 
+    /*
     Ok checks if the buffer is valid
     @return true if the buffer is valid
     */
     bool ok()
     {
-        return mode != SD_ERROR;
+        return mode != SD_UNEXPECTED && mode != SD_OOM;
     }
 
-    /* 
+    /*
     Append a character to the buffer
     @param c the character to append
     @return true if the buffer is ready to be deserialized
@@ -189,8 +232,10 @@ public:
     bool append(char c)
     {
 
-        *head = c;
-        head++;
+        if (mode != SD_DESERIALIZE)
+            return false;
+
+        write(c);
 
         switch (type)
         {
@@ -201,18 +246,18 @@ public:
             case SD_SHORT:
             case SD_INT:
                 type = (SerdesType)c;
-                limit = head + c;
+                skip = head + c;
                 break;
             case SD_START:
                 level++;
                 break;
             case SD_STOP:
+                level--;
                 if (level == 0)
                 {
-                    deserialize();
+                    reset();
                     return true;
                 }
-                level--;
                 break;
             }
             break;
@@ -220,11 +265,11 @@ public:
         case SD_BYTE:
         case SD_SHORT:
         case SD_INT:
-            if (head != limit)
+            if (head != skip)
                 return false;
             if (level == 0)
             {
-                deserialize();
+                reset();
                 return true;
             }
             type = SD_START;
