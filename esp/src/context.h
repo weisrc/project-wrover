@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <list>
+#include "ArduinoJson.h"
 #include <WiFi.h>
 
 #define REQUEST_NETWORK_SCAN "requestNetworkScan"
@@ -18,11 +18,11 @@ class Context
 
 public:
     bool networkScanPending = false;
-    wl_status_t lastWiFiStatus;
+    // wl_status_t lastWiFiStatus;
 
     Context()
     {
-        lastWiFiStatus = WiFi.status();
+        // lastWiFiStatus = WiFi.status();
     }
 
     void send(JsonDocument &doc)

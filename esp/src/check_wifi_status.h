@@ -4,18 +4,18 @@
 
 void checkWiFiStatus()
 {
-    auto status = WiFi.status();
+    // auto status = WiFi.status();
 
-    if (status == ctx.lastWiFiStatus)
-        return;
+    // if (status == ctx.lastWiFiStatus)
+    //     return;
 
-    ctx.lastWiFiStatus = status;
+    // ctx.lastWiFiStatus = status;
 
-    JsonDocument event;
-    event["type"] = WIFI_STATUS_CHANGE;
-    event["ok"] = true;
-    // event["status"] = status;
-    ctx.send(event);
+    // JsonDocument event;
+    // event["type"] = WIFI_STATUS_CHANGE;
+    // event["ok"] = true;
+    // // event["status"] = status;
+    // ctx.send(event);
 
-    Serial.println("WiFi status changed");
+    // Serial.println("WiFi status changed");
 }

@@ -1,0 +1,54 @@
+#include "Arduino.h"
+#include "WiFi.h"
+#include "ArduinoJson.h"
+
+void setup()
+{
+    Serial.begin(115200);
+}
+
+class Context
+{
+public:
+    bool scanRequested = false;
+
+    void send(JsonDocument &data)
+    {
+        serializeJson(data, Serial);
+    }
+};
+
+Context ctx;
+
+void loop()
+{
+    if (Serial.available())
+    {
+        JsonDocument command;
+        deserializeJson(command, Serial);
+        ctx.send(command);
+        if (command["type"] == "scan")
+        {
+            ctx.scanRequested = true;
+            WiFi.scanNetworks(true);
+        }
+    }
+
+    if (ctx.scanRequested)
+    {
+        int16_t value = WiFi.scanComplete();
+        if (value >= 0)
+        {
+            JsonDocument output;
+            JsonArray networks = output["networks"].to<JsonArray>();
+            for (int i = 0; i < value; i++)
+            {
+                JsonArray network = networks.add<JsonArray>();
+                network.add(WiFi.SSID(i));
+            }
+
+            ctx.send(output);
+            ctx.scanRequested = false;
+        }
+    }
+}
