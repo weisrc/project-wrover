@@ -1,18 +1,7 @@
 #pragma once
 #include "WiFi.h"
 #include "context.h"
-
-String jsonString(String str)
-{
-    str.replace("\\", "\\\\");
-    str.replace("\b", "\\b");
-    str.replace("\f", "\\f");
-    str.replace("\n", "\\n");
-    str.replace("\r", "\\r");
-    str.replace("\t", "\\t");
-    str.replace("\"", "\\\"");
-    return "\"" + str + "\"";
-}
+#include "ArduinoJson.h"
 
 void checkNetworkScan()
 {
@@ -27,32 +16,30 @@ void checkNetworkScan()
         break;
     case WIFI_SCAN_FAILED:
     {
-        ctx.sendEvent(R"({"type":"wifi.scan","ok":false})");
+        JsonDocument doc;
+        doc["type"] = "wifi.scan";
+        doc["ok"] = false;
+        ctx.send(doc);
         ctx.networkScanPending = false;
         break;
     }
     default:
     {
-        ctx.send(R"({"type":"wifi.scan","ok":true,"networks":[)");
-        
+        Serial.println("Scan complete");
+        JsonDocument doc;
+        doc["type"] = "wifi.scan";
+        doc["ok"] = true;
+        JsonArray networks = doc["networks"].to<JsonArray>();
         for (int i = 0; i < value & 8; i++)
         {
-            if (i)
-                ctx.send(",");
-            ctx.send(R"({"ssid":)");
-            ctx.send(jsonString(WiFi.SSID(i)));
-            ctx.send(R"(,"type":)");
-            ctx.send(String(WiFi.encryptionType(i)));
-            ctx.send(R"(,"bssid":)");
-            ctx.send(jsonString(WiFi.BSSIDstr(i)));
-            ctx.send(R"(,"rssi":)");
-            ctx.send(String(WiFi.RSSI(i)));
-            ctx.send(R"(,"channel":)");
-            ctx.send(String(WiFi.channel(i)));
-            ctx.send("}");
+            JsonObject network = networks.createNestedObject();
+            network["ssid"] = WiFi.SSID(i);
+            network["rssi"] = WiFi.RSSI(i);
+            network["encryption"] = WiFi.encryptionType(i);
+            network["channel"] = WiFi.channel(i);
+            network["bssid"] = WiFi.BSSIDstr(i);
         }
-        ctx.send("]}");
-        ctx.endEvent();
+        ctx.send(doc);
         ctx.networkScanPending = false;
         break;
     }

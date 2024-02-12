@@ -5,12 +5,10 @@
 
 
 
-void handleCommand(String command)
+void handleCommand(JsonDocument &command)
 {
 
-    const String type = nextWord(command);
-
-    ctx.sendEvent(command);
+    auto type = command["type"];
 
     if (type == REQUEST_NETWORK_SCAN)
         requestNetworkScan();

@@ -11,10 +11,11 @@ void checkWiFiStatus()
 
     ctx.lastWiFiStatus = status;
 
-    // JsonDocument event;
-    // event["type"] = WIFI_STATUS_CHANGE;
-    // event["ok"] = status;
-    // ctx1.sendEvent(event);
+    JsonDocument event;
+    event["type"] = WIFI_STATUS_CHANGE;
+    event["ok"] = true;
+    // event["status"] = status;
+    ctx.send(event);
 
     Serial.println("WiFi status changed");
 }

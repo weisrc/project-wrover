@@ -1,11 +1,11 @@
-#include <Arduino.h>
+#include "Arduino.h"
+#include "ArduinoJson.h"
 // #include <ESPAsyncWebServer.h>
 
 #include "context.h"
 #include "check_network_scan.h"
 #include "handle_command.h"
 #include "check_wifi_status.h"
-#include "connect_wifi.h"
 
 // AsyncWebServer server(80);
 
@@ -28,17 +28,9 @@ void loop()
 {
   if (Serial.available())
   {
-    char c = Serial.read();
-    if (c == '\n')
-    {
-      serialCommand[serialIndex] = 0;
-      handleCommand(serialCommand);
-      serialIndex = 0;
-    }
-    else
-    {
-      serialCommand[serialIndex++] = c;
-    }
+    JsonDocument command;
+    deserializeJson(command, Serial);
+    handleCommand(command);
   }
   checkNetworkScan();
   checkWiFiStatus();

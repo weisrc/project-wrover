@@ -25,25 +25,11 @@ public:
         lastWiFiStatus = WiFi.status();
     }
 
-    void sendEvent(String event)
+    void send(JsonDocument &doc)
     {
         if (Serial.availableForWrite())
         {
-            Serial.println(event);
-        }
-    }
-    void send(String event)
-    {
-        if (Serial.availableForWrite())
-        {
-            Serial.print(event);
-        }
-    }
-    void endEvent()
-    {
-        if (Serial.availableForWrite())
-        {
-            Serial.println();
+            serializeJson(doc, Serial);
         }
     }
 };

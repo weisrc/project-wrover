@@ -9,25 +9,26 @@ void requestNetworkScan()
     ctx.networkScanPending = true;
 }
 
-void beginWiFi(String command)
+void beginWiFi(JsonDocument &command)
 {
-    const String method = nextWord(command);
-    const String ssid = nextWord(command);
+    const String method = command["method"];
+    const String ssid = command["ssid"];
 
     if (method == "open")
         WiFi.begin(ssid);
     else if (method == "psk")
-        WiFi.begin(ssid, nextWord(command));
+        WiFi.begin(ssid, command["pass"].as<String>());
     else if (method == "peap")
         WiFi.begin(ssid, WPA2_AUTH_PEAP,
-                   event["id"].as<String>(),
-                   event["user"].as<String>(),
-                   event["pass"].as<String>());
+                   command["id"].as<String>(),
+                   command["user"].as<String>(),
+                   command["pass"].as<String>());
 }
 
-void requestWiFiStatus() {
+void requestWiFiStatus()
+{
     JsonDocument reply;
     reply["type"] = REPLY_WIFI_STATUS;
     reply["ok"] = WiFi.status();
-    ctx.sendEvent(reply);
+    ctx.send(reply);
 }
