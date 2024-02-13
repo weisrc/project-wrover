@@ -69,7 +69,10 @@ export function RemoteConnectCard(props: {
           className="mb-4 mt-1"
           placeholder="IP Address"
           value={ip} onChange={(e) => setIp(e.currentTarget.value)} />
-        <Button disabled={connecting}>
+        <Button className="mr-1" onClick={() => router.replace("/")}>
+          Return to Setup
+        </Button>
+        <Button disabled={connecting || !ip}>
           {connecting ? "Connecting..." : "Connect"}
         </Button>
       </CardContent>
