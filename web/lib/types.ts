@@ -44,6 +44,7 @@ export type ResponseEvents = {
   rssi: { data: string };
   status: { data: string };
   ssid: { data: string };
+  socketReady: {}
 };
 
 export const AUTH_MODE_MAP = {
