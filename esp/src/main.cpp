@@ -15,13 +15,12 @@ void setup()
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", "hello world"); });
-
-  // server.begin();
 }
 
 void sendReply(JsonDocument &reply)
 {
   serializeJson(reply, Serial);
+  Serial.println();
 }
 
 void sendData(String type, String data)
@@ -53,11 +52,11 @@ void connect(JsonDocument &request)
     String password = request["password"];
 
     wpa2_auth_method_t kind = WPA2_AUTH_PEAP;
-    if (method == "PEAP")
+    if (method == "peap")
       kind = WPA2_AUTH_PEAP;
-    else if (method == "TLS")
+    else if (method == "tls")
       kind = WPA2_AUTH_TLS;
-    else if (method == "TTLS")
+    else if (method == "ttls")
       kind = WPA2_AUTH_TTLS;
     WiFi.begin(ssid, kind, identity, username, password);
   }
@@ -81,6 +80,8 @@ void handleRequest(JsonDocument &request)
     sendData("rssi", String(WiFi.RSSI()));
   else if (type == "status")
     sendData("status", String(WiFi.status()));
+  else if (type == "ssid")
+    sendData("ssid", WiFi.SSID());
   else if (type == "begin")
     server.begin();
 }
@@ -114,10 +115,7 @@ void checkStatusChange()
   if (status != lastStatus)
   {
     lastStatus = status;
-    JsonDocument reply;
-    reply["type"] = "status";
-    reply["status"] = status;
-    sendReply(reply);
+    sendData("status", String(status));
   }
 }
 
