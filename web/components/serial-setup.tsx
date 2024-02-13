@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { NAME } from "@/lib/common";
 import Link from "next/link";
 
-import { connectSerial } from "@/lib/serial";
+import { connectSerial } from "@/lib/connect-serial";
 
 export function SerialSetup(props: {
   onConnectionChange: (connected: boolean) => void;
