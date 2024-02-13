@@ -1,46 +1,137 @@
 #include <Arduino.h>
-// #include <ESPAsyncWebServer.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoJson.h>
 
-#include "context.h"
-#include "check_network_scan.h"
-#include "handle_command.h"
-#include "check_wifi_status.h"
-#include "connect_wifi.h"
+AsyncWebServer server(80);
 
-// AsyncWebServer server(80);
-
-char serialCommand[64];
-size_t serialIndex = 0;
-char socketCommand[64];
-size_t socketIndex = 0;
+bool scanRequested = false;
+wl_status_t lastStatus;
 
 void setup()
 {
   Serial.begin(115200);
 
-  // server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-  //           { request->send(200, "text/plain", "hello world"); });
+  lastStatus = WiFi.status();
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/plain", "hello world"); });
 
   // server.begin();
+}
+
+void sendReply(JsonDocument &reply)
+{
+  serializeJson(reply, Serial);
+}
+
+void sendData(String type, String data)
+{
+  JsonDocument doc;
+  doc["type"] = type;
+  doc["data"] = data;
+  sendReply(doc);
+}
+
+void connect(JsonDocument &request)
+{
+  String ssid = request["ssid"];
+  String auth = request["auth"];
+  if (auth == "open")
+  {
+    WiFi.begin(ssid);
+  }
+  else if (auth == "wpa2")
+  {
+    String password = request["password"];
+    WiFi.begin(ssid, password);
+  }
+  else if (auth == "wpa2_enterprise")
+  {
+    String method = request["method"];
+    String identity = request["identity"];
+    String username = request["username"];
+    String password = request["password"];
+
+    wpa2_auth_method_t kind = WPA2_AUTH_PEAP;
+    if (method == "PEAP")
+      kind = WPA2_AUTH_PEAP;
+    else if (method == "TLS")
+      kind = WPA2_AUTH_TLS;
+    else if (method == "TTLS")
+      kind = WPA2_AUTH_TTLS;
+    WiFi.begin(ssid, kind, identity, username, password);
+  }
+}
+
+void handleRequest(JsonDocument &request)
+{
+  String type = request["type"];
+  if (type == "scan")
+  {
+    scanRequested = true;
+    WiFi.scanNetworks(true);
+  }
+  else if (type == "connect")
+    connect(request);
+  else if (type == "disconnect")
+    WiFi.disconnect();
+  else if (type == "ip")
+    sendData("ip", WiFi.localIP().toString());
+  else if (type == "rssi")
+    sendData("rssi", String(WiFi.RSSI()));
+  else if (type == "status")
+    sendData("status", String(WiFi.status()));
+  else if (type == "begin")
+    server.begin();
+}
+
+void checkScanComplete()
+{
+
+  if (!scanRequested || WiFi.scanComplete() < 0)
+
+    return;
+
+  scanRequested = false;
+  JsonDocument reply;
+  reply["type"] = "scan";
+  JsonArray networks = reply["networks"].to<JsonArray>();
+  for (int i = 0; i < WiFi.scanComplete(); i++)
+  {
+    JsonArray network = networks.add<JsonArray>();
+    network.add(WiFi.SSID(i));
+    network.add(WiFi.RSSI(i));
+    network.add(WiFi.encryptionType(i));
+    network.add(WiFi.channel(i));
+    network.add(WiFi.BSSIDstr(i));
+  }
+  sendReply(reply);
+}
+
+void checkStatusChange()
+{
+  wl_status_t status = WiFi.status();
+  if (status != lastStatus)
+  {
+    lastStatus = status;
+    JsonDocument reply;
+    reply["type"] = "status";
+    reply["status"] = status;
+    sendReply(reply);
+  }
 }
 
 void loop()
 {
   if (Serial.available())
   {
-    char c = Serial.read();
-    if (c == '\n')
-    {
-      serialCommand[serialIndex] = 0;
-      handleCommand(serialCommand);
-      serialIndex = 0;
-    }
-    else
-    {
-      serialCommand[serialIndex++] = c;
-    }
+    JsonDocument request;
+    DeserializationError error = deserializeJson(request, Serial);
+    if (error)
+      return;
+    handleRequest(request);
   }
-  checkNetworkScan();
-  checkWiFiStatus();
 
+  checkScanComplete();
+  checkStatusChange();
 }
