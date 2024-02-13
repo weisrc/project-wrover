@@ -2,6 +2,7 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
+#include "camera_setup.h"
 #include "channel.h"
 #include "globals.h"
 #include "wifi_checks.h"
@@ -34,6 +35,8 @@ void setup()
   Serial.begin(115200);
 
   lastStatus = WiFi.status();
+
+  cameraSetup();
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", "hello world"); });
