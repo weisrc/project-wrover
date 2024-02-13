@@ -56,10 +56,15 @@ export function NetworkConnectionForm({
     });
     while (true) {
       const { data: status } = await responseEmitter.wait("status");
+      console.log("wifi status", status);
       if (status === "3") {
         break;
       }
     }
+    requestEmitter.emit("ip", {});
+    const { data: ip } = await responseEmitter.wait("ip");
+    console.log(ip);
+    requestEmitter.emit("begin", {});
     setConnecting(false);
   }
 

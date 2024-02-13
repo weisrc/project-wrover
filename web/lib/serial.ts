@@ -23,9 +23,11 @@ export async function connectSerial(
   const writer = textEncoder.writable.getWriter();
   const reader = textDecoder.readable.getReader();
 
-  requestEmitter.tap((event, data) => {
+  function tap(event: string, data: object) {
     writer.write(JSON.stringify({ type: event, ...data }) + "\n");
-  });
+  }
+
+  requestEmitter.tap(tap);
 
   let backlog = "";
 
@@ -39,21 +41,24 @@ export async function connectSerial(
         }
 
         backlog += value;
+        console.log("backlog", backlog)
         const lines = backlog.split("\n");
         backlog = lines.pop()!;
         for (const line of lines) {
           try {
             const data = JSON.parse(line);
             responseEmitter.emit(data.type, data);
-          } catch {}
+          } catch { }
         }
       }
     } catch (error) {
       console.error(error);
+      break;
     } finally {
       reader.releaseLock();
     }
   }
 
+  requestEmitter.untap(tap);
   onConnectionChange(false);
 }
