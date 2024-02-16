@@ -16,11 +16,11 @@ void begin(Channel &chan)
 
 void handleRequest(Channel &chan, JsonDocument &request)
 {
+  String type = request["type"];
   JsonDocument echo;
   echo["type"] = "echo";
-  echo["data"] = request;
+  echo["data"] = type;
   chan.send(echo);
-  String type = request["type"];
   if (type == "scan")
   {
     scanRequested = true;
@@ -40,4 +40,11 @@ void handleRequest(Channel &chan, JsonDocument &request)
     sendData(chan, "ssid", WiFi.SSID());
   else if (type == "begin")
     begin(chan);
+  else if (type == "beginCamera")
+    cameraSocketId = chan.socketId();
+  else if (type == "stopCamera")
+    cameraSocketId = NO_SOCKET_ID;
+  else if (type == "setCameraFPS") {
+    cameraFps = request["fps"];
+  }
 }
