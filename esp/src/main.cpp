@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 
 #include "camera_setup.h"
+#include "camera_stream.h"
 #include "channel.h"
 #include "globals.h"
 #include "wifi_checks.h"
@@ -57,4 +58,5 @@ void loop()
 
   checkScanComplete();
   checkStatusChange();
+  cameraStream();
 }
