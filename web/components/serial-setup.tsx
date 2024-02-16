@@ -12,11 +12,15 @@ import { Button } from "@/components/ui/button";
 import { NAME } from "@/lib/common";
 import Link from "next/link";
 
-import { connectSerial } from "@/lib/serial";
+import { connectSerial } from "@/lib/connect-serial";
+import { useRouter } from "next/navigation";
 
 export function SerialSetup(props: {
   onConnectionChange: (connected: boolean) => void;
 }) {
+
+  const router = useRouter();
+
   return (
     <Card className="border-none shadow-none">
       <CardHeader>
@@ -31,11 +35,15 @@ export function SerialSetup(props: {
       </CardHeader>
       <CardContent>
         <Button
+          className="mr-1"
           onClick={async () => {
             await connectSerial(props.onConnectionChange);
           }}
         >
-          Connect
+          Start Serial Setup
+        </Button>
+        <Button onClick={() => router.replace("/remote")}>
+          Remote Connection
         </Button>
       </CardContent>
     </Card>
