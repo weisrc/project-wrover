@@ -1,21 +1,19 @@
-"use client"
+"use client";
 
-import { RemoteConnectCard } from "@/components/remote-connect-card"
-import { connectWebSocket } from "@/lib/connect-web-socket"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { RemoteConnectCard } from "@/components/remote-connect-card";
+import { RemoteView } from "@/components/remote-view";
+import { useState } from "react";
 
 export default function Remote() {
-    const [connected, setConnected] = useState(false)
+  const [connected, setConnected] = useState(false);
 
-    return <div className="flex flex-col items-center h-screen pt-16">
-        {connected ? (
-            "You are connected"
-        ) : (
-            <RemoteConnectCard onConnectionChange={setConnected} />
-        )}
+  return (
+    <div className="flex flex-col items-center h-screen pt-16">
+      {connected ? (
+        <RemoteView />
+      ) : (
+        <RemoteConnectCard onConnectionChange={setConnected} />
+      )}
     </div>
-
-
-
+  );
 }

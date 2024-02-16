@@ -22,6 +22,7 @@ import {
 } from "@/lib/types";
 import { useState } from "react";
 import { InputField } from "./input-field";
+import { useRouter } from "next/navigation";
 
 export function NetworkConnectionForm({
   ssid,
@@ -36,6 +37,7 @@ export function NetworkConnectionForm({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [method, setMethod] = useState<ConnectEventMethod>("peap");
+  const router = useRouter();
 
   const authName = AUTH_MODE_MAP[auth];
 
@@ -63,9 +65,9 @@ export function NetworkConnectionForm({
     }
     requestEmitter.emit("ip", {});
     const { data: ip } = await responseEmitter.wait("ip");
-    console.log(ip);
     requestEmitter.emit("begin", {});
     setConnecting(false);
+    router.replace("/remote?ip=" + ip)
   }
 
   return (

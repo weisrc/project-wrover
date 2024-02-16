@@ -36,6 +36,9 @@ export type RequestEvents = {
   rssi: {};
   status: {};
   begin: {};
+  beginCamera: {};
+  stopCamera: {};
+  setCameraFPS: { fps: number };
 };
 
 export type ResponseEvents = {
@@ -44,7 +47,8 @@ export type ResponseEvents = {
   rssi: { data: string };
   status: { data: string };
   ssid: { data: string };
-  socketReady: {}
+  socketReady: {};
+  binaryData: Blob;
 };
 
 export const AUTH_MODE_MAP = {

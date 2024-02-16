@@ -25,7 +25,7 @@ export function NetworkTable({ networks }: { networks: NetworkItem[] }) {
           <TableHead>Auth</TableHead>
           <TableHead>RSSI</TableHead>
           <TableHead className="text-right">Channel</TableHead>
-          <TableHead className="text-right">BSSID</TableHead>
+          {/* <TableHead className="text-right">BSSID</TableHead> */}
         </TableRow>
       </TableHeader>
       <TableBody className="max-h-[300px] overflow-y-auto">
@@ -42,7 +42,7 @@ export function NetworkTable({ networks }: { networks: NetworkItem[] }) {
               </TableCell>
               <TableCell>{rssi}</TableCell>
               <TableCell className="text-right">{channel}</TableCell>
-              <TableCell className="text-right font-mono">{bssid}</TableCell>
+              {/* <TableCell className="text-right font-mono">{bssid}</TableCell> */}
             </TableRow>
           );
         })}
