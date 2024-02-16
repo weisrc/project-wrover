@@ -41,7 +41,6 @@ export async function connectSerial(
         }
 
         backlog += value;
-        console.log("backlog", backlog)
         const lines = backlog.split("\n");
         backlog = lines.pop()!;
         for (const line of lines) {

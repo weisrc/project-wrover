@@ -17,6 +17,8 @@ export async function connectWebSocket(ip: string) {
             } catch (e) {
                 console.error(e)
             }
+        } else {
+            responseEmitter.emit("binaryData", event.data);
         }
     }
 
