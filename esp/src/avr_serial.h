@@ -10,8 +10,6 @@ void avrSerialSetup()
         Serial.println("failed to configure serial");
 
         while (1)
-        {
             delay(1000);
-        }
     }
 }

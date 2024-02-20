@@ -31,6 +31,8 @@ void loop()
       handleRequest(chan, request);
   }
 
+  avrSerial.print("A");
+
   checkScanComplete();
   checkStatusChange();
   cameraStream();

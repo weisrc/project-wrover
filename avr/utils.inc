@@ -19,7 +19,7 @@ delay_loop:
 nibble_to_hex:
 	cpi r16, 10
 	brlo nibble_to_hex_ret
-	subi r16, -('A' - '0' - 1.0)
+	subi r16, -('A' - '0' - 10)
 nibble_to_hex_ret:
 	subi r16, -'0'
 	ret

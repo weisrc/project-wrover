@@ -55,7 +55,7 @@ lcd_init:
 	ldi r16, 1
 	rcall delay
 
-	ldi r16, 'A'
+	ldi r16, 'B'
 	rcall lcd_write
 
 	pop r16
