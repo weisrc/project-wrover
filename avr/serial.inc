@@ -38,6 +38,7 @@ serial_read:
 	in r16, UDR
 	ret
 
+
 serial_print_hex:
 	push r16
 	push r17

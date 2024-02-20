@@ -11,8 +11,8 @@ Zero seems to be used by the first socket. I will therefore use last one.
 #define NO_SOCKET_ID UINT32_MAX
 #define HALL1 GPIO_NUM_32
 #define HALL2 GPIO_NUM_13
-#define AVR_RX GPIO_NUM_14
-#define AVR_TX GPIO_NUM_12
+#define AVR_RX GPIO_NUM_33
+#define AVR_TX GPIO_NUM_14
 
 uint32_t cameraSocketId = NO_SOCKET_ID;
 uint8_t cameraFps = 10;

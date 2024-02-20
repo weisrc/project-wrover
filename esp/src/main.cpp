@@ -17,7 +17,9 @@ void setup()
   cameraSetup();
   webServerSetup();
 
-  lastStatus = WiFi.status();  
+  lastStatus = WiFi.status(); 
+  avrPrint("Hello world");
+
 }
 
 void loop()
@@ -31,7 +33,10 @@ void loop()
       handleRequest(chan, request);
   }
 
-  avrSerial.print("A");
+  if (avrSerial.available()) {
+    Serial.write(avrSerial.read());
+  }
+
 
   checkScanComplete();
   checkStatusChange();

@@ -23,6 +23,37 @@ motor_init:
 	pop r16
 	ret
 
+
+motor0_set:
+	push r16
+	rcall motor0_speed
+	andi r16, 1
+	breq motor0_set_for
+motor0_set_rev:
+	sbi MOTOR_MODE, MOTOR0_REV
+	rjmp motor0_set_end
+motor0_set_for:
+	cbi MOTOR_MODE, MOTOR0_REV
+motor0_set_end:
+	pop r16
+	ret
+
+
+motor1_set:
+	push r16
+	rcall motor1_speed
+	andi r16, 1
+	breq motor1_set_for
+motor1_set_rev:
+	sbi MOTOR_MODE, MOTOR1_REV
+	rjmp motor1_set_end
+motor1_set_for:
+	cbi MOTOR_MODE, MOTOR1_REV
+motor1_set_end:
+	pop r16
+	ret
+
+
 motor0_speed:
 	push r16
 	out OCR1AH, r16
