@@ -18,10 +18,10 @@ uint32_t cameraSocketId = NO_SOCKET_ID;
 uint8_t cameraFps = 10;
 unsigned long cameraLastTime = 0;
 
-bool serverActive = false;
+bool webServerActive = false;
 bool scanRequested = false;
 wl_status_t lastStatus;
 
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+AsyncWebServer webServer(80);
+AsyncWebSocket wsEndpoint("/ws");
 SoftwareSerial avrSerial;

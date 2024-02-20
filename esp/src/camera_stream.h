@@ -7,7 +7,7 @@ void cameraStream()
     if (cameraSocketId == NO_SOCKET_ID)
         return;
 
-    AsyncWebSocketClient *client = ws.client(cameraSocketId);
+    AsyncWebSocketClient *client = wsEndpoint.client(cameraSocketId);
 
     if (!client)
         return;
