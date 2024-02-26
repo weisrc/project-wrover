@@ -33,8 +33,23 @@ void avrSend(AvrMode mode, char data)
     avrSerial.write(data);
 }
 
+void avrLCDSecond()
+{
+    avrSend(MODE_COMMAND, 0x80 + 0x40);
+}
+
 void avrPrint(String str)
 {
     for (char c : str)
-        avrSend(MODE_WRITE, c);
+    {
+        if (c == '\n')
+            avrLCDSecond();
+        else
+            avrSend(MODE_WRITE, c);
+    }
+}
+
+void avrClear()
+{
+    avrSend(MODE_COMMAND, 1);
 }

@@ -7,9 +7,6 @@
 .equ SERIAL_BAUD = 4800
 .equ SERIAL_UBRR = (FCPU / 16 / SERIAL_BAUD) - 1
 
-.equ LF = $0a
-.equ CR = $0d
-
 serial_init:
 	push r16
 	ldi r16, high(SERIAL_UBRR)

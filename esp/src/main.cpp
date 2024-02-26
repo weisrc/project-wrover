@@ -9,16 +9,25 @@
 #include "wifi_checks.h"
 #include "web_server.h"
 #include "handle_request.h"
+#include "EEPROM.h"
+#include "StreamUtils.h"
 
 void setup()
 {
   Serial.begin(115200);
+  EEPROM.begin(STORAGE_SIZE);
   avrSerialSetup();
   cameraSetup();
   webServerSetup();
 
-  lastStatus = WiFi.status(); 
-  avrPrint("Hello world");
+  lastStatus = WiFi.status();
+  avrClear();
+  avrPrint("WRover ESP\nWaiting Setup...");
+
+  JsonDocument connectJson;
+  EepromStream eepromStream(0, STORAGE_SIZE);
+  DeserializationError error = deserializeJson(connectJson, eepromStream);
+
 
 }
 

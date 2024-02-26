@@ -11,8 +11,8 @@
 
 .equ LCD_FN = $20
 .equ LCD_FN_8BIT = $10
-.equ LCD_FN_2LINE = $80
-.equ LCD_FN_FONT = $40
+.equ LCD_FN_2LINE = $08
+.equ LCD_FN_FONT = $04
 
 .equ LCD_DIS = $08
 .equ LCD_DIS_ON = $04
@@ -24,6 +24,8 @@
 .equ LCD_ENTRY = $04
 .equ LCD_ENTRY_INC = $02
 .equ LCD_ENTRY_SHIFT = $01
+
+.equ LCD_LF = $0a
 
 .cseg
 
@@ -108,5 +110,30 @@ lcd_clear_command_wait:
 	rcall lcd_wait
 	dec r16
 	breq lcd_clear_command_wait
+	pop r16
+	ret
+
+
+lcd_print:
+	push r16
+lcd_print_loop:
+	lpm r16, Z+
+	cpi r16, 0
+	breq lcd_print_end
+	cpi r16, LCD_LF
+	breq lcd_print_lf
+	rcall lcd_write
+	rjmp lcd_print_loop
+lcd_print_lf:
+	rcall lcd_second
+	rjmp lcd_print_loop
+lcd_print_end:
+	pop r16
+	ret
+
+lcd_second:
+	push r16
+	ldi r16, $80 + $40
+	rcall lcd_command
 	pop r16
 	ret
