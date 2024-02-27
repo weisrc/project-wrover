@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include "globals.h"
 
 class Channel
 {

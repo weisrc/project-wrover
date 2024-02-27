@@ -19,13 +19,14 @@ void getDistances(Channel &chan) {
     chan.send(response);
 }
 
+void setMotor(Channel &chan, JsonDocument &request) {
+  avrSend(MODE_MOTOR0, request["m0"].as<uint8_t>());
+  avrSend(MODE_MOTOR1, request["m1"].as<uint8_t>());
+}
+
 void handleRequest(Channel &chan, JsonDocument &request)
 {
   String type = request["type"];
-  JsonDocument echo;
-  echo["type"] = "echo";
-  echo["data"] = type;
-  chan.send(echo);
   if (type == "scan")
   {
     scanRequested = true;
@@ -53,5 +54,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
     cameraFps = request["fps"];
   else if (type == "sonar")
     getDistances(chan);
+  else if (type == "motor")
+    setMotor(chan, request);
 }
 

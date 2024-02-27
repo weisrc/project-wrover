@@ -32,6 +32,9 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
+	ldi r16, 10
+	rcall delay
+
 	rcall lcd_init
 	rcall serial_init
 	rcall sonar_init

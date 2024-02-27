@@ -94,7 +94,7 @@ lcd_write:
 
 lcd_wait:
 	push r16
-	ldi r16, 15
+	ldi r16, 30
 lcd_wait_loop:
 	dec r16
 	breq lcd_wait_loop
