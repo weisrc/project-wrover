@@ -9,9 +9,9 @@
 
 void begin(Channel &chan)
 {
-  server.begin();
+  webServer.begin();
   sendData(chan, "begin", "ok");
-  serverActive = true;
+  webServerActive = true;
 }
 
 void handleRequest(Channel &chan, JsonDocument &request)

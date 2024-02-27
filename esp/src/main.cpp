@@ -4,45 +4,31 @@
 
 #include "camera_setup.h"
 #include "camera_stream.h"
-#include "channel.h"
+#include "avr_serial.h"
 #include "globals.h"
 #include "wifi_checks.h"
+#include "web_server.h"
 #include "handle_request.h"
-
-void onWSEventData(AwsFrameInfo *info, AsyncWebSocketClient *client, uint8_t *data, size_t len)
-{
-  if (info->opcode == WS_TEXT)
-  {
-    JsonDocument request;
-    WSChannel chan(client);
-    DeserializationError error = deserializeJson(request, data, len);
-    if (!error)
-      handleRequest(chan, request);
-  }
-}
-
-void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
-{
-  if (type == WS_EVT_CONNECT) {
-    WSChannel chan(client);
-    sendData(chan, "socketReady", "ok");
-  }
-  else if (type == WS_EVT_DATA)
-    onWSEventData((AwsFrameInfo *)arg, client, data, len);
-}
+#include "EEPROM.h"
+#include "StreamUtils.h"
 
 void setup()
 {
   Serial.begin(115200);
+  EEPROM.begin(STORAGE_SIZE);
+  avrSerialSetup();
+  cameraSetup();
+  webServerSetup();
 
   lastStatus = WiFi.status();
+  avrClear();
+  avrPrint("WRover ESP\nWaiting Setup...");
 
-  cameraSetup();
+  JsonDocument connectJson;
+  EepromStream eepromStream(0, STORAGE_SIZE);
+  DeserializationError error = deserializeJson(connectJson, eepromStream);
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", "hello world"); });
-  ws.onEvent(onWSEvent);
-  server.addHandler(&ws);
+
 }
 
 void loop()
@@ -55,6 +41,11 @@ void loop()
     if (!error)
       handleRequest(chan, request);
   }
+
+  if (avrSerial.available()) {
+    Serial.write(avrSerial.read());
+  }
+
 
   checkScanComplete();
   checkStatusChange();

@@ -14,11 +14,11 @@ void broadcast(JsonDocument &doc)
   serializeJson(doc, Serial);
   Serial.println();
 
-  if (serverActive)
+  if (webServerActive)
   {
     String out;
     serializeJson(doc, out);
-    ws.textAll(out);
+    wsEndpoint.textAll(out);
   }
 }
 

@@ -9,9 +9,8 @@
 .include "m8515def.inc"
 .list
 
-; equates used by term io
-.equ FCPU_L = 1000000 ;used by termio rtn 
-.equ BAUD = 4800    ;desired baud rate
+.equ LF = $0a
+.equ CR = $0d
 
 .dseg
 
@@ -38,40 +37,19 @@ main:
 	rcall sonar_init
 	rcall motor_init
 	rcall timer_init
+	rcall handle_init
+
+	ldi ZH, high(boot_msg << 1)
+	ldi ZL, low(boot_msg << 1)
+	rcall lcd_print
 
 	sei
-
 loop:
-
-	ldi r16, 5
-	rcall delay
-
-	lds r16, SONAR_DELTA0H
-	rcall serial_print_hex
-	lds r16, SONAR_DELTA0L
-	rcall serial_print_hex
-	ldi r16, ' '
-	rcall serial_write
-
-	lds r16, SONAR_DELTA1H
-	rcall serial_print_hex
-	lds r16, SONAR_DELTA1L
-	rcall serial_print_hex
-	ldi r16, ' '
-	rcall serial_write
-
-	lds r16, SONAR_DELTA2H
-	rcall serial_print_hex
-	lds r16, SONAR_DELTA2L
-	rcall serial_print_hex
-
-	ldi r16, CR
-	rcall serial_write
-
+	rcall handle
 	rjmp loop
 
 
-
+boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
 
 .include "utils.inc"
 .include "sonar.inc"
@@ -79,4 +57,5 @@ loop:
 .include "motor.inc"
 .include "lcd.inc"
 .include "serial.inc"
+.include "handle.inc"
 .exit
