@@ -1,17 +1,36 @@
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
+import { SonarData } from "@/lib/types";
 
 export function RemoteView() {
   const [captureUrl, setCaptureUrl] = useState("");
 
+  const [sonar, setSonar] = useState<SonarData>();
+
   useEffect(() => {
     requestEmitter.emit("beginCamera", {});
+    requestEmitter.emit("sonar", {});
 
-    responseEmitter.on("binaryData", (data) => {
+    const onBinaryData = (data: Blob) => {
       const url = URL.createObjectURL(data);
       setCaptureUrl(url);
-    });
+    }
+
+    const onSonar = ({data}: {data: SonarData}) => {
+      setSonar(data);
+      setTimeout(() => {
+        requestEmitter.emit("sonar", {});
+      }, 500);
+    }
+
+    responseEmitter.on("binaryData", onBinaryData);
+    responseEmitter.on("sonar", onSonar);
+
+    return () => {
+      responseEmitter.off("binaryData", onBinaryData);
+      responseEmitter.off("sonar", onSonar);
+    }
   }, []);
 
   return (
@@ -26,6 +45,9 @@ export function RemoteView() {
           });
         }}
       />
+      <pre>
+        {JSON.stringify(sonar)}
+      </pre>
     </div>
   );
 }

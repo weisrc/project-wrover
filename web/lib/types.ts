@@ -1,21 +1,21 @@
 export type ConnectEvent = {
   ssid: string;
 } & (
-  | {
+    | {
       auth: "open";
     }
-  | {
+    | {
       auth: "wpa2";
       password: string;
     }
-  | {
+    | {
       auth: "wpa2_enterprise";
       method: ConnectEventMethod;
       identity: string;
       username: string;
       password: string;
     }
-);
+  );
 
 export type ConnectEventMethod = "peap" | "ttls" | "tls";
 
@@ -39,7 +39,10 @@ export type RequestEvents = {
   beginCamera: {};
   stopCamera: {};
   setCameraFPS: { fps: number };
+  sonar: {}
 };
+
+export type SonarData = [number, number, number];
 
 export type ResponseEvents = {
   scan: { networks: NetworkItem[] };
@@ -49,6 +52,7 @@ export type ResponseEvents = {
   ssid: { data: string };
   socketReady: {};
   binaryData: Blob;
+  sonar: { data: SonarData }
 };
 
 export const AUTH_MODE_MAP = {

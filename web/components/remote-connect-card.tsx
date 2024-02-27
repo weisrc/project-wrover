@@ -42,6 +42,7 @@ export function RemoteConnectCard(props: {
   }
 
   useEffect(() => {
+    console.log("use effect running...");
     if (ip) {
       connect(ip);
     }

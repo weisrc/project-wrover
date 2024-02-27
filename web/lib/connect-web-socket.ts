@@ -1,6 +1,18 @@
 import { requestEmitter, responseEmitter } from "./common";
 
+let singleton: Promise<void> | undefined;
+
 export async function connectWebSocket(ip: string) {
+  if (singleton) {
+    return singleton;
+  }
+  singleton = unsafeconnectWebSocket(ip);
+  return singleton;
+}
+
+async function unsafeconnectWebSocket(ip: string) {
+
+  console.log("connect web socket", ip);
   const ws = new WebSocket(`ws://${ip}/ws`);
 
   function tap(event: string, data: object) {
@@ -30,4 +42,5 @@ export async function connectWebSocket(ip: string) {
   ]);
 
   await new Promise((resolve) => setTimeout(resolve, 100));
+
 }
