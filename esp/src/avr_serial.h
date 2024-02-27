@@ -53,3 +53,21 @@ void avrClear()
 {
     avrSend(MODE_COMMAND, 1);
 }
+
+char avrReadByte() {
+    while (!avrSerial.available());
+    return avrSerial.read();
+}
+
+uint16_t avrReadWord() {
+    uint16_t data;
+    data = avrReadByte();
+    data <<= 8;
+    data += avrReadByte();
+    return data;
+}
+
+uint16_t avrSonar(AvrMode mode) {
+    avrSerial.write(mode);
+    return avrReadWord();
+}

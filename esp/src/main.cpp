@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <StreamUtils.h>
 
 #include "camera_setup.h"
 #include "camera_stream.h"
@@ -9,8 +10,6 @@
 #include "wifi_checks.h"
 #include "web_server.h"
 #include "handle_request.h"
-#include "EEPROM.h"
-#include "StreamUtils.h"
 
 void setup()
 {
@@ -21,14 +20,23 @@ void setup()
   webServerSetup();
 
   lastStatus = WiFi.status();
-  avrClear();
-  avrPrint("WRover ESP\nWaiting Setup...");
 
+  sleep(1);
+
+  avrClear();
   JsonDocument connectJson;
   EepromStream eepromStream(0, STORAGE_SIZE);
   DeserializationError error = deserializeJson(connectJson, eepromStream);
-
-
+  if (!error && connectJson["type"] == "connect")
+  {
+    NullChannel chan;
+    connect(chan, connectJson);
+    avrPrint("WRover ESP\nConnecting...");
+  }
+  else
+  {
+    avrPrint("WRover ESP\nWaiting Setup...");
+  }
 }
 
 void loop()
@@ -42,10 +50,10 @@ void loop()
       handleRequest(chan, request);
   }
 
-  if (avrSerial.available()) {
+  if (avrSerial.available())
+  {
     Serial.write(avrSerial.read());
   }
-
 
   checkScanComplete();
   checkStatusChange();

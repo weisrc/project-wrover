@@ -10,6 +10,17 @@ public:
   virtual uint32_t socketId() = 0;
 };
 
+class NullChannel : public Channel
+{
+  void send(JsonDocument &data)
+  {
+  }
+  uint32_t socketId()
+  {
+    return NO_SOCKET_ID;
+  }
+};
+
 class SerialChannel : public Channel
 {
 public:
@@ -18,7 +29,8 @@ public:
     serializeJson(data, Serial);
     Serial.println();
   }
-  uint32_t socketId() {
+  uint32_t socketId()
+  {
     return NO_SOCKET_ID;
   }
 };
@@ -39,7 +51,8 @@ public:
     serializeJson(data, output);
     this->client->text(output);
   }
-  uint32_t socketId() {
+  uint32_t socketId()
+  {
     return client->id();
   }
 };

@@ -4,6 +4,8 @@
 
 #include "globals.h"
 #include "data_utils.h"
+#include "avr_serial.h"
+#include "begin_webserver.h"
 
 void checkScanComplete()
 {
@@ -34,5 +36,14 @@ void checkStatusChange()
   {
     lastStatus = status;
     broadcastData("status", String(status));
+
+    if (status == WL_CONNECTED)
+    {
+      avrClear();
+      avrPrint("WiFi Connected:\n");
+      avrPrint(WiFi.localIP().toString());
+      NullChannel chan;
+      beginWebServer(chan);
+    }
   }
 }

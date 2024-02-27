@@ -6,12 +6,17 @@
 #include "globals.h"
 #include "data_utils.h"
 #include "wifi_connection.h"
+#include "begin_webserver.h"
+#include "avr_serial.h"
 
-void begin(Channel &chan)
-{
-  webServer.begin();
-  sendData(chan, "begin", "ok");
-  webServerActive = true;
+void getDistances(Channel &chan) {
+    JsonDocument response;
+    response["type"] = "sonar";
+    JsonArray data = response["data"].to<JsonArray>();
+    data.add(avrSonar(MODE_SONAR0));
+    data.add(avrSonar(MODE_SONAR1));
+    data.add(avrSonar(MODE_SONAR2));
+    chan.send(response);
 }
 
 void handleRequest(Channel &chan, JsonDocument &request)
@@ -39,12 +44,14 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "ssid")
     sendData(chan, "ssid", WiFi.SSID());
   else if (type == "begin")
-    begin(chan);
+    beginWebServer(chan);
   else if (type == "beginCamera")
     cameraSocketId = chan.socketId();
   else if (type == "stopCamera")
     cameraSocketId = NO_SOCKET_ID;
-  else if (type == "setCameraFPS") {
+  else if (type == "setCameraFPS")
     cameraFps = request["fps"];
-  }
+  else if (type == "sonar")
+    getDistances(chan);
 }
+

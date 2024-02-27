@@ -46,6 +46,7 @@ main:
 	sei
 loop:
 	rcall handle
+	;rcall print_sonars
 	rjmp loop
 
 
@@ -58,4 +59,5 @@ boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
 .include "lcd.inc"
 .include "serial.inc"
 .include "handle.inc"
+.include "dev_utils.inc"
 .exit
