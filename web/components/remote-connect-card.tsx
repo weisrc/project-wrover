@@ -73,7 +73,14 @@ export function RemoteConnectCard(props: {
         <Button className="mr-1" onClick={() => router.replace("/")}>
           Return to Setup
         </Button>
-        <Button disabled={connecting || !ip}>
+        <Button disabled={connecting || !ip}
+          onClick={() => {
+            connect(ip);
+            const search = new URLSearchParams();
+            search.append("ip", ip);
+            router.replace("?" + search.toString());
+          }}
+        >
           {connecting ? "Connecting..." : "Connect"}
         </Button>
       </CardContent>
