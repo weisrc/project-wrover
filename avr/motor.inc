@@ -16,9 +16,9 @@ motor_init:
 	sbi DDRD, MOTOR0_REV
 	sbi DDRD, MOTOR1_REV
 
-	ldi r16, $40
-	rcall motor0_speed
-	cbi MOTOR_MODE, MOTOR0_REV
+	ldi r16, 0
+	rcall motor0_set
+	rcall motor1_set
 	
 	pop r16
 	ret

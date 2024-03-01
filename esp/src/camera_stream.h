@@ -4,6 +4,8 @@
 
 void cameraStream()
 {
+    static unsigned long lastTime = 0;
+
     if (cameraSocketId == NO_SOCKET_ID)
         return;
 
@@ -14,10 +16,10 @@ void cameraStream()
 
     unsigned long interval = 1000 / cameraFps;
     unsigned long now = millis();
-    if (now - cameraLastTime < interval)
+    if (now - lastTime < interval)
         return;
 
-    cameraLastTime = now;
+    lastTime = now;
 
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb)
