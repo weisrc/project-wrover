@@ -3,9 +3,15 @@
 
 #include "globals.h"
 #include "data_utils.h"
+#include "avr_serial.h"
 
 bool hall0Changed = false;
 bool hall1Changed = false;
+
+void setMotor(Channel &chan, JsonDocument &request) {
+  avrSend(MODE_MOTOR0, request["m0"].as<uint8_t>());
+  avrSend(MODE_MOTOR1, request["m1"].as<uint8_t>());
+}
 
 void IRAM_ATTR hall0ISR()
 {
@@ -25,21 +31,21 @@ void hallSensorSetup()
     attachInterrupt(HALL1, hall1ISR, CHANGE);
 }
 
-void hallSensorCheck()
+void locomotionBroadcast()
 {
-    static String data;
+    static String hall;
     static unsigned long lastTime = 0;
 
     if (hall0Changed)
     {
         hall0Changed = false;
-        data += '0';
+        hall += '0';
     }
 
     if (hall1Changed)
     {
         hall1Changed = false;
-        data += '1';
+        hall += '1';
     }
 
     unsigned long now = millis();
@@ -48,9 +54,13 @@ void hallSensorCheck()
 
     lastTime = now;
 
-    if (data.length() == 0)
-        return;
-
-    broadcastData("hall", data);
-    data.clear();
+    JsonDocument data;
+    data["type"] = "locomotion";
+    data["hall"] = hall;
+    JsonArray sonars = data["sonar"].to<JsonArray>();
+    sonars.add(avrSonar(MODE_SONAR0));
+    sonars.add(avrSonar(MODE_SONAR1));
+    sonars.add(avrSonar(MODE_SONAR2));
+    broadcast(data);
+    hall.clear();
 }

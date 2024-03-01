@@ -8,21 +8,7 @@
 #include "wifi_connection.h"
 #include "begin_webserver.h"
 #include "avr_serial.h"
-
-void getDistances(Channel &chan) {
-    JsonDocument response;
-    response["type"] = "sonar";
-    JsonArray data = response["data"].to<JsonArray>();
-    data.add(avrSonar(MODE_SONAR0));
-    data.add(avrSonar(MODE_SONAR1));
-    data.add(avrSonar(MODE_SONAR2));
-    chan.send(response);
-}
-
-void setMotor(Channel &chan, JsonDocument &request) {
-  avrSend(MODE_MOTOR0, request["m0"].as<uint8_t>());
-  avrSend(MODE_MOTOR1, request["m1"].as<uint8_t>());
-}
+#include "locomotion.h"
 
 void handleRequest(Channel &chan, JsonDocument &request)
 {
@@ -52,8 +38,6 @@ void handleRequest(Channel &chan, JsonDocument &request)
     cameraSocketId = NO_SOCKET_ID;
   else if (type == "setCameraFPS")
     cameraFps = request["fps"];
-  else if (type == "sonar")
-    getDistances(chan);
   else if (type == "motor")
     setMotor(chan, request);
 }

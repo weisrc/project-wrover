@@ -10,7 +10,7 @@
 #include "wifi_checks.h"
 #include "web_server.h"
 #include "handle_request.h"
-#include "hall_sensor.h"
+#include "locomotion.h"
 
 void setup()
 {
@@ -61,5 +61,5 @@ void loop()
   checkScanComplete();
   checkStatusChange();
   cameraStream();
-  hallSensorCheck();
+  locomotionBroadcast();
 }
