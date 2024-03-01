@@ -45,5 +45,13 @@ void checkStatusChange()
       NullChannel chan;
       beginWebServer(chan);
     }
+    else if (status == WL_CONNECT_FAILED)
+    {
+      WiFi.disconnect();
+      JsonDocument data;
+      EepromStream eepromStream(0, STORAGE_SIZE);
+      serializeJson(data, eepromStream);
+      eepromStream.flush();
+    }
   }
 }

@@ -25,7 +25,7 @@ void cameraStream()
     if (!fb)
         return;
 
-    client->binary((uint8_t *)fb->buf, fb->len);
+    client->binary(fb->buf, fb->len);
 
     esp_camera_fb_return(fb);
 }

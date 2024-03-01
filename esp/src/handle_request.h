@@ -21,7 +21,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "connect")
     connect(chan, request);
   else if (type == "disconnect")
-    disconnect(chan);
+    disconnect(chan, request);
   else if (type == "ip")
     sendData(chan, "ip", WiFi.localIP().toString());
   else if (type == "rssi")
@@ -41,4 +41,3 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "motor")
     setMotor(chan, request);
 }
-
