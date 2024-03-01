@@ -1,9 +1,22 @@
 import { requestEmitter, responseEmitter } from "./common";
 
+async function tryRequestPort() {
+  try {
+    return await navigator.serial.requestPort();
+  } catch {
+    return null;
+  }
+}
+
 export async function connectSerial(
   onConnectionChange: (connected: boolean) => void
 ) {
-  const port = await navigator.serial.requestPort();
+  const port = await tryRequestPort();
+
+  if (!port) {
+    return
+  }
+  
   await port.open({ baudRate: 115200 });
   if (!port.writable) {
     console.error("Port is not writable");
@@ -46,6 +59,7 @@ export async function connectSerial(
         for (const line of lines) {
           try {
             const data = JSON.parse(line);
+            console.log(data);
             responseEmitter.emit(data.type, data);
           } catch { }
         }
