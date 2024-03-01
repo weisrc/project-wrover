@@ -10,14 +10,17 @@
 #include "wifi_checks.h"
 #include "web_server.h"
 #include "handle_request.h"
+#include "hall_sensor.h"
 
 void setup()
 {
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
+  
   avrSerialSetup();
   cameraSetup();
   webServerSetup();
+  hallSensorSetup();
 
   lastStatus = WiFi.status();
 
@@ -58,4 +61,5 @@ void loop()
   checkScanComplete();
   checkStatusChange();
   cameraStream();
+  hallSensorCheck();
 }
