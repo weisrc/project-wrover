@@ -39,7 +39,7 @@ export type RequestEvents = {
   beginCamera: {};
   stopCamera: {};
   setCameraFPS: { fps: number };
-  sonar: {}
+  motor: { m0: number, m1: number };
 };
 
 export type SonarData = [number, number, number];
@@ -52,7 +52,7 @@ export type ResponseEvents = {
   ssid: { data: string };
   socketReady: {};
   binaryData: Blob;
-  sonar: { data: SonarData }
+  locomotion: { hall: string, sonar: SonarData };
 };
 
 export const AUTH_MODE_MAP = {
