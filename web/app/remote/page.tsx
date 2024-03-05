@@ -8,12 +8,14 @@ export default function Remote() {
   const [connected, setConnected] = useState(false);
 
   return (
-    <div className="flex flex-col items-center h-screen pt-16">
+    <>
       {connected ? (
         <RemoteView />
       ) : (
-        <RemoteConnectCard onConnectionChange={setConnected} />
+        <div className="flex flex-col items-center h-screen pt-16">
+          <RemoteConnectCard onConnectionChange={setConnected} />
+        </div>
       )}
-    </div>
+    </>
   );
 }

@@ -41,6 +41,9 @@ export type RequestEvents = {
 };
 
 export type SonarData = [number, number, number];
+export type LocomotionData = {
+  hall: string, sonar: SonarData
+}
 
 export type ResponseEvents = {
   scan: { networks: NetworkItem[] };
@@ -50,7 +53,7 @@ export type ResponseEvents = {
   ssid: { data: string };
   socketReady: {};
   binaryData: Blob;
-  locomotion: { hall: string, sonar: SonarData };
+  locomotion: LocomotionData;
 };
 
 export const AUTH_MODE_MAP = {
