@@ -42,6 +42,12 @@ export class Vec2 {
         return new Vec2(this.x * other.y, this.y * other.y);
     }
 
+    between(other: Vec2) {
+        const x = this.x + other.x
+        const y = this.y + other.y
+        return new Vec2(x / 2, y / 2)
+    }
+
     direction() {
         return Math.atan2(this.y, this.x);
     }

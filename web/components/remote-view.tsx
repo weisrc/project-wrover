@@ -8,7 +8,7 @@ export function RemoteView() {
 
   return (
     <div>
-      <MapCanvas data={[]} className="inset-0 fixed"/>
+      <MapCanvas className="inset-0 fixed"/>
       <CameraView className="fixed bottom-0 right-0"/>
       {/* <Input
         type="number"
