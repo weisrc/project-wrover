@@ -36,8 +36,6 @@ export type RequestEvents = {
   rssi: {};
   status: {};
   begin: {};
-  beginCamera: {};
-  stopCamera: {};
   setCameraFPS: { fps: number };
   motor: { m0: number, m1: number };
 };
