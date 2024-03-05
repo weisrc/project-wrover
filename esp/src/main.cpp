@@ -62,4 +62,6 @@ void loop()
   checkStatusChange();
   cameraStream();
   locomotionBroadcast();
+  wsEndpoint.cleanupClients();
+  camEndpoint.cleanupClients();
 }

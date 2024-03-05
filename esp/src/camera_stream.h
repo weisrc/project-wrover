@@ -6,12 +6,7 @@ void cameraStream()
 {
     static unsigned long lastTime = 0;
 
-    if (cameraSocketId == NO_SOCKET_ID)
-        return;
-
-    AsyncWebSocketClient *client = wsEndpoint.client(cameraSocketId);
-
-    if (!client)
+    if (camEndpoint.count() == 0)
         return;
 
     unsigned long interval = 1000 / cameraFps;
@@ -25,7 +20,7 @@ void cameraStream()
     if (!fb)
         return;
 
-    client->binary(fb->buf, fb->len);
+    camEndpoint.binaryAll(fb->buf, fb->len);
 
     esp_camera_fb_return(fb);
 }

@@ -34,7 +34,15 @@ void hallSensorSetup()
 void locomotionBroadcast()
 {
     static String hall;
-    static unsigned long lastTime = 0;
+    static unsigned long lastSampleTime = 0;
+    static unsigned long lastBroadcastTime = 0;
+
+    unsigned long now = millis();
+
+    if (now - lastSampleTime < 10)
+        return;
+
+    lastSampleTime = now;
 
     if (hall0Changed)
     {
@@ -48,11 +56,10 @@ void locomotionBroadcast()
         hall += '1';
     }
 
-    unsigned long now = millis();
-    if (now - lastTime < 500)
+    if (now - lastBroadcastTime < 500)
         return;
 
-    lastTime = now;
+    lastBroadcastTime = now;
 
     JsonDocument data;
     data["type"] = "locomotion";

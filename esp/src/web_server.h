@@ -32,4 +32,5 @@ void webServerSetup()
               { request->send(200, "text/plain", "hello world"); });
     wsEndpoint.onEvent(onWSEvent);
     webServer.addHandler(&wsEndpoint);
+    webServer.addHandler(&camEndpoint);
 }

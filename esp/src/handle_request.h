@@ -32,12 +32,8 @@ void handleRequest(Channel &chan, JsonDocument &request)
     sendData(chan, "ssid", WiFi.SSID());
   else if (type == "begin")
     beginWebServer(chan);
-  else if (type == "beginCamera")
-    cameraSocketId = chan.socketId();
-  else if (type == "stopCamera")
-    cameraSocketId = NO_SOCKET_ID;
   else if (type == "setCameraFPS")
-    cameraFps = request["fps"];
+    cameraFps = constrain(request["fps"].as<int>(), 1, 24);
   else if (type == "motor")
     setMotor(chan, request);
 }
