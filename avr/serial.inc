@@ -4,7 +4,7 @@
 ;
 
 .equ FCPU = 1000000
-.equ SERIAL_BAUD = 4800
+.equ SERIAL_BAUD = 2400
 .equ SERIAL_UBRR = (FCPU / 16 / SERIAL_BAUD) - 1
 
 serial_init:

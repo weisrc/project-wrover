@@ -16,7 +16,7 @@ enum AvrMode
 
 void avrSerialSetup()
 {
-    avrSerial.begin(4800, SWSERIAL_8N1, AVR_RX, AVR_TX);
+    avrSerial.begin(2400, SWSERIAL_8N1, AVR_RX, AVR_TX);
 
     if (!avrSerial)
     {

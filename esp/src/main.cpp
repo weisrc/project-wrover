@@ -14,6 +14,8 @@
 
 void setup()
 {
+  setCpuFrequencyMhz(80);
+  
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
   
@@ -22,24 +24,13 @@ void setup()
   webServerSetup();
   hallSensorSetup();
 
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
   lastStatus = WiFi.status();
 
   sleep(1);
-
-  avrClear();
-  JsonDocument connectJson;
-  EepromStream eepromStream(0, STORAGE_SIZE);
-  DeserializationError error = deserializeJson(connectJson, eepromStream);
-  if (!error && connectJson["type"] == "connect")
-  {
-    NullChannel chan;
-    connect(chan, connectJson);
-    avrPrint("WRover ESP\nConnecting...");
-  }
-  else
-  {
-    avrPrint("WRover ESP\nWaiting Setup...");
-  }
+  autoConnect();
 }
 
 void loop()

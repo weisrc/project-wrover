@@ -49,11 +49,29 @@ void connect(Channel &chan, JsonDocument &request)
   }
 }
 
-void disconnect(Channel &chan, JsonDocument& request)
+void disconnect(Channel &chan, JsonDocument &request)
 {
   WiFi.disconnect();
   EepromStream eepromStream(0, STORAGE_SIZE);
   serializeJson(request, eepromStream);
   eepromStream.flush();
   sendData(chan, "disconnect", "ok");
+}
+
+void autoConnect()
+{
+  avrClear();
+  JsonDocument connectJson;
+  EepromStream eepromStream(0, STORAGE_SIZE);
+  DeserializationError error = deserializeJson(connectJson, eepromStream);
+  if (!error && connectJson["type"] == "connect")
+  {
+    NullChannel chan;
+    connect(chan, connectJson);
+    avrPrint("WRover ESP\nConnecting...");
+  }
+  else
+  {
+    avrPrint("WRover ESP\nWaiting Setup...");
+  }
 }
