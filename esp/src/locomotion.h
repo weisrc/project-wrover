@@ -56,7 +56,7 @@ void locomotionBroadcast()
         hall += '1';
     }
 
-    if (now - lastBroadcastTime < 500)
+    if (now - lastBroadcastTime < 100)
         return;
 
     lastBroadcastTime = now;
