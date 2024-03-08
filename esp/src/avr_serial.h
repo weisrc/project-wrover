@@ -46,20 +46,25 @@ void avrPrint(String str)
             avrLCDSecond();
         else
             avrSend(MODE_WRITE, c);
+        delay(1);
     }
 }
 
 void avrClear()
 {
     avrSend(MODE_COMMAND, 1);
+    delay(2);
 }
 
-char avrReadByte() {
-    while (!avrSerial.available());
+char avrReadByte()
+{
+    while (!avrSerial.available())
+        ;
     return avrSerial.read();
 }
 
-uint16_t avrReadWord() {
+uint16_t avrReadWord()
+{
     uint16_t data;
     data = avrReadByte();
     data <<= 8;
@@ -67,7 +72,8 @@ uint16_t avrReadWord() {
     return data;
 }
 
-uint16_t avrSonar(AvrMode mode) {
+uint16_t avrSonar(AvrMode mode)
+{
     avrSerial.write(mode);
     return avrReadWord();
 }

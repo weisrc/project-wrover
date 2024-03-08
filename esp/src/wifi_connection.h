@@ -67,8 +67,8 @@ void autoConnect()
   if (!error && connectJson["type"] == "connect")
   {
     NullChannel chan;
-    connect(chan, connectJson);
     avrPrint("WRover ESP\nConnecting...");
+    connect(chan, connectJson);
   }
   else
   {

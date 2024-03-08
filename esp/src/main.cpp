@@ -14,7 +14,7 @@
 
 void setup()
 {
-  setCpuFrequencyMhz(80);
+  setCpuFrequencyMhz(240);
   
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
@@ -29,7 +29,6 @@ void setup()
 
   lastStatus = WiFi.status();
 
-  sleep(1);
   autoConnect();
 }
 
