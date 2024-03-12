@@ -13,3 +13,11 @@ delay_loop:
 	brne delay_head
 	pop r16
 	ret
+
+double_s8_to_u8:
+	cpi r16, 128
+	brlo double_s8_to_u8_skip
+	ldi r16, 127
+double_s8_to_u8_skip:
+	lsl r16
+	ret

@@ -65,9 +65,13 @@ lcd_command:
 	push r16
 	out LCD_DB, r16
 	in r16, LCD_CTL
+	
+	nop
+	nop
 	ori r16, LCD_EN
 	andi r16, ~LCD_RS
 	out LCD_CTL, r16
+	nop
 	nop
 	nop
 	nop

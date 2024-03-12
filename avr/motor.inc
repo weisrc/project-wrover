@@ -5,6 +5,13 @@
 .equ MOTOR1_REV = PD7
 .equ MOTOR_MODE = PORTD
 
+.dseg
+
+MOTOR0_TARGET: .byte 1
+MOTOR1_TARGET: .byte 1
+MOTOR0_CURRENT: .byte 1
+MOTOR1_CURRENT: .byte 1
+
 .cseg
 
 motor_init:
@@ -26,30 +33,34 @@ motor_init:
 
 motor0_set:
 	push r16
-	rcall motor0_speed
-	andi r16, 1
-	breq motor0_set_for
+	cpi r16, 0
+	brlt motor0_set_rev
 motor0_set_rev:
 	sbi MOTOR_MODE, MOTOR0_REV
+	neg r16
 	rjmp motor0_set_end
 motor0_set_for:
 	cbi MOTOR_MODE, MOTOR0_REV
 motor0_set_end:
+	rcall double_s8_to_u8
+	rcall motor0_speed
 	pop r16
 	ret
 
 
 motor1_set:
 	push r16
-	rcall motor1_speed
-	andi r16, 1
-	breq motor1_set_for
+	cpi r16, 0
+	brlt motor1_set_rev
 motor1_set_rev:
 	sbi MOTOR_MODE, MOTOR1_REV
+	neg r16
 	rjmp motor1_set_end
 motor1_set_for:
 	cbi MOTOR_MODE, MOTOR1_REV
 motor1_set_end:
+	rcall double_s8_to_u8
+	rcall motor1_speed
 	pop r16
 	ret
 

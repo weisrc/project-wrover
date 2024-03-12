@@ -9,8 +9,8 @@ bool hall0Changed = false;
 bool hall1Changed = false;
 
 void setMotor(Channel &chan, JsonDocument &request) {
-  avrSend(MODE_MOTOR0, request["m0"].as<uint8_t>());
-  avrSend(MODE_MOTOR1, request["m1"].as<uint8_t>());
+  avrSend(MODE_MOTOR0, request["m0"].as<int8_t>());
+  avrSend(MODE_MOTOR1, request["m1"].as<int8_t>());
 }
 
 void IRAM_ATTR hall0ISR()
