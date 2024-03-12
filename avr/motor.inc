@@ -34,7 +34,7 @@ motor_init:
 motor0_set:
 	push r16
 	cpi r16, 0
-	brlt motor0_set_rev
+	brge motor0_set_for
 motor0_set_rev:
 	sbi MOTOR_MODE, MOTOR0_REV
 	neg r16
@@ -51,7 +51,7 @@ motor0_set_end:
 motor1_set:
 	push r16
 	cpi r16, 0
-	brlt motor1_set_rev
+	brge motor1_set_for
 motor1_set_rev:
 	sbi MOTOR_MODE, MOTOR1_REV
 	neg r16
