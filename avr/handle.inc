@@ -35,7 +35,7 @@ handle:
 	cpi r17, MODE_NONE
 	breq handle_none
 	cpi r17, MODE_MOTOR0
-	breq handle_motor0
+	breq handle_motor0ssss
 	cpi r17, MODE_MOTOR1
 	breq handle_motor1
 	cpi r17, MODE_WRITE
@@ -54,11 +54,11 @@ handle_none_end:
 	rjmp handle_end
 
 handle_motor0:
-	rcall motor0_set
+	sts MOTOR0_TARGET, r16
 	rjmp handle_done
 
 handle_motor1:
-	rcall motor1_set
+	sts MOTOR1_TARGET, r16
 	rjmp handle_done
 
 handle_write:

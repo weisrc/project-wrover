@@ -50,6 +50,7 @@ main:
 loop:
 	rcall handle
 	;rcall print_sonars
+	rcall motor_update
 	rjmp loop
 
 
