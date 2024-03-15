@@ -7,11 +7,25 @@
 
 bool hall0Changed = false;
 bool hall1Changed = false;
+bool motor0Reverse = false;
+bool motor1Reverse = false;
 String hall;
 
-void setMotor(Channel &chan, JsonDocument &request) {
-  avrSend(MODE_MOTOR0, request["m0"].as<int8_t>());
-  avrSend(MODE_MOTOR1, request["m1"].as<int8_t>());
+void setMotor(Channel &chan, JsonDocument &request)
+{
+    int8_t m0 = request["m0"].as<int8_t>();
+    int8_t m1 = request["m1"].as<int8_t>();
+    if (m0 > 0) 
+        motor0Reverse = false;
+    else if (m0 < 0)
+        motor0Reverse = true;
+    
+    if (m1 > 0)
+        motor1Reverse = false;
+    else if (m1 < 0)
+        motor1Reverse = true;
+    avrSend(MODE_MOTOR0, m0);
+    avrSend(MODE_MOTOR1, m1);
 }
 
 void IRAM_ATTR hall0ISR()
@@ -33,7 +47,8 @@ void hallSensorSetup()
     hall.reserve(HALL_SIZE);
 }
 
-void broadcastLocomotion() {
+void broadcastLocomotion()
+{
     JsonDocument data;
     data["type"] = "locomotion";
     data["hall"] = hall;
@@ -56,19 +71,20 @@ void locomotionUpdate()
 
     lastSampleTime = now;
 
-    if (hall.length() >= HALL_SIZE) {
+    if (hall.length() >= HALL_SIZE)
+    {
         broadcastLocomotion();
     }
 
     if (hall0Changed)
     {
         hall0Changed = false;
-        hall += '0';
+        hall += motor0Reverse ? 'L' : 'l';
     }
 
     if (hall1Changed)
     {
         hall1Changed = false;
-        hall += '1';
+        hall += motor1Reverse ? 'R' : 'r';
     }
 }
