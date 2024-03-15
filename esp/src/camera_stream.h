@@ -25,4 +25,6 @@ void cameraCapture()
 
     wsEndpoint.binary(camSocketId, fb->buf, fb->len);
     camSocketId = NO_SOCKET_ID;
+
+    esp_camera_fb_return(fb);
 }

@@ -20,7 +20,6 @@ void setup()
   EEPROM.begin(STORAGE_SIZE);
   
   avrSerialSetup();
-
   avrClear();
   avrPrint("WRover ESP\nStarting...");
   sleep(1);
@@ -46,6 +45,8 @@ void loop()
     DeserializationError error = deserializeJson(request, Serial);
     if (!error)
       handleRequest(chan, request);
+    else
+      Serial.println("failed to parse");
   }
 
   if (avrSerial.available())
