@@ -1,6 +1,5 @@
 import { requestEmitter } from "@/lib/common";
 import { MapCanvas } from "./map-canvas";
-import { Input } from "./ui/input";
 import { CameraView } from "./camera-view";
 import { useEffect } from "react";
 
