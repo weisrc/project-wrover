@@ -32,7 +32,7 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
-	ldi r16, 10
+	ldi r16, 20
 	rcall delay
 
 	rcall lcd_init

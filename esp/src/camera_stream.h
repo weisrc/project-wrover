@@ -1,6 +1,17 @@
+#pragma once
 #include <Arduino.h>
 #include <esp_camera.h>
 #include "globals.h"
+#include "channel.h"
+
+void broadcastCapture()
+{
+    camera_fb_t *fb = esp_camera_fb_get();
+    if (!fb)
+        return;
+
+    camEndpoint.binaryAll(fb->buf, fb->len);
+}
 
 void cameraStream()
 {
@@ -16,11 +27,6 @@ void cameraStream()
 
     lastTime = now;
 
-    camera_fb_t *fb = esp_camera_fb_get();
-    if (!fb)
-        return;
-
-    camEndpoint.binaryAll(fb->buf, fb->len);
-
-    esp_camera_fb_return(fb);
+    broadcastCapture();
 }
+

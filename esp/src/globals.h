@@ -11,6 +11,7 @@
 #define AVR_TX GPIO_NUM_14
 
 #define STORAGE_SIZE 2048
+#define HALL_SIZE 2024
 
 uint8_t cameraFps = 5;
 bool webServerActive = false;

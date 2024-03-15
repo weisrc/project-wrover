@@ -9,6 +9,7 @@
 #include "begin_webserver.h"
 #include "avr_serial.h"
 #include "locomotion.h"
+#include "camera_setup.h"
 
 void handleRequest(Channel &chan, JsonDocument &request)
 {
@@ -36,4 +37,8 @@ void handleRequest(Channel &chan, JsonDocument &request)
     cameraFps = constrain(request["fps"].as<int>(), 1, 24);
   else if (type == "motor")
     setMotor(chan, request);
+  else if (type == "capture")
+    broadcastCapture();
+  else if (type == "locomotion")
+    broadcastLocomotion();
 }

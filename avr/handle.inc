@@ -35,7 +35,7 @@ handle:
 	cpi r17, MODE_NONE
 	breq handle_none
 	cpi r17, MODE_MOTOR0
-	breq handle_motor0ssss
+	breq handle_motor0
 	cpi r17, MODE_MOTOR1
 	breq handle_motor1
 	cpi r17, MODE_WRITE

@@ -7,6 +7,7 @@
 
 bool hall0Changed = false;
 bool hall1Changed = false;
+String hall;
 
 void setMotor(Channel &chan, JsonDocument &request) {
   avrSend(MODE_MOTOR0, request["m0"].as<int8_t>());
@@ -29,13 +30,24 @@ void hallSensorSetup()
     pinMode(HALL1, INPUT);
     attachInterrupt(HALL0, hall0ISR, CHANGE);
     attachInterrupt(HALL1, hall1ISR, CHANGE);
+    hall.reserve(HALL_SIZE);
 }
 
-void locomotionBroadcast()
+void broadcastLocomotion() {
+    JsonDocument data;
+    data["type"] = "locomotion";
+    data["hall"] = hall;
+    JsonArray sonars = data["sonar"].to<JsonArray>();
+    sonars.add(avrSonar(MODE_SONAR0));
+    sonars.add(avrSonar(MODE_SONAR1));
+    sonars.add(avrSonar(MODE_SONAR2));
+    broadcast(data);
+    hall.clear();
+}
+
+void locomotionUpdate()
 {
-    static String hall;
     static unsigned long lastSampleTime = 0;
-    static unsigned long lastBroadcastTime = 0;
 
     unsigned long now = millis();
 
@@ -43,6 +55,10 @@ void locomotionBroadcast()
         return;
 
     lastSampleTime = now;
+
+    if (hall.length() >= HALL_SIZE) {
+        broadcastLocomotion();
+    }
 
     if (hall0Changed)
     {
@@ -55,19 +71,5 @@ void locomotionBroadcast()
         hall1Changed = false;
         hall += '1';
     }
-
-    if (now - lastBroadcastTime < 100)
-        return;
-
-    lastBroadcastTime = now;
-
-    JsonDocument data;
-    data["type"] = "locomotion";
-    data["hall"] = hall;
-    JsonArray sonars = data["sonar"].to<JsonArray>();
-    sonars.add(avrSonar(MODE_SONAR0));
-    sonars.add(avrSonar(MODE_SONAR1));
-    sonars.add(avrSonar(MODE_SONAR2));
-    broadcast(data);
-    hall.clear();
 }
+

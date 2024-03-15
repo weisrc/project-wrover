@@ -14,12 +14,17 @@
 
 void setup()
 {
-  setCpuFrequencyMhz(240);
+  setCpuFrequencyMhz(120);
   
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
   
   avrSerialSetup();
+
+  avrClear();
+  avrPrint("WRover ESP\nStarting...");
+  sleep(1);
+
   cameraSetup();
   webServerSetup();
   hallSensorSetup();
@@ -50,8 +55,8 @@ void loop()
 
   checkScanComplete();
   checkStatusChange();
-  cameraStream();
-  locomotionBroadcast();
+  // cameraStream();
+  locomotionUpdate();
   wsEndpoint.cleanupClients();
   camEndpoint.cleanupClients();
 }

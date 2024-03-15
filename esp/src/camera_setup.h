@@ -1,3 +1,4 @@
+#pragma once
 #include <Arduino.h>
 #include <esp_camera.h>
 #include <camera_pins.h>
