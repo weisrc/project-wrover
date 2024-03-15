@@ -38,6 +38,8 @@ export type RequestEvents = {
   begin: {};
   setCameraFPS: { fps: number };
   motor: { m0: number, m1: number };
+  locomotion: {};
+  capture: {};
 };
 
 export type SonarData = [number, number, number];
