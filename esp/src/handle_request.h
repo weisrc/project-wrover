@@ -38,7 +38,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "motor")
     setMotor(chan, request);
   else if (type == "capture")
-    broadcastCapture();
+    camSocketId = chan.socketId();
   else if (type == "locomotion")
     broadcastLocomotion();
 }

@@ -13,12 +13,12 @@
 #define STORAGE_SIZE 2048
 #define HALL_SIZE 2024
 
-uint8_t cameraFps = 5;
+uint32_t camSocketId = NO_SOCKET_ID;
+int cameraFps = 24;
 bool webServerActive = false;
 bool scanRequested = false;
 wl_status_t lastStatus;
 
 AsyncWebServer webServer(80);
 AsyncWebSocket wsEndpoint("/ws");
-AsyncWebSocket camEndpoint("/cam");
 SoftwareSerial avrSerial;

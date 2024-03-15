@@ -55,8 +55,7 @@ void loop()
 
   checkScanComplete();
   checkStatusChange();
-  // cameraStream();
   locomotionUpdate();
+  cameraCapture();
   wsEndpoint.cleanupClients();
-  camEndpoint.cleanupClients();
 }
