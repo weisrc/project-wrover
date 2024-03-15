@@ -10,7 +10,7 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
 
         let emitCaptureTimeout: NodeJS.Timeout;
 
-        function emitCapture() {
+        function requestCapture() {
             if (emitCaptureWaiting) {
                 return;
             }
@@ -18,7 +18,7 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
             requestEmitter.emit("capture", {});
             emitCaptureWaiting = true;
             emitCaptureTimeout = setTimeout(() => {
-                emitCapture();
+                requestCapture();
                 emitCaptureWaiting = false;
             }, 1000)
         }
@@ -27,10 +27,10 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
             const url = URL.createObjectURL(data);
             setCaptureUrl(url);
             emitCaptureWaiting = false;
-            emitCapture();
+            requestCapture();
         }
 
-        emitCapture();
+        requestCapture();
 
         responseEmitter.on("binaryData", onBinaryData);
 

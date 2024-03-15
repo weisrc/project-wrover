@@ -1,10 +1,10 @@
-import { LocomotionData, SonarData } from "@/lib/types"
-import { HTMLAttributes, useEffect, useMemo, useRef, useState } from "react"
-import { DrawCanvas, DrawFunction } from "./draw-canvas"
+import { requestEmitter, responseEmitter } from "@/lib/common";
+import { LocomotionData, SonarData } from "@/lib/types";
 import { Vec2 } from "@/lib/vec2";
-import { responseEmitter } from "@/lib/common";
+import { HTMLAttributes, useEffect } from "react";
+import { DrawCanvas, DrawFunction } from "./draw-canvas";
 
-export type MapCanvasProps = HTMLAttributes<HTMLDivElement>
+export type MapCanvasProps = HTMLAttributes<HTMLDivElement>;
 
 const angles = [-Math.PI / 2, 0, -Math.PI];
 
@@ -44,7 +44,16 @@ export function MapCanvas(props: MapCanvasProps) {
                 data.shift();
             }
             data.push(item);
+            requestLocomotion();
         }
+
+        function requestLocomotion() {
+            setTimeout(() => {
+                requestEmitter.emit("locomotion", {});
+            }, 100);
+        }
+
+        requestLocomotion()
 
         responseEmitter.on("locomotion", onLocomotion)
 
@@ -75,16 +84,16 @@ export function MapCanvas(props: MapCanvasProps) {
                 // ctx.strokeStyle = "white";
                 // ctx.stroke()
 
-                if (char === "0") {
+                const which = char.toLowerCase();
+                const sign = which === char ? 1 : -1
+
+                if (which === "l") {
                     const angle = right.subtract(left).direction();
-                    right = Vec2.polar(angle + delta, diameter).add(left);
-                } else if (char === "1") {
+                    right = Vec2.polar(angle + delta * sign, diameter).add(left);
+                } else if (which === "r") {
                     const angle = left.subtract(right).direction();
-                    left = Vec2.polar(angle - delta, diameter).add(right);
+                    left = Vec2.polar(angle - delta * sign, diameter).add(right);
                 }
-
-
-
             }
 
             if (!moved && !isLast) {
