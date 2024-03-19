@@ -48,10 +48,17 @@ void checkStatusChange()
     else if (status == WL_CONNECT_FAILED)
     {
       WiFi.disconnect();
+      avrClear();
+      avrPrint("WiFi Failed!");
       JsonDocument data;
       EepromStream eepromStream(0, STORAGE_SIZE);
       serializeJson(data, eepromStream);
       eepromStream.flush();
+    }
+    else if (status == WL_NO_SSID_AVAIL)
+    {
+      avrClear();
+      avrPrint("No SSID\nAvailable");
     }
   }
 }
