@@ -15,6 +15,7 @@
 
 uint32_t camSocketId = NO_SOCKET_ID;
 int cameraFps = 24;
+bool cameraOk = false;
 bool webServerActive = false;
 bool scanRequested = false;
 wl_status_t lastStatus;
