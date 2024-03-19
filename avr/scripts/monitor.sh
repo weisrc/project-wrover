@@ -1,1 +1,1 @@
-cu -l /dev/ttyUSB0 -s 4800
+cu -l /dev/ttyUSB0 -s 2400

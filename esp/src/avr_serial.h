@@ -11,7 +11,8 @@ enum AvrMode
     MODE_MOTOR1 = 5,
     MODE_WRITE = 6,
     MODE_COMMAND = 7,
-    MODE_LAST = 8
+    MODE_CLEAR = 8,
+    MODE_LAST = 9
 };
 
 void avrSerialSetup()
@@ -46,14 +47,12 @@ void avrPrint(String str)
             avrLCDSecond();
         else
             avrSend(MODE_WRITE, c);
-        delay(1);
     }
 }
 
 void avrClear()
 {
-    avrSend(MODE_COMMAND, 1);
-    delay(2);
+    avrSerial.write(MODE_CLEAR);
 }
 
 char avrReadByte()

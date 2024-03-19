@@ -58,7 +58,7 @@ void checkStatusChange()
     else if (status == WL_NO_SSID_AVAIL)
     {
       avrClear();
-      avrPrint("No SSID\nAvailable");
+      avrPrint("WiFi No SSID\nSetup required");
     }
   }
 }
