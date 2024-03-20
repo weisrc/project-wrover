@@ -64,7 +64,7 @@ export function MapCanvas(props: MapCanvasProps) {
 
     const radius = 100;
     const diameter = radius * 2;
-    const delta = -0.1;
+    const delta = -0.017;
 
     const draw: DrawFunction = (ctx, width, height) => {
         const offset = new Vec2(width / 2, height / 2);

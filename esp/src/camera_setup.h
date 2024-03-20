@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <esp_camera.h>
 #include <camera_pins.h>
+#include "globals.h"
 
 void cameraSetup()
 {
