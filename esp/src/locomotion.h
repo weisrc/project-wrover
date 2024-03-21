@@ -7,6 +7,8 @@
 
 bool hall0Changed = false;
 bool hall1Changed = false;
+bool willMotor0Reverse = false;
+bool willMotor1Reverse = false;
 bool motor0Reverse = false;
 bool motor1Reverse = false;
 String hall;
@@ -15,11 +17,11 @@ void setMotor(Channel &chan, JsonDocument &request)
 {
     int8_t m0 = request["m0"].as<int8_t>();
     int8_t m1 = request["m1"].as<int8_t>();
-    if (m0 > 0) 
+    if (m0 > 0)
         motor0Reverse = false;
     else if (m0 < 0)
         motor0Reverse = true;
-    
+
     if (m1 > 0)
         motor1Reverse = false;
     else if (m1 < 0)
@@ -63,28 +65,37 @@ void broadcastLocomotion()
 void locomotionUpdate()
 {
     static unsigned long lastSampleTime = 0;
+    static unsigned long motor0ChangedAt = 0;
+    static unsigned long motor1ChangedAt = 0;
 
     unsigned long now = millis();
 
-    if (now - lastSampleTime < 10)
+    if (now - lastSampleTime < 20)
         return;
 
     lastSampleTime = now;
 
     if (hall.length() >= HALL_SIZE)
-    {
         broadcastLocomotion();
-    }
 
     if (hall0Changed)
     {
-        hall0Changed = false;
-        hall += motor0Reverse ? 'L' : 'l';
+        motor0ChangedAt = now;
+        hall += willMotor0Reverse ? 'L' : 'l';
     }
 
     if (hall1Changed)
     {
-        hall1Changed = false;
-        hall += motor1Reverse ? 'R' : 'r';
+        motor1ChangedAt = now;
+        hall += willMotor1Reverse ? 'R' : 'r';
     }
+
+    if (now - motor0ChangedAt > 50)
+        willMotor0Reverse = motor0Reverse;
+
+    if (now - motor1ChangedAt > 50)
+        willMotor1Reverse = motor1Reverse;
+
+    hall0Changed = false;
+    hall1Changed = false;
 }
