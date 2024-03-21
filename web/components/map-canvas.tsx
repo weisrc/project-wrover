@@ -62,9 +62,9 @@ export function MapCanvas(props: MapCanvasProps) {
         }
     }, [])
 
-    const radius = 100;
+    const radius = 15;
     const diameter = radius * 2;
-    const delta = -0.017;
+    const delta = -0.032;
 
     const draw: DrawFunction = (ctx, width, height) => {
         const offset = new Vec2(width / 2, height / 2);
@@ -87,10 +87,10 @@ export function MapCanvas(props: MapCanvasProps) {
                 const which = char.toLowerCase();
                 const sign = which === char ? 1 : -1
 
-                if (which === "l") {
+                if (which === "r") {
                     const angle = right.subtract(left).direction();
                     right = Vec2.polar(angle + delta * sign, diameter).add(left);
-                } else if (which === "r") {
+                } else if (which === "l") {
                     const angle = left.subtract(right).direction();
                     left = Vec2.polar(angle - delta * sign, diameter).add(right);
                 }
