@@ -6,6 +6,7 @@
 #include "data_utils.h"
 #include "avr_serial.h"
 #include "begin_webserver.h"
+#include "wifi_connection.h"
 
 void checkScanComplete()
 {
@@ -47,16 +48,15 @@ void checkStatusChange()
     }
     else if (status == WL_CONNECT_FAILED)
     {
-      WiFi.disconnect();
+      NullChannel chan;
+      disconnect(chan);
       avrClear();
-      avrPrint("WiFi Failed!");
-      JsonDocument data;
-      EepromStream eepromStream(0, STORAGE_SIZE);
-      serializeJson(data, eepromStream);
-      eepromStream.flush();
+      avrPrint("WiFi Failed\nSetup required");
     }
     else if (status == WL_NO_SSID_AVAIL)
     {
+      NullChannel chan;
+      disconnect(chan);
       avrClear();
       avrPrint("WiFi No SSID\nSetup required");
     }

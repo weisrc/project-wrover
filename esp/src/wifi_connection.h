@@ -49,11 +49,12 @@ void connect(Channel &chan, JsonDocument &request)
   }
 }
 
-void disconnect(Channel &chan, JsonDocument &request)
+void disconnect(Channel &chan)
 {
   WiFi.disconnect();
+  JsonDocument empty;
   EepromStream eepromStream(0, STORAGE_SIZE);
-  serializeJson(request, eepromStream);
+  serializeJson(empty, eepromStream);
   eepromStream.flush();
   sendData(chan, "disconnect", "ok");
 }

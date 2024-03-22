@@ -22,7 +22,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "connect")
     connect(chan, request);
   else if (type == "disconnect")
-    disconnect(chan, request);
+    disconnect(chan);
   else if (type == "ip")
     sendData(chan, "ip", WiFi.localIP().toString());
   else if (type == "rssi")

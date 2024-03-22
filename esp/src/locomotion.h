@@ -66,7 +66,7 @@ void locomotionUpdate()
 
     unsigned long now = millis();
 
-    if (now - lastSampleTime < 50)
+    if (now - lastSampleTime < 20)
         return;
 
     lastSampleTime = now;
