@@ -40,6 +40,7 @@ motor_update:
 	push r16
 	lds r16, MOTOR_UPDATE_COUNTER
 	inc r16
+	andi r16, $7f
 	sts MOTOR_UPDATE_COUNTER, r16
 	brne motor_update_end
 	push r17

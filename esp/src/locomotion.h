@@ -7,8 +7,6 @@
 
 bool hall0Changed = false;
 bool hall1Changed = false;
-bool willMotor0Reverse = false;
-bool willMotor1Reverse = false;
 bool motor0Reverse = false;
 bool motor1Reverse = false;
 String hall;
@@ -65,12 +63,10 @@ void broadcastLocomotion()
 void locomotionUpdate()
 {
     static unsigned long lastSampleTime = 0;
-    static unsigned long motor0ChangedAt = 0;
-    static unsigned long motor1ChangedAt = 0;
 
     unsigned long now = millis();
 
-    if (now - lastSampleTime < 20)
+    if (now - lastSampleTime < 50)
         return;
 
     lastSampleTime = now;
@@ -79,22 +75,10 @@ void locomotionUpdate()
         broadcastLocomotion();
 
     if (hall0Changed)
-    {
-        motor0ChangedAt = now;
-        hall += willMotor0Reverse ? 'L' : 'l';
-    }
+        hall += motor0Reverse ? 'L' : 'l';
 
     if (hall1Changed)
-    {
-        motor1ChangedAt = now;
-        hall += willMotor1Reverse ? 'R' : 'r';
-    }
-
-    if (now - motor0ChangedAt > 50)
-        willMotor0Reverse = motor0Reverse;
-
-    if (now - motor1ChangedAt > 50)
-        willMotor1Reverse = motor1Reverse;
+        hall += motor1Reverse ? 'R' : 'r';
 
     hall0Changed = false;
     hall1Changed = false;

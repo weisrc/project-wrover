@@ -87,12 +87,12 @@ export function MapCanvas(props: MapCanvasProps) {
                 const which = char.toLowerCase();
                 const sign = which === char ? 1 : -1
 
-                if (which === "r") {
-                    const angle = right.subtract(left).direction();
-                    right = Vec2.polar(angle + delta * sign, diameter).add(left);
-                } else if (which === "l") {
+                if (which === "l") {
                     const angle = left.subtract(right).direction();
                     left = Vec2.polar(angle - delta * sign, diameter).add(right);
+                } else if (which === "r") {
+                    const angle = right.subtract(left).direction();
+                    right = Vec2.polar(angle + delta * sign, diameter).add(left);
                 }
             }
 
