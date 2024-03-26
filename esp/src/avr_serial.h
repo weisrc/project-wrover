@@ -57,9 +57,17 @@ void avrClear()
 
 char avrReadByte()
 {
-    while (!avrSerial.available())
-        ;
-    return avrSerial.read();
+    static char lastData = 0;
+    unsigned long startTime = millis();
+    while (1) {
+        if (avrSerial.available()) {
+            lastData = avrSerial.read();
+            return lastData;
+        }
+        if (millis() - startTime > AVR_SERIAL_TIMEOUT) {
+            return lastData;
+        }
+    }
 }
 
 uint16_t avrReadWord()

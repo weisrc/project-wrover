@@ -14,11 +14,12 @@
 
 void setup()
 {
+
   setCpuFrequencyMhz(120);
-  
+
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
-  
+
   avrSerialSetup();
   avrClear();
   avrPrint("WRover ESP\nStarting...");
