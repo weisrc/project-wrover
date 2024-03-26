@@ -6,6 +6,8 @@
 
 void cameraCapture()
 {
+    if (!cameraOk)
+        return;
 
     if (camSocketId == NO_SOCKET_ID)
         return;
@@ -16,7 +18,7 @@ void cameraCapture()
     unsigned long now = millis();
     if (now - lastTime < interval)
         return;
-    
+
     lastTime = now;
 
     camera_fb_t *fb = esp_camera_fb_get();
