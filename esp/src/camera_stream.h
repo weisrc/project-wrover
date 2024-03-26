@@ -30,3 +30,13 @@ void cameraCapture()
 
     esp_camera_fb_return(fb);
 }
+
+void cameraSetFrameSize(framesize_t size)
+{
+    if (!cameraOk)
+        return;
+
+    sensor_t *sensor = esp_camera_sensor_get();
+
+    sensor->set_framesize(sensor, size);
+}

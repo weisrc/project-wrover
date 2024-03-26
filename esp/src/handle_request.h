@@ -35,6 +35,8 @@ void handleRequest(Channel &chan, JsonDocument &request)
     beginWebServer(chan);
   else if (type == "setCameraFPS")
     cameraFps = constrain(request["fps"].as<int>(), 1, 24);
+  else if (type == "setCameraFrameSize")
+    cameraSetFrameSize((framesize_t)request["size"].as<int>());
   else if (type == "motor")
     setMotor(chan, request);
   else if (type == "capture")
