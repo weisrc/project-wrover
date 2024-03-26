@@ -15,7 +15,7 @@
 void setup()
 {
 
-  setCpuFrequencyMhz(120);
+  setCpuFrequencyMhz(240);
 
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);

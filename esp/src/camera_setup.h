@@ -26,11 +26,11 @@ void cameraSetup()
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
     config.xclk_freq_hz = 20e6;
-    config.frame_size = FRAMESIZE_QCIF;
+    config.frame_size = FRAMESIZE_QVGA;
     config.pixel_format = PIXFORMAT_JPEG;
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
-    config.jpeg_quality = 8;
+    config.jpeg_quality = 18;
     config.fb_count = 1;
 
     if (PWDN_GPIO_NUM != -1)
