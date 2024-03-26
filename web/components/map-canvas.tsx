@@ -3,6 +3,7 @@ import { LocomotionData, SonarData } from "@/lib/types";
 import { Vec2 } from "@/lib/vec2";
 import { HTMLAttributes, useEffect } from "react";
 import { DrawCanvas, DrawFunction } from "./draw-canvas";
+import { DualOdometer } from "@/lib/dual-odometer";
 
 export type MapCanvasProps = HTMLAttributes<HTMLDivElement>;
 
@@ -77,14 +78,12 @@ export function MapCanvas(props: MapCanvasProps) {
   }, []);
 
   const radius = 15;
-  const diameter = radius * 2;
   const delta = 0.043;
 
   let offset: Vec2;
 
   const draw: DrawFunction = (ctx, width, height) => {
-    let left = new Vec2(-radius, 0);
-    let right = new Vec2(radius, 0);
+    const meter = new DualOdometer(radius, delta);
     const screenCenter = new Vec2(width / 2, height / 2);
     offset ??= screenCenter;
 
@@ -102,14 +101,12 @@ export function MapCanvas(props: MapCanvasProps) {
         // ctx.stroke()
 
         const which = char.toLowerCase();
-        const sign = which === char ? 1 : -1;
+        const backwards = char !== which;
 
         if (which === "l") {
-          const angle = left.subtract(right).direction();
-          left = Vec2.polar(angle + delta * sign, diameter).add(right);
+          meter.moveLeft(backwards);
         } else if (which === "r") {
-          const angle = right.subtract(left).direction();
-          right = Vec2.polar(angle - delta * sign, diameter).add(left);
+          meter.moveRight(backwards);
         }
       }
 
@@ -117,19 +114,12 @@ export function MapCanvas(props: MapCanvasProps) {
         continue;
       }
 
-      const angle = right.subtract(left).direction();
+      const angle = meter.getDirection();
 
-      drawSonarRays(
-        ctx,
-        left.between(right),
-        angle,
-        item.sonar,
-        isLast,
-        offset
-      );
+      drawSonarRays(ctx, meter.getCenter(), angle, item.sonar, isLast, offset);
     }
 
-    offset = screenCenter.subtract(left.between(right));
+    offset = screenCenter.subtract(meter.getCenter());
   };
 
   return <DrawCanvas draw={draw} {...props} background="black" />;
