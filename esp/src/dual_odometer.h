@@ -41,4 +41,11 @@ public:
     {
         return this->left.between(this->right);
     }
+
+    void setPosition(Vec2 center, float direction)
+    {
+        Vec2 offset = Vec2::polar(direction, this->radius + M_PI_2);
+        this->left = center.subtract(offset);
+        this->right = center.add(offset);
+    }
 };
