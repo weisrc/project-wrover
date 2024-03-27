@@ -4,6 +4,8 @@
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
 
+#include "dual_odometer.h"
+
 #define NO_SOCKET_ID UINT32_MAX
 #define HALL0 GPIO_NUM_32
 #define HALL1 GPIO_NUM_13
@@ -19,9 +21,9 @@ int cameraFps = 24;
 bool cameraOk = false;
 bool webServerActive = false;
 bool scanRequested = false;
-bool locomotionRequested = false;
 wl_status_t lastStatus;
 
 AsyncWebServer webServer(80);
 AsyncWebSocket wsEndpoint("/ws");
 SoftwareSerial avrSerial;
+DualOdometer odometer(15, 0.043);

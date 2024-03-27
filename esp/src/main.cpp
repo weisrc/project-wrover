@@ -59,6 +59,7 @@ void loop()
   checkStatusChange();
   locomotionUpdate();
   motorUpdate();
+  sonarUpdate();
   cameraCapture();
   wsEndpoint.cleanupClients();
 }

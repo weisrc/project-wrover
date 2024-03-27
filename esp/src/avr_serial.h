@@ -81,6 +81,11 @@ uint16_t avrReadWord()
 
 uint16_t avrSonar(AvrMode mode)
 {
+    static uint16_t lastData = 0;
     avrSerial.write(mode);
-    return avrReadWord();
+    uint16_t out = avrReadWord();
+    if (out > UINT16_MAX / 2)
+        return lastData;
+    lastData = out;
+    return out;
 }

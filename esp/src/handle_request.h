@@ -42,7 +42,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "capture")
     camSocketId = chan.socketId();
   else if (type == "locomotion")
-    locomotionRequested = true;
+    locomotionReply(chan);
   else if (type == "cameraOk")
     sendData(chan, "cameraOk", cameraOk);
 }
