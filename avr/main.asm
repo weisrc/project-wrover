@@ -52,6 +52,7 @@ main:
 loop:
 	rcall handle
 	rcall motor_update
+	rcall serial_update ; only needed for ack_serial
 	rjmp loop
 
 
@@ -63,7 +64,7 @@ boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
 .include "motor.inc"
 .include "lcd.inc"
 ; .include "serial.inc"
-.include "buffered_serial.inc"
+.include "ack_serial.inc"
 .include "handle.inc"
 .include "dev_utils.inc"
 .exit
