@@ -17,7 +17,7 @@ enum AvrMode
 
 void avrSerialSetup()
 {
-    avrSerial.begin(2400, SWSERIAL_8N1, AVR_RX, AVR_TX);
+    avrSerial.begin(4800, SWSERIAL_8E1, AVR_RX, AVR_TX);
 
     if (!avrSerial)
     {
@@ -28,10 +28,49 @@ void avrSerialSetup()
     }
 }
 
+int avrRead()
+{
+    unsigned long startTime = millis();
+    while (1)
+    {
+        if (avrSerial.available())
+        {
+            char data = avrSerial.read();
+            Serial.println("AVR serial rx: " + String(data) + " (" + String((int)data) + ")");
+            return data;
+        }
+        if (millis() - startTime > AVR_SERIAL_TIMEOUT)
+        {
+            Serial.println("AVR serial rx: Timeout");
+            return -1;
+        }
+    }
+}
+
+void avrWrite(char data)
+{
+    do
+    {
+        avrSerial.write(data);
+        Serial.println("AVR serial tx: " + String(data) + " (" + String((int)data) + ")");
+    } while (avrRead() == -1);
+}
+
+int avrReadWithAck()
+{
+    int data = avrRead();
+    if (data != -1)
+    {
+        Serial.println("Sending ack for " + String(data) + " (" + String((int)data) + ")");
+        avrSerial.write(MODE_NONE); // any value works
+    }
+    return data;
+}
+
 void avrSend(AvrMode mode, char data)
 {
-    avrSerial.write(mode);
-    avrSerial.write(data);
+    avrWrite(mode);
+    avrWrite(data);
 }
 
 void avrLCDSecond()
@@ -52,38 +91,33 @@ void avrPrint(String str)
 
 void avrClear()
 {
-    avrSerial.write(MODE_CLEAR);
+    avrWrite(MODE_CLEAR);
 }
 
-char avrReadByte()
+char avrStaticRead()
 {
     static char lastData = 0;
-    unsigned long startTime = millis();
-    while (1) {
-        if (avrSerial.available()) {
-            lastData = avrSerial.read();
-            return lastData;
-        }
-        if (millis() - startTime > AVR_SERIAL_TIMEOUT) {
-            return lastData;
-        }
-    }
+    int got = avrReadWithAck();
+    if (got == -1)
+        return lastData;
+    lastData = got;
+    return got;
 }
 
-uint16_t avrReadWord()
+uint16_t avrStaticReadWord()
 {
     uint16_t data;
-    data = avrReadByte();
+    data = avrStaticRead();
     data <<= 8;
-    data += avrReadByte();
+    data += avrStaticRead();
     return data;
 }
 
 uint16_t avrSonar(AvrMode mode)
 {
     static uint16_t lastData = 0;
-    avrSerial.write(mode);
-    uint16_t out = avrReadWord();
+    avrWrite(mode);
+    uint16_t out = avrStaticReadWord();
     if (out > UINT16_MAX / 2)
         return lastData;
     lastData = out;

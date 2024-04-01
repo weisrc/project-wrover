@@ -20,10 +20,29 @@ void setup()
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
 
+  Serial.println("Starting AVR serial...");
+
   avrSerialSetup();
+
+  while (1)
+  {
+    int sonar0 = avrSonar(MODE_SONAR0);
+    int sonar1 = avrSonar(MODE_SONAR1);
+    int sonar2 = avrSonar(MODE_SONAR2);
+    Serial.println("Sonar0: " + String(sonar0) + " Sonar1: " + String(sonar1) + " Sonar2: " + String(sonar2));
+    sleep(10);
+  }
+
+  Serial.println("Clearing AVR text...");
+
   avrClear();
+
+  Serial.println("Starting WRover ESP...");
+
   avrPrint("WRover ESP\nStarting...");
   sleep(1);
+
+  Serial.println("Setting up camera...");
 
   cameraSetup();
   webServerSetup();
@@ -35,6 +54,8 @@ void setup()
   lastStatus = WiFi.status();
 
   autoConnect();
+
+  
 }
 
 void loop()

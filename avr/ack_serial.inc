@@ -2,10 +2,9 @@
 ; serial.inc
 
 .equ FCPU = 1000000
-.equ SERIAL_BAUD = 2400
+.equ SERIAL_BAUD = 4800
 .equ SERIAL_UBRR = (FCPU / 16 / SERIAL_BAUD) - 1
-.equ SERIAL_ACK = $06
-.equ SERIAL_NACK = $15
+.equ SERIAL_ACK = 123
 
 .dseg
 
@@ -17,7 +16,8 @@ SERIAL_TX_HEAD: .byte 1
 SERIAL_TX_TAIL: .byte 1
 SERIAL_TX_BUFFER: .byte 128
 
-SERIAL_WRITING: .byte 1
+SERIAL_WRITING_H: .byte 1
+SERIAL_WRITING_L: .byte 1
 
 .cseg
 
@@ -39,17 +39,19 @@ serial_init:
     sts SERIAL_RX_TAIL, r16
 	sts SERIAL_TX_HEAD, r16
 	sts SERIAL_TX_TAIL, r16
-	sts SERIAL_WRITING, r16
+	sts SERIAL_WRITING_H, r16
+	sts SERIAL_WRITING_L, r16
 
 	pop r16
 	ret
 
 serial_write:
+	cli
 	push XL
 	push XH
 
 	lds XL, SERIAL_TX_HEAD
-	andi XL, 0x7F
+	andi XL, $7F
 	clr XH
 
 	subi XL, low(-SERIAL_TX_BUFFER)
@@ -57,25 +59,33 @@ serial_write:
 
 	st X, r16
 
-	lds r16, SERIAL_TX_HEAD
-	inc r16
-	sts SERIAL_TX_HEAD, r16
+	lds XH, SERIAL_TX_HEAD
+	inc XH
+	sts SERIAL_TX_HEAD, XH
 
 	pop XH
 	pop XL
+	sei
 	ret
 
 serial_update:
+	cli
 	sbis UCSRA, UDRE
 	rjmp serial_update_ret ; data register busy
     push XL
     push XH
 
-	lds XH, SERIAL_WRITING
+	lds XH, SERIAL_WRITING_H
 	cpi XH, 0
 	breq serial_update_write
-	inc XH
-	sts SERIAL_WRITING, XH
+	rjmp serial_update_end
+
+	lds XL, SERIAL_WRITING_L
+	subi XL, -1
+	sts SERIAL_WRITING_L, XL
+	clr XL
+	adc XH, XL 
+	sts SERIAL_WRITING_H, XH
 	rjmp serial_update_end
 
 serial_update_write:
@@ -95,12 +105,14 @@ serial_update_write:
     ld XH, X
 	out UDR, XH
 	ldi XH, 1
-	sts SERIAL_WRITING, XH
-
+	sts SERIAL_WRITING_H, XH
+	sts SERIAL_WRITING_L, XH
+	
 serial_update_end:
     pop XH
     pop XL
 serial_update_ret:
+	sei
 	ret
 
 
@@ -143,7 +155,7 @@ serial_rxc:
 	push XH
 	push r16
 
-	lds r16, SERIAL_WRITING
+	lds r16, SERIAL_WRITING_H
 	cpi r16, 0
 	brne serial_rxc_feedback
 	
@@ -170,7 +182,8 @@ serial_rxc_ok:
 
 serial_rxc_feedback:
 	clr r16
-	sts SERIAL_WRITING, r16
+	sts SERIAL_WRITING_H, r16
+	sts SERIAL_WRITING_L, r16
 	lds r16, SERIAL_TX_TAIL
 	inc r16
 	sts SERIAL_TX_TAIL, r16
