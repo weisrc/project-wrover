@@ -80,12 +80,11 @@ serial_update:
 	breq serial_update_write
 	rjmp serial_update_end
 
+	lds XH, SERIAL_WRITING_H
 	lds XL, SERIAL_WRITING_L
-	subi XL, -1
-	sts SERIAL_WRITING_L, XL
-	clr XL
-	adc XH, XL 
+	adiw XH:XL, 1
 	sts SERIAL_WRITING_H, XH
+	sts SERIAL_WRITING_L, XL
 	rjmp serial_update_end
 
 serial_update_write:
@@ -167,7 +166,7 @@ serial_rxc:
 	sbci XH, high(-SERIAL_RX_BUFFER)
 
 	sbic UCSRA, PE
-	rjmp serial_rxc_end
+	rjmp serial_rxc_err
 
 serial_rxc_ok:
 	in r16, UDR
@@ -180,7 +179,15 @@ serial_rxc_ok:
 	sts SERIAL_RX_HEAD, r16
 	rjmp serial_rxc_end
 
+serial_rxc_err:
+	in r16, UDR
+	ldi r16, 210
+	out UDR, r16
+	rjmp serial_rxc_end
+
 serial_rxc_feedback:
+	in r16, UCSRA
+	in r16, UDR
 	clr r16
 	sts SERIAL_WRITING_H, r16
 	sts SERIAL_WRITING_L, r16

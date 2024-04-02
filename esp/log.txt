@@ -1,0 +1,75 @@
+AVR serial tx: ␁ (1)
+AVR serial rx: { (123)
+
+AVR serial rx: e (101)
+Sending ack for 101 (101)
+
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+
+AVR serial tx: ␂ (2)
+AVR serial rx: f (102)
+
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+
+AVR serial tx: ␃ (3)
+AVR serial rx: g (103)
+
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+AVR serial rx: h (104)
+Sending ack for 104 (104)
+Sonar0: 25979 Sonar1: 31611 Sonar2: 31592
+
+
+
+AVR serial tx: ␁ (1)
+AVR serial rx: { (123)
+AVR serial rx: e (101)
+Sending ack for 101 (101)
+AVR serial rx: f (102)
+Sending ack for 102 (102)
+AVR serial tx: ␂ (2)
+AVR serial rx: { (123)
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+AVR serial tx: ␃ (3)
+AVR serial rx: g (103)
+AVR serial rx: { (123)
+Sending ack for 123 (123)
+AVR serial rx: h (104)
+Sending ack for 104 (104)
+Sonar0: 25958 Sonar1: 31611 Sonar2: 31592
+
+
+
+[DEBUG] RX: y (121)
+[DEBUG] Sending ack for 121 (121)
+[DEBUG] TX:  (0)
+
+[DEBUG] TX: ␁ (1)
+[DEBUG] RX: { (123)
+ (13)G] RX: 
+[DEBUG] Sending ack for 13 (13)
+[DEBUG] TX:  (0)
+[DEBUG] RX: � (254)
+[DEBUG] Sending ack for 254 (254)
+[DEBUG] TX:  (0)
+
+[DEBUG] TX: ␂ (2)
+[WARN] RX: Timeout
+[DEBUG] TX: ␂ (2)
+[WARN] RX: Timeout
+[DEBUG] TX: ␂ (2)
+[WARN] RX: Timeout
+[DEBUG] TX: ␂ (2)
+[WARN] RX: Timeout
+[DEBUG] TX: ␂ (2)
+[WARN] RX: Timeout
+[DEBUG] TX: ␂ (2)

@@ -70,12 +70,6 @@ int8_t shiftTowards(int8_t current, int8_t target)
 
 void sonarUpdate()
 {
-
-    static uint16_t sonar0Array[SONAR_ARRAY_SIZE] = {0};
-    static uint16_t sonar1Array[SONAR_ARRAY_SIZE] = {0};
-    static uint16_t sonar2Array[SONAR_ARRAY_SIZE] = {0};
-    static size_t i = 0;
-
     static unsigned long lastSampleTime = 0;
     unsigned long now = millis();
 
@@ -84,25 +78,27 @@ void sonarUpdate()
 
     lastSampleTime = now;
 
-    sonar0Array[i] = avrSonar(MODE_SONAR0);
-    sonar1Array[i] = avrSonar(MODE_SONAR1);
-    sonar2Array[i] = avrSonar(MODE_SONAR2);
-    i = (i + 1) % SONAR_ARRAY_SIZE;
-
-    uint32_t sonar0Sum = 0;
-    uint32_t sonar1Sum = 0;
-    uint32_t sonar2Sum = 0;
-
-    for (size_t j = 0; j < SONAR_ARRAY_SIZE; j++)
+    auto closure0 = [](word_result_t result)
     {
-        sonar0Sum += sonar0Array[j];
-        sonar1Sum += sonar1Array[j];
-        sonar2Sum += sonar2Array[j];
-    }
+        if (result.ok)
+            sonar0Average = result.value;
+    };
 
-    sonar0Average = sonar0Sum / SONAR_ARRAY_SIZE;
-    sonar1Average = sonar1Sum / SONAR_ARRAY_SIZE;
-    sonar2Average = sonar2Sum / SONAR_ARRAY_SIZE;
+    auto closure1 = [](word_result_t result)
+    {
+        if (result.ok)
+            sonar1Average = result.value;
+    };
+
+    auto closure2 = [](word_result_t result)
+    {
+        if (result.ok)
+            sonar2Average = result.value;
+    };
+
+    avrSonar(MODE_SONAR0)->finally(closure0);
+    avrSonar(MODE_SONAR1)->finally(closure1);
+    avrSonar(MODE_SONAR2)->finally(closure2);
 }
 
 void motorUpdate()
@@ -118,16 +114,36 @@ void motorUpdate()
 
     if (motor0SmoothSpeed != motor0Speed)
     {
-        motor0SmoothSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
-        motor0Reverse = motor0SmoothSpeed < 0;
-        avrSend(MODE_MOTOR0, motor0SmoothSpeed);
+        int8_t motor0NextSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
+
+        auto closure = [motor0NextSpeed](write_result_t result)
+        {
+            if (result.ok)
+            {
+
+                motor0SmoothSpeed = motor0NextSpeed;
+                motor0Reverse = motor0SmoothSpeed < 0;
+            }
+        };
+
+        avrSend(MODE_MOTOR0, motor0NextSpeed)->finally(closure);
     }
 
     if (motor1SmoothSpeed != motor1Speed)
     {
-        motor1SmoothSpeed = shiftTowards(motor1SmoothSpeed, motor1Speed);
-        motor1Reverse = motor1SmoothSpeed < 0;
-        avrSend(MODE_MOTOR1, motor1SmoothSpeed);
+        int8_t motor1NextSpeed = shiftTowards(motor1SmoothSpeed, motor1Speed);
+
+        auto closure = [motor1NextSpeed](write_result_t result)
+        {
+            if (result.ok)
+            {
+
+                motor1SmoothSpeed = motor1NextSpeed;
+                motor1Reverse = motor1SmoothSpeed < 0;
+            }
+        };
+
+        avrSend(MODE_MOTOR1, motor1NextSpeed)->finally(closure);
     }
 }
 

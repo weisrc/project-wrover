@@ -24,6 +24,7 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
         }
 
         const onBinaryData = (data: Blob) => {
+            URL.revokeObjectURL(captureUrl);
             const url = URL.createObjectURL(data);
             setCaptureUrl(url);
             emitCaptureWaiting = false;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 #include "globals.h"
 
 enum AvrMode
@@ -21,105 +22,79 @@ void avrSerialSetup()
 
     if (!avrSerial)
     {
-        Serial.println("failed to configure serial");
-
+        LOG_ERROR("failed to configure AVR serial");
         while (1)
             delay(1000);
     }
 }
 
-int avrRead()
+std::shared_ptr<write_promise_t> avrSend(AvrMode mode, char data)
 {
-    unsigned long startTime = millis();
-    while (1)
+    String str;
+    str += (char)mode;
+    str += data;
+    return avrAckStream.write(str);
+}
+
+std::shared_ptr<write_promise_t> avrLCDSecond()
+{
+    return avrSend(MODE_COMMAND, 0x80 + 0x40);
+}
+
+std::shared_ptr<write_promise_t> avrPrint(String str)
+{
+    String converted;
+
+    for (int i = 0; i < str.length(); i++)
     {
-        if (avrSerial.available())
-        {
-            char data = avrSerial.read();
-            Serial.println("AVR serial rx: " + String(data) + " (" + String((int)data) + ")");
-            return data;
-        }
-        if (millis() - startTime > AVR_SERIAL_TIMEOUT)
-        {
-            Serial.println("AVR serial rx: Timeout");
-            return -1;
-        }
-    }
-}
-
-void avrWrite(char data)
-{
-    do
-    {
-        avrSerial.write(data);
-        Serial.println("AVR serial tx: " + String(data) + " (" + String((int)data) + ")");
-    } while (avrRead() == -1);
-}
-
-int avrReadWithAck()
-{
-    int data = avrRead();
-    if (data != -1)
-    {
-        Serial.println("Sending ack for " + String(data) + " (" + String((int)data) + ")");
-        avrSerial.write(MODE_NONE); // any value works
-    }
-    return data;
-}
-
-void avrSend(AvrMode mode, char data)
-{
-    avrWrite(mode);
-    avrWrite(data);
-}
-
-void avrLCDSecond()
-{
-    avrSend(MODE_COMMAND, 0x80 + 0x40);
-}
-
-void avrPrint(String str)
-{
-    for (char c : str)
-    {
+        char c = str[i];
         if (c == '\n')
-            avrLCDSecond();
+        {
+            converted += (char)MODE_COMMAND;
+            converted += (char)(0x80 + 0x40);
+        }
         else
-            avrSend(MODE_WRITE, c);
+        {
+            converted += (char)MODE_WRITE;
+            converted += c;
+        }
     }
+
+    return avrAckStream.write(converted);
 }
 
-void avrClear()
+std::shared_ptr<write_promise_t> avrClear()
 {
-    avrWrite(MODE_CLEAR);
+    return avrSend(MODE_CLEAR, 0);
 }
 
-char avrStaticRead()
+typedef Result<uint16_t, ReadError> word_result_t;
+
+std::shared_ptr<Promise<word_result_t>> avrReadWord()
 {
-    static char lastData = 0;
-    int got = avrReadWithAck();
-    if (got == -1)
-        return lastData;
-    lastData = got;
-    return got;
+
+    auto first = [](read_result_t result)
+    {
+        auto second = [result](read_result_t result2)
+        {
+            if (result.error)
+                return word_result_t::err(result.error);
+            if (result2.error)
+                return word_result_t::err(result2.error);
+
+            uint16_t value = (result.value << 8) | result2.value;
+            return word_result_t(value);
+        };
+
+        return avrAckStream.read()->then<word_result_t>(second);
+    };
+
+    return avrAckStream.read()
+        ->then<word_result_t>(first);
 }
 
-uint16_t avrStaticReadWord()
+std::shared_ptr<Promise<word_result_t>> avrSonar(AvrMode mode)
 {
-    uint16_t data;
-    data = avrStaticRead();
-    data <<= 8;
-    data += avrStaticRead();
-    return data;
-}
-
-uint16_t avrSonar(AvrMode mode)
-{
-    static uint16_t lastData = 0;
-    avrWrite(mode);
-    uint16_t out = avrStaticReadWord();
-    if (out > UINT16_MAX / 2)
-        return lastData;
-    lastData = out;
-    return out;
+    return avrAckStream.write(mode)->then<word_result_t>([](write_result_t result)
+                                                         { return avrReadWord(); });
 }
