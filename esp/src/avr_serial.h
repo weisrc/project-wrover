@@ -73,28 +73,19 @@ typedef Result<uint16_t, ReadError> word_result_t;
 std::shared_ptr<Promise<word_result_t>> avrReadWord()
 {
 
-    auto first = [](read_result_t result)
+    auto bothClosure = [](Pair<read_result_t, read_result_t> pair)
     {
-        auto second = [result](read_result_t result2)
-        {
-            if (result.error)
-                return word_result_t::err(result.error);
-            if (result2.error)
-                return word_result_t::err(result2.error);
-
-            uint16_t value = (result.value << 8) | result2.value;
-            return word_result_t(value);
-        };
-
-        return avrAckStream.read()->then<word_result_t>(second);
+        if (!pair.a.ok || !pair.b.ok)
+            return word_result_t::err(pair.a.error);
+        return word_result_t((pair.a.value << 8) | pair.b.value);
     };
 
-    return avrAckStream.read()
-        ->then<word_result_t>(first);
+    return bothPromise<read_result_t, read_result_t>(avrAckStream.read(), avrAckStream.read())
+        ->then<word_result_t>(bothClosure);
 }
 
 std::shared_ptr<Promise<word_result_t>> avrSonar(AvrMode mode)
 {
-    return avrAckStream.write(mode)->then<word_result_t>([](write_result_t result)
-                                                         { return avrReadWord(); });
+    avrAckStream.write(mode);
+    return avrReadWord();
 }

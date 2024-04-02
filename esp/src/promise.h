@@ -110,18 +110,50 @@ public:
         }
     }
 
+    bool isResolved()
+    {
+        return resolved;
+    }
+
     ~Promise()
     {
         if (!resolved)
         {
         }
     }
-
-    template <typename U, typename V>
-    static std::shared_ptr<Promise<Pair<U, V>>> both(std::shared_ptr<Promise<U>> promiseA, std::shared_ptr<Promise<U>> promiseB)
-    {
-        auto promise = std::make_shared<Promise<Pair<U, V>>>();
-
-        return promise;
-    }
 };
+
+template <typename U, typename V>
+std::shared_ptr<Promise<Pair<U, V>>> bothPromise(std::shared_ptr<Promise<U>> promiseA, std::shared_ptr<Promise<U>> promiseB)
+{
+    auto promise = std::make_shared<Promise<Pair<U, V>>>();
+
+    std::shared_ptr<Pair<U, V>> pair = std::make_shared<Pair<U, V>>();
+
+    auto aClosure = [promiseB, pair, promise](U aValue)
+    {
+        pair->a = aValue;
+        LOG_DEBUG("aClosure ran");
+        if (promiseB->isResolved())
+        {
+            promise->resolve(*pair);
+            LOG_DEBUG("resolving both from A");
+        }
+    };
+
+    auto bClosure = [promiseA, pair, promise](U bValue)
+    {
+        pair->b = bValue;
+        LOG_DEBUG("bClosure ran");
+        if (promiseA->isResolved())
+        {
+            promise->resolve(*pair);
+            LOG_DEBUG("resolving both from B");
+        }
+    };
+
+    promiseA->finally(aClosure);
+    promiseB->finally(bClosure);
+
+    return promise;
+}

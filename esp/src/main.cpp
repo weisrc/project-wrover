@@ -36,10 +36,10 @@ void update()
   }
 }
 
-void sleep(int seconds)
+void sleepUpdate(unsigned long timeout)
 {
   unsigned long startTime = millis();
-  while (millis() - startTime < seconds)
+  while (millis() - startTime < timeout)
     update();
 }
 
@@ -56,9 +56,25 @@ void setup()
 
   LOG_INFO("Starting WRover ESP...");
 
+  auto closure = [](word_result_t res)
+  {
+    if (res.ok)
+      LOG_INFO("Sonar 0 value: " + String(res.value)); 
+    
+    if (!res.ok)
+      LOG_INFO("Failed to get sonar 0 value");
+  };
+
+  avrSonar(MODE_SONAR0)
+      ->finally(closure);
+
+  while (1)
+    avrAckStream.update();
+
   avrClear();
   avrPrint("WRover ESP\nStarting...");
-  sleep(1);
+
+  sleepUpdate(1000);
 
   LOG_INFO("Setting up camera...");
 
