@@ -7,6 +7,13 @@ struct none_t
 {
 } none;
 
+template <typename T, typename U>
+struct Pair
+{
+    T a;
+    U b;
+};
+
 template <typename V, typename E>
 class Result
 {
@@ -108,5 +115,13 @@ public:
         if (!resolved)
         {
         }
+    }
+
+    template <typename U, typename V>
+    static std::shared_ptr<Promise<Pair<U, V>>> both(std::shared_ptr<Promise<U>> promiseA, std::shared_ptr<Promise<U>> promiseB)
+    {
+        auto promise = std::make_shared<Promise<Pair<U, V>>>();
+
+        return promise;
     }
 };

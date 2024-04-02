@@ -45,7 +45,6 @@ private:
     void addTask(std::function<void()> task)
     {
         taskQueue.push_back(task);
-        tryProcessNextTask();
     }
 
     void tryProcessNextTask()
@@ -103,7 +102,8 @@ private:
     }
 
 public:
-    AsyncStream(Stream &stream, unsigned long timeout = 50, char ackValue = 0) : stream(stream), timeout(timeout), ackValue(ackValue) {}
+    AsyncStream(Stream &stream, unsigned long timeout = 50, char ackValue = 0) : stream(stream), timeout(timeout), ackValue(ackValue) {
+    }
 
     int available()
     {

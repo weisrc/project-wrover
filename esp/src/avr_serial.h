@@ -65,7 +65,7 @@ std::shared_ptr<write_promise_t> avrPrint(String str)
 
 std::shared_ptr<write_promise_t> avrClear()
 {
-    return avrSend(MODE_CLEAR, 0);
+    return avrAckStream.write(MODE_CLEAR);
 }
 
 typedef Result<uint16_t, ReadError> word_result_t;

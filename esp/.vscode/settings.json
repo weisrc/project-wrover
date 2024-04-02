@@ -56,7 +56,9 @@
         "condition_variable": "cpp",
         "ratio": "cpp",
         "mutex": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "list": "cpp",
+        "iostream": "cpp"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.vcFormat.indent.lambdaBracesWhenParameter": false

@@ -13,9 +13,38 @@
 #include "locomotion.h"
 #include "logger.h"
 
+void update()
+{
+  avrAckStream.update();
+  checkScanComplete();
+  checkStatusChange();
+  locomotionUpdate();
+  motorUpdate();
+  sonarUpdate();
+  cameraCapture();
+  wsEndpoint.cleanupClients();
+
+  if (Serial.available())
+  {
+    SerialChannel chan;
+    JsonDocument request;
+    DeserializationError error = deserializeJson(request, Serial);
+    if (!error)
+      handleRequest(chan, request);
+    else
+      LOG_WARN("failed to parse");
+  }
+}
+
+void sleep(int seconds)
+{
+  unsigned long startTime = millis();
+  while (millis() - startTime < seconds)
+    update();
+}
+
 void setup()
 {
-
   setCpuFrequencyMhz(240);
 
   Serial.begin(115200);
@@ -25,12 +54,9 @@ void setup()
 
   avrSerialSetup();
 
-  LOG_INFO("Clearing AVR text...");
-
-  avrClear();
-
   LOG_INFO("Starting WRover ESP...");
 
+  avrClear();
   avrPrint("WRover ESP\nStarting...");
   sleep(1);
 
@@ -44,34 +70,10 @@ void setup()
   WiFi.disconnect();
 
   lastStatus = WiFi.status();
-
   autoConnect();
 }
 
 void loop()
 {
-  if (Serial.available())
-  {
-    SerialChannel chan;
-    JsonDocument request;
-    DeserializationError error = deserializeJson(request, Serial);
-    if (!error)
-      handleRequest(chan, request);
-    else
-      LOG_WARN("failed to parse");
-  }
-
-  if (avrSerial.available())
-  {
-    Serial.write(avrSerial.read());
-  }
-
-  checkScanComplete();
-  checkStatusChange();
-  locomotionUpdate();
-  motorUpdate();
-  // sonarUpdate();
-  cameraCapture();
-  avrAckStream.update();
-  wsEndpoint.cleanupClients();
+  update();
 }
