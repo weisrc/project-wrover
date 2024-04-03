@@ -28,7 +28,7 @@ void avrSerialSetup()
     }
 }
 
-std::shared_ptr<write_promise_t> avrSend(AvrMode mode, char data)
+std::shared_ptr<WritePromise> avrSend(AvrMode mode, char data)
 {
     String str;
     str += (char)mode;
@@ -36,12 +36,12 @@ std::shared_ptr<write_promise_t> avrSend(AvrMode mode, char data)
     return avrAckStream.write(str);
 }
 
-std::shared_ptr<write_promise_t> avrLCDSecond()
+std::shared_ptr<WritePromise> avrLCDSecond()
 {
     return avrSend(MODE_COMMAND, 0x80 + 0x40);
 }
 
-std::shared_ptr<write_promise_t> avrPrint(String str)
+std::shared_ptr<WritePromise> avrPrint(String str)
 {
     String converted;
 
@@ -63,28 +63,28 @@ std::shared_ptr<write_promise_t> avrPrint(String str)
     return avrAckStream.write(converted);
 }
 
-std::shared_ptr<write_promise_t> avrClear()
+std::shared_ptr<WritePromise> avrClear()
 {
     return avrAckStream.write(MODE_CLEAR);
 }
 
-typedef Result<uint16_t, ReadError> word_result_t;
+typedef Result<uint16_t, ReadError> WordResult;
 
-std::shared_ptr<Promise<word_result_t>> avrReadWord()
+std::shared_ptr<Promise<WordResult>> avrReadWord()
 {
 
-    auto bothClosure = [](Pair<read_result_t, read_result_t> pair)
+    auto closure = [](Pair<ReadResult, ReadResult> pair)
     {
         if (!pair.a.ok || !pair.b.ok)
-            return word_result_t::err(pair.a.error);
-        return word_result_t((pair.a.value << 8) | pair.b.value);
+            return WordResult::fail(pair.a.error);
+        return WordResult((pair.a.value << 8) | pair.b.value);
     };
 
-    return bothPromise<read_result_t, read_result_t>(avrAckStream.read(), avrAckStream.read())
-        ->then<word_result_t>(bothClosure);
+    return avrAckStream.read()->pair(avrAckStream.read())
+        ->then<WordResult>(closure);
 }
 
-std::shared_ptr<Promise<word_result_t>> avrSonar(AvrMode mode)
+std::shared_ptr<Promise<WordResult>> avrSonar(AvrMode mode)
 {
     avrAckStream.write(mode);
     return avrReadWord();

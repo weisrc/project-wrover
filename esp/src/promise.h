@@ -3,15 +3,47 @@
 #include <memory>
 #include <list>
 
-struct none_t
-{
-} none;
-
 template <typename T, typename U>
 struct Pair
 {
     T a;
     U b;
+};
+
+template <typename T>
+class Optional
+{
+private:
+    T value;
+    bool hasValue;
+public:
+    Optional() : hasValue(false) {}
+
+    Optional(T value)
+    {
+        this->value = value;
+        this->hasValue = true;
+    }
+
+    T get()
+    {
+        return value;
+    }
+
+    bool isEmpty()
+    {
+        return hasValue;
+    }
+
+    bool isPresent()
+    {
+        return hasValue;
+    }
+
+    static Optional<T> empty()
+    {
+        return Optional<T>();
+    }
 };
 
 template <typename V, typename E>
@@ -30,7 +62,7 @@ public:
         this->ok = true;
     }
 
-    static Result<V, E> err(E error)
+    static Result<V, E> fail(E error)
     {
         Result<V, E> result;
         result.ok = false;
@@ -97,6 +129,66 @@ public:
         return promise;
     }
 
+    template <typename U>
+    std::shared_ptr<Promise<Pair<T, U>>> pair(std::shared_ptr<Promise<U>> other)
+    {
+        auto promise = std::make_shared<Promise<Pair<T, U>>>();
+        auto pair = std::make_shared<Pair<T, U>>();
+
+        auto thisClosure = [other, pair, promise](U aValue)
+        {
+            pair->a = aValue;
+            LOG_DEBUG("thisClosure ran");
+            if (other->isResolved())
+            {
+                promise->resolve(*pair);
+                LOG_DEBUG("resolving both from A");
+            }
+        };
+
+        auto otherClosure = [&, pair, promise](U bValue)
+        {
+            pair->b = bValue;
+            LOG_DEBUG("otherClosure ran");
+            if (isResolved())
+            {
+                promise->resolve(*pair);
+                LOG_DEBUG("resolving both from B");
+            }
+        };
+
+        finally(thisClosure);
+        other->finally(otherClosure);
+
+        return promise;
+    }
+
+    template <typename U>
+    std::shared_ptr<Promise<Pair<T, U>>> race(std::shared_ptr<Promise<U>> other)
+    {
+        auto promise = std::make_shared<Promise<Pair<Optional<T>, Optional<U>>>>();
+        auto pair = std::make_shared<Pair<Optional<T>, Optional<U>>>();
+
+        auto thisClosure = [other, pair, promise](T aValue)
+        {
+            pair->a = Optional<T>(aValue);
+            LOG_DEBUG("thisClosure ran");
+            promise->resolve(*pair);
+        };
+
+        auto otherClosure = [this, pair, promise](U bValue)
+        {
+            pair->b = Optional<U>(bValue);
+            LOG_DEBUG("otherClosure ran");
+            promise->resolve(*pair);
+        };
+
+        finally(thisClosure);
+        other->finally(otherClosure);
+
+        return promise;
+    }
+
     void resolve(T value)
     {
         if (resolved)
@@ -106,7 +198,7 @@ public:
         this->value = value;
         for (auto listener : listeners)
             listener(value);
-        
+
         listeners.clear();
     }
 
@@ -123,38 +215,3 @@ public:
         }
     }
 };
-
-template <typename U, typename V>
-std::shared_ptr<Promise<Pair<U, V>>> bothPromise(std::shared_ptr<Promise<U>> promiseA, std::shared_ptr<Promise<U>> promiseB)
-{
-    auto promise = std::make_shared<Promise<Pair<U, V>>>();
-
-    std::shared_ptr<Pair<U, V>> pair = std::make_shared<Pair<U, V>>();
-
-    auto aClosure = [promiseB, pair, promise](U aValue)
-    {
-        pair->a = aValue;
-        LOG_DEBUG("aClosure ran");
-        if (promiseB->isResolved())
-        {
-            promise->resolve(*pair);
-            LOG_DEBUG("resolving both from A");
-        }
-    };
-
-    auto bClosure = [promiseA, pair, promise](U bValue)
-    {
-        pair->b = bValue;
-        LOG_DEBUG("bClosure ran");
-        if (promiseA->isResolved())
-        {
-            promise->resolve(*pair);
-            LOG_DEBUG("resolving both from B");
-        }
-    };
-
-    promiseA->finally(aClosure);
-    promiseB->finally(bClosure);
-
-    return promise;
-}

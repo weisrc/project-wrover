@@ -16,10 +16,10 @@ enum WriteError
     WRITE_TIMEOUT = 0
 };
 
-typedef Result<char, ReadError> read_result_t;
-typedef Result<bool, WriteError> write_result_t;
-typedef Promise<read_result_t> read_promise_t;
-typedef Promise<write_result_t> write_promise_t;
+typedef Result<char, ReadError> ReadResult;
+typedef Result<bool, WriteError> WriteResult;
+typedef Promise<ReadResult> ReadPromise;
+typedef Promise<WriteResult> WritePromise;
 
 class AsyncStream
 {
@@ -30,8 +30,8 @@ private:
 
     std::list<std::function<void()>> taskQueue;
 
-    std::shared_ptr<read_promise_t> readPromise;
-    std::shared_ptr<write_promise_t> writePromise;
+    std::shared_ptr<ReadPromise> readPromise;
+    std::shared_ptr<WritePromise> writePromise;
 
     char lastWriteValue = 0;
     unsigned long startTime = 0;
@@ -75,7 +75,7 @@ private:
         {
             LOG_DEBUG("RX: " + String(data) + " (" + String((int)data) + ")");
             put(ackValue);
-            readPromise->resolve(read_result_t(data));
+            readPromise->resolve(ReadResult(data));
             readPromise.reset();
         }
     }
@@ -93,7 +93,7 @@ private:
             else if (readPromise != nullptr)
             {
                 LOG_WARN("RX: Timeout, aborting read");
-                readPromise->resolve(read_result_t::err(TIMEOUT)); // Provide the missing argument list for the class template "Result"
+                readPromise->resolve(ReadResult::fail(TIMEOUT)); // Provide the missing argument list for the class template "Result"
                 readPromise.reset();
             }
             startTime = now;
@@ -110,9 +110,9 @@ public:
         return stream.available();
     }
 
-    std::shared_ptr<read_promise_t> read()
+    std::shared_ptr<ReadPromise> read()
     {
-        auto promise = std::make_shared<read_promise_t>();
+        auto promise = std::make_shared<ReadPromise>();
 
         addTask([&, promise]()
                 {   readPromise = promise; 
@@ -121,9 +121,9 @@ public:
         return promise;
     }
 
-    std::shared_ptr<write_promise_t> write(char data)
+    std::shared_ptr<WritePromise> write(char data)
     {
-        auto promise = std::make_shared<write_promise_t>();
+        auto promise = std::make_shared<WritePromise>();
 
         addTask([&, data, promise]()
                 {
@@ -135,9 +135,9 @@ public:
         return promise;
     }
 
-    std::shared_ptr<write_promise_t> write(String data)
+    std::shared_ptr<WritePromise> write(String data)
     {
-        std::shared_ptr<write_promise_t> promise;
+        std::shared_ptr<WritePromise> promise;
 
         for (size_t i = 0; i < data.length(); i++)
         {

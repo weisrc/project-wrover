@@ -78,19 +78,19 @@ void sonarUpdate()
 
     lastSampleTime = now;
 
-    auto closure0 = [](word_result_t result)
+    auto closure0 = [](WordResult result)
     {
         if (result.ok)
             sonar0Average = result.value;
     };
 
-    auto closure1 = [](word_result_t result)
+    auto closure1 = [](WordResult result)
     {
         if (result.ok)
             sonar1Average = result.value;
     };
 
-    auto closure2 = [](word_result_t result)
+    auto closure2 = [](WordResult result)
     {
         if (result.ok)
             sonar2Average = result.value;
@@ -116,7 +116,7 @@ void motorUpdate()
     {
         int8_t motor0NextSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
 
-        auto closure = [motor0NextSpeed](write_result_t result)
+        auto closure = [motor0NextSpeed](WriteResult result)
         {
             if (result.ok)
             {
@@ -133,7 +133,7 @@ void motorUpdate()
     {
         int8_t motor1NextSpeed = shiftTowards(motor1SmoothSpeed, motor1Speed);
 
-        auto closure = [motor1NextSpeed](write_result_t result)
+        auto closure = [motor1NextSpeed](WriteResult result)
         {
             if (result.ok)
             {
