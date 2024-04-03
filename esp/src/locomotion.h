@@ -80,20 +80,20 @@ void sonarUpdate()
 
     auto closure0 = [](WordResult result)
     {
-        if (result.ok)
-            sonar0Average = result.value;
+        if (result.isOk())
+            sonar0Average = result.getValue();
     };
 
     auto closure1 = [](WordResult result)
     {
-        if (result.ok)
-            sonar1Average = result.value;
+        if (result.isOk())
+            sonar1Average = result.getValue();
     };
 
     auto closure2 = [](WordResult result)
     {
-        if (result.ok)
-            sonar2Average = result.value;
+        if (result.isOk())
+            sonar2Average = result.getValue();
     };
 
     avrSonar(MODE_SONAR0)->finally(closure0);
@@ -118,7 +118,7 @@ void motorUpdate()
 
         auto closure = [motor0NextSpeed](WriteResult result)
         {
-            if (result.ok)
+            if (result.isOk())
             {
 
                 motor0SmoothSpeed = motor0NextSpeed;
@@ -135,7 +135,7 @@ void motorUpdate()
 
         auto closure = [motor1NextSpeed](WriteResult result)
         {
-            if (result.ok)
+            if (result.isOk())
             {
 
                 motor1SmoothSpeed = motor1NextSpeed;

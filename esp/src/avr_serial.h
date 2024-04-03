@@ -75,9 +75,9 @@ std::shared_ptr<Promise<WordResult>> avrReadWord()
 
     auto closure = [](Pair<ReadResult, ReadResult> pair)
     {
-        if (!pair.a.ok || !pair.b.ok)
-            return WordResult::fail(pair.a.error);
-        return WordResult((pair.a.value << 8) | pair.b.value);
+        if (pair.a.isError() || pair.b.isError())
+            return WordResult::fail(pair.a.getError());
+        return WordResult((pair.a.getValue() << 8) | pair.b.getValue());
     };
 
     return avrAckStream.read()->pair(avrAckStream.read())

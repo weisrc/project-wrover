@@ -16,14 +16,11 @@ class Optional
 private:
     T value;
     bool hasValue;
+
 public:
     Optional() : hasValue(false) {}
 
-    Optional(T value)
-    {
-        this->value = value;
-        this->hasValue = true;
-    }
+    Optional(T value) : value(value), hasValue(true) {}
 
     T get()
     {
@@ -49,23 +46,40 @@ public:
 template <typename V, typename E>
 class Result
 {
-public:
+
+private:
     V value;
     E error;
-    bool ok;
+    bool hasValue;
 
-    Result() : ok(false) {}
+public:
+    Result() : hasValue(false) {}
 
-    Result(V value)
+    Result(V value) : value(value), hasValue(true) {}
+
+    bool isOk()
     {
-        this->value = value;
-        this->ok = true;
+        return hasValue;
+    }
+
+    bool isError()
+    {
+        return !hasValue;
+    }
+
+    V getValue()
+    {
+        return value;
+    }
+
+    E getError()
+    {
+        return error;
     }
 
     static Result<V, E> fail(E error)
     {
         Result<V, E> result;
-        result.ok = false;
         result.error = error;
         return result;
     }
