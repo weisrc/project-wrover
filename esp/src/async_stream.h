@@ -114,7 +114,7 @@ public:
     {
         auto promise = std::make_shared<read_promise_t>();
 
-        addTask([this, promise]()
+        addTask([&, promise]()
                 {   readPromise = promise; 
                     startTime = millis(); });
 
@@ -125,7 +125,7 @@ public:
     {
         auto promise = std::make_shared<write_promise_t>();
 
-        addTask([this, promise, data]()
+        addTask([&, data, promise]()
                 {
                     lastWriteValue = data;
                     put(data);

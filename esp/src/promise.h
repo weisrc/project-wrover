@@ -105,9 +105,9 @@ public:
         resolved = true;
         this->value = value;
         for (auto listener : listeners)
-        {
             listener(value);
-        }
+        
+        listeners.clear();
     }
 
     bool isResolved()
@@ -119,6 +119,7 @@ public:
     {
         if (!resolved)
         {
+            LOG_WARN("Promise destroyed without being resolved");
         }
     }
 };

@@ -52,6 +52,7 @@ void checkStatusChange()
       disconnect(chan);
       avrClear();
       avrPrint("WiFi Failed\nSetup required");
+      LOG_WARN("WiFi connection failed");
     }
     else if (status == WL_NO_SSID_AVAIL)
     {
@@ -59,6 +60,7 @@ void checkStatusChange()
       disconnect(chan);
       avrClear();
       avrPrint("WiFi No SSID\nSetup required");
+      LOG_WARN("No SSID available");
     }
   }
 }

@@ -34,6 +34,13 @@ void update()
     else
       LOG_WARN("failed to parse");
   }
+
+  static unsigned long lastUpdate = 0;
+  if (millis() - lastUpdate > 1000)
+  {
+    lastUpdate = millis();
+    LOG_INFO("Free heap: " + String(ESP.getFreeHeap()));
+  }
 }
 
 void sleepUpdate(unsigned long timeout)
@@ -56,25 +63,8 @@ void setup()
 
   LOG_INFO("Starting WRover ESP...");
 
-  auto closure = [](word_result_t res)
-  {
-    if (res.ok)
-      LOG_INFO("Sonar 0 value: " + String(res.value)); 
-    
-    if (!res.ok)
-      LOG_INFO("Failed to get sonar 0 value");
-  };
-
-  avrSonar(MODE_SONAR0)
-      ->finally(closure);
-
-  while (1)
-    avrAckStream.update();
-
   avrClear();
   avrPrint("WRover ESP\nStarting...");
-
-  sleepUpdate(1000);
 
   LOG_INFO("Setting up camera...");
 
@@ -86,6 +76,9 @@ void setup()
   WiFi.disconnect();
 
   lastStatus = WiFi.status();
+
+  sleepUpdate(1000);
+
   autoConnect();
 }
 
