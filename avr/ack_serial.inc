@@ -160,25 +160,23 @@ serial_rxc:
 	push XH
 	push r16
 
-	lds r16, SERIAL_WRITING_H
-	cpi r16, 0
+	in XL, UCSRA
+	in r16, UDR
+	lds XH, SERIAL_WRITING_H
+	cpi XH, 0
 	brne serial_rxc_feedback
-	
-	lds XL, SERIAL_RX_HEAD
-	andi XL, 0x7F
-	clr XH
-
-	subi XL, low(-SERIAL_RX_BUFFER)
-	sbci XH, high(-SERIAL_RX_BUFFER)
-
-	in r16, UCSRA
-	andi r16, (1 << FE) | (1 << PE)
+	andi XL, (1 << FE) | (1 << PE)
 	brne serial_rxc_err
 
 serial_rxc_ok:
-	in r16, UDR
+
+	lds XL, SERIAL_RX_HEAD
+	andi XL, 0x7F
+	clr XH
+	subi XL, low(-SERIAL_RX_BUFFER)
+	sbci XH, high(-SERIAL_RX_BUFFER)
+
 	st X, r16
-	; ldi r16, SERIAL_ACK
 	out UDR, r16
 
 	lds r16, SERIAL_RX_HEAD
@@ -187,14 +185,9 @@ serial_rxc_ok:
 	rjmp serial_rxc_end
 
 serial_rxc_err:
-	in r16, UDR
-	ldi r16, 210
-	out UDR, r16
 	rjmp serial_rxc_end
 
 serial_rxc_feedback:
-	in r16, UCSRA
-	in r16, UDR
 	clr r16
 	sts SERIAL_WRITING_H, r16
 	sts SERIAL_WRITING_L, r16
