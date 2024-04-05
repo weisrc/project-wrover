@@ -24,6 +24,15 @@ void update()
   cameraCapture();
   wsEndpoint.cleanupClients();
 
+  if (!messageQueue.empty())
+  {
+    auto message = messageQueue.get();
+    JsonDocument request;
+    auto error = deserializeJson(request, message.data);
+    if (!error)
+      handleRequest(*message.channel, request);
+  }
+
   if (Serial.available())
   {
     SerialChannel chan;

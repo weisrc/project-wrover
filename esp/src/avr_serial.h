@@ -4,21 +4,21 @@
 
 enum AvrMode
 {
-    MODE_NONE = 0,
-    MODE_SONAR0 = 1,
-    MODE_SONAR1 = 2,
-    MODE_SONAR2 = 3,
-    MODE_MOTOR0 = 4,
-    MODE_MOTOR1 = 5,
-    MODE_WRITE = 6,
-    MODE_COMMAND = 7,
-    MODE_CLEAR = 8,
-    MODE_LAST = 9
+    MODE_NONE = 100,
+    MODE_SONAR0 = 101,
+    MODE_SONAR1 = 102,
+    MODE_SONAR2 = 103,
+    MODE_MOTOR0 = 104,
+    MODE_MOTOR1 = 105,
+    MODE_WRITE = 106,
+    MODE_COMMAND = 107,
+    MODE_CLEAR = 108,
+    MODE_LAST = 109
 };
 
 void avrSerialSetup()
 {
-    avrSerial.begin(4800, SWSERIAL_8E1, AVR_RX, AVR_TX);
+    avrSerial.begin(4800, SWSERIAL_8O1, AVR_RX, AVR_TX);
 
     if (!avrSerial)
     {

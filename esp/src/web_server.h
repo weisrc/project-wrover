@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "globals.h"
 #include "channel.h"
 #include "handle_request.h"
@@ -7,11 +9,9 @@ void onWSEventData(AwsFrameInfo *info, AsyncWebSocketClient *client, uint8_t *da
 {
     if (info->opcode == WS_TEXT)
     {
-        JsonDocument request;
-        WSChannel chan(client);
-        DeserializationError error = deserializeJson(request, data, len);
-        if (!error)
-            handleRequest(chan, request);
+        String str((char *)data, len);
+        auto chan = std::make_shared<WSChannel>(client);
+        messageQueue.add(chan, str);
     }
 }
 

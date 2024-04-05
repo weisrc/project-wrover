@@ -6,8 +6,8 @@
 
 #include "dual_odometer.h"
 #include "async_stream.h"
+#include "message_queue.h"
 
-#define NO_SOCKET_ID UINT32_MAX
 #define HALL0 GPIO_NUM_32
 #define HALL1 GPIO_NUM_13
 #define AVR_RX GPIO_NUM_33
@@ -27,5 +27,6 @@ wl_status_t lastStatus;
 AsyncWebServer webServer(80);
 AsyncWebSocket wsEndpoint("/ws");
 SoftwareSerial avrSerial;
-AsyncStream avrAckStream(avrSerial, AVR_SERIAL_TIMEOUT, 0);
+AsyncStream avrAckStream(avrSerial, AVR_SERIAL_TIMEOUT, 0, true);
 DualOdometer odometer(15, 0.043);
+MessageQueue messageQueue;

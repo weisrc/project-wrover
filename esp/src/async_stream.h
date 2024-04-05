@@ -24,9 +24,10 @@ typedef Promise<WriteResult> WritePromise;
 class AsyncStream
 {
 private:
-    Stream &stream;
+    UARTBase &stream;
     unsigned long timeout;
     char ackValue;
+    bool oddParity = false;
 
     std::list<std::function<void()>> taskQueue;
 
@@ -63,46 +64,71 @@ private:
     void updateWhenAvailable()
     {
         char data = stream.read();
+        bool targetParity = oddParity ? stream.parityOdd(data) : stream.parityEven(data);
+        bool parityOk = stream.readParity() == targetParity;
 
         if (writePromise != nullptr)
         {
-            LOG_DEBUG("TX: Got ack for " + String(lastWriteValue) + " (" + String((int)lastWriteValue) + ")");
+            if (data != lastWriteValue)
+            {
+                LOG_WARN("TX ack mismatch: " + String((int)data) + " != " + String((int)lastWriteValue) + " parityOk: " + String(parityOk));
+            }
+            else
+            {
+                LOG_DEBUG("TX: Got ack for " + String(lastWriteValue) + " (" + String((int)lastWriteValue) + ")");
+            }
+
             writePromise->resolve(0);
             writePromise.reset();
             LOG_DEBUG("writePromise: " + String(writePromise != nullptr));
+            return;
         }
-        else if (readPromise != nullptr)
+        if (!parityOk)
+        {
+            LOG_WARN("RX: Parity error");
+            return;
+        }
+
+        if (readPromise != nullptr)
         {
             LOG_DEBUG("RX: " + String(data) + " (" + String((int)data) + ")");
             put(ackValue);
             readPromise->resolve(ReadResult(data));
             readPromise.reset();
+            return;
+        }
+        else
+        {
+            LOG_WARN("Unexpected RX: " + String(data) + " (" + String((int)data) + ")");
+            put(ackValue);
         }
     }
 
     void updateWhenNotAvailable()
     {
         unsigned long now = millis();
-        if (now - startTime > timeout)
-        {
-            if (writePromise != nullptr)
-            {
-                LOG_WARN("TX: Timeout, resending " + String(lastWriteValue) + " (" + String((int)lastWriteValue) + ")");
-                put(lastWriteValue);
-            }
-            else if (readPromise != nullptr)
-            {
-                LOG_WARN("RX: Timeout, aborting read");
-                readPromise->resolve(ReadResult::fail(TIMEOUT)); // Provide the missing argument list for the class template "Result"
-                readPromise.reset();
-            }
-            startTime = now;
+        if (now - startTime < timeout)
             return;
+
+        if (writePromise != nullptr)
+        {
+            LOG_WARN("TX: Timeout, resending " + String(lastWriteValue) + " (" + String((int)lastWriteValue) + ")");
+            put(lastWriteValue);
         }
+        else if (readPromise != nullptr)
+        {
+            LOG_WARN("RX: Timeout, aborting read");
+            readPromise->resolve(ReadResult::fail(TIMEOUT)); // Provide the missing argument list for the class template "Result"
+            readPromise.reset();
+        }
+        startTime = now;
     }
 
 public:
-    AsyncStream(Stream &stream, unsigned long timeout = 50, char ackValue = 0) : stream(stream), timeout(timeout), ackValue(ackValue) {
+    AsyncStream(UARTBase &stream, unsigned long timeout = 50,
+                char ackValue = 0, bool oddParity = true) : stream(stream), timeout(timeout),
+                                                     ackValue(ackValue), oddParity(oddParity)
+    {
     }
 
     int available()

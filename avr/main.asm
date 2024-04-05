@@ -49,6 +49,7 @@ main:
 	rcall lcd_print
 
 	sei
+
 loop:
 	rcall handle
 	rcall motor_update

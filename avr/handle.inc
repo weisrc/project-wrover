@@ -1,14 +1,14 @@
 
-.equ MODE_NONE = 0
-.equ MODE_SONAR0 = 1
-.equ MODE_SONAR1 = 2
-.equ MODE_SONAR2 = 3
-.equ MODE_MOTOR0 = 4
-.equ MODE_MOTOR1 = 5
-.equ MODE_WRITE = 6
-.equ MODE_COMMAND = 7
-.equ MODE_CLEAR = 8
-.equ MODE_LAST = 9
+.equ MODE_NONE = 100
+.equ MODE_SONAR0 = 101
+.equ MODE_SONAR1 = 102
+.equ MODE_SONAR2 = 103
+.equ MODE_MOTOR0 = 104
+.equ MODE_MOTOR1 = 105
+.equ MODE_WRITE = 106
+.equ MODE_COMMAND = 107
+.equ MODE_CLEAR = 108
+.equ MODE_LAST = 109
 
 .dseg
 
@@ -18,7 +18,7 @@ MODE: .byte 1
 
 handle_init:
 	push r16
-	clr r16
+	ldi r16, MODE_NONE
 	sts MODE, r16
 	pop r16
 	ret

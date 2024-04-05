@@ -2,7 +2,8 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
-#include "globals.h"
+
+#define NO_SOCKET_ID UINT32_MAX
 
 class Channel
 {
@@ -39,21 +40,20 @@ public:
 class WSChannel : public Channel
 {
 private:
-  AsyncWebSocketClient *client;
+  uint32_t id;
+  AsyncWebSocket *server;
 
 public:
-  WSChannel(AsyncWebSocketClient *client)
-  {
-    this->client = client;
-  }
+  WSChannel(AsyncWebSocketClient *client) : server(client->server()), id(client->id()) {}
+
   void send(JsonDocument &data)
   {
     String output;
     serializeJson(data, output);
-    this->client->text(output);
+    server->text(id, output);
   }
   uint32_t socketId()
   {
-    return client->id();
+    return id;
   }
 };

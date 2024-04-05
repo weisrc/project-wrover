@@ -73,7 +73,7 @@ void sonarUpdate()
     static unsigned long lastSampleTime = 0;
     unsigned long now = millis();
 
-    if (now - lastSampleTime < 200)
+    if (now - lastSampleTime < 100)
         return;
 
     lastSampleTime = now;
