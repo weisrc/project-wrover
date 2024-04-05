@@ -36,6 +36,17 @@ serial_print_hex:
 	pop r16
 	ret
 
+lcd_print_hex:
+	push r16
+	push r17
+	rcall byte_to_hex
+	rcall lcd_write
+	mov r16, r17
+	rcall lcd_write
+	pop r17
+	pop r16
+	ret
+
 print_sonars:
 	push r16
 
