@@ -18,9 +18,9 @@ enum AvrMode
 
 void avrSerialSetup()
 {
-    avrSerial.begin(4800, SWSERIAL_8O1, AVR_RX, AVR_TX);
+    avrSerialBase.begin(4800, SWSERIAL_8O1, AVR_RX, AVR_TX);
 
-    if (!avrSerial)
+    if (!avrSerialBase)
     {
         LOG_ERROR("failed to configure AVR serial");
         while (1)
@@ -33,7 +33,7 @@ std::shared_ptr<WritePromise> avrSend(AvrMode mode, char data)
     String str;
     str += (char)mode;
     str += data;
-    return avrAckStream.write(str);
+    return avrSerial.write(str);
 }
 
 std::shared_ptr<WritePromise> avrLCDSecond()
@@ -60,15 +60,15 @@ std::shared_ptr<WritePromise> avrPrint(String str)
         }
     }
 
-    return avrAckStream.write(converted);
+    return avrSerial.write(converted);
 }
 
 std::shared_ptr<WritePromise> avrClear()
 {
-    return avrAckStream.write(MODE_CLEAR);
+    return avrSerial.write(MODE_CLEAR);
 }
 
-typedef Result<uint16_t, ReadError> WordResult;
+typedef Result<uint16_t, AsyncSerialError> WordResult;
 
 std::shared_ptr<Promise<WordResult>> avrReadWord()
 {
@@ -80,12 +80,12 @@ std::shared_ptr<Promise<WordResult>> avrReadWord()
         return WordResult((pair.a.getValue() << 8) | pair.b.getValue());
     };
 
-    return avrAckStream.read()->pair(avrAckStream.read())
+    return avrSerial.read()->pair(avrSerial.read())
         ->then<WordResult>(closure);
 }
 
 std::shared_ptr<Promise<WordResult>> avrSonar(AvrMode mode)
 {
-    avrAckStream.write(mode);
+    avrSerial.write(mode);
     return avrReadWord();
 }

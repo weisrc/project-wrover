@@ -6,31 +6,28 @@
 
 #define WRITE_BUFFER_SIZE 256
 
-enum ReadError
+enum AsyncSerialError
 {
-    TIMEOUT = 0
+    QUEUE_FULL,
+    TIMEOUT
 };
 
-enum WriteError
-{
-    WRITE_TIMEOUT = 0
-};
-
-typedef Result<char, ReadError> ReadResult;
-typedef Result<bool, WriteError> WriteResult;
+typedef Result<char, AsyncSerialError> ReadResult;
+typedef Result<bool, AsyncSerialError> WriteResult;
 typedef Promise<ReadResult> ReadPromise;
 typedef Promise<WriteResult> WritePromise;
 
-class AsyncStream
+class AsyncSerial
 {
 private:
     UARTBase &stream;
     unsigned long timeout;
     char ackValue;
     bool oddParity = false;
+    size_t maxTaskQueueSize = 100;
+    bool isResolving = false;
 
     std::list<std::function<void()>> taskQueue;
-
     std::shared_ptr<ReadPromise> readPromise;
     std::shared_ptr<WritePromise> writePromise;
 
@@ -43,9 +40,24 @@ private:
         LOG_DEBUG("TX: " + String(data) + " (" + String((int)data) + ")");
     }
 
-    void addTask(std::function<void()> task)
+    bool addTask(std::function<void()> task)
     {
-        taskQueue.push_back(task);
+        if (taskQueue.size() >= maxTaskQueueSize)
+        {
+            LOG_WARN("Async task queue full");
+            return false;
+        }
+        /*
+         * When inside a then closure (.i.e. resolving a promise), we want to prioritize the task defined in the closure
+         * serial.write('A').finally([] { serial.write('B'); });
+         * serial.write('C');
+         * In this example, 'B' should be sent before 'C'
+         */
+        if (isResolving)
+            taskQueue.push_front(task);
+        else
+            taskQueue.push_back(task);
+        return true;
     }
 
     void tryProcessNextTask()
@@ -78,7 +90,9 @@ private:
                 LOG_DEBUG("TX: Got ack for " + String(lastWriteValue) + " (" + String((int)lastWriteValue) + ")");
             }
 
+            isResolving = true;
             writePromise->resolve(0);
+            isResolving = false;
             writePromise.reset();
             LOG_DEBUG("writePromise: " + String(writePromise != nullptr));
             return;
@@ -93,7 +107,9 @@ private:
         {
             LOG_DEBUG("RX: " + String(data) + " (" + String((int)data) + ")");
             put(ackValue);
+            isResolving = true;
             readPromise->resolve(ReadResult(data));
+            isResolving = false;
             readPromise.reset();
             return;
         }
@@ -118,16 +134,19 @@ private:
         else if (readPromise != nullptr)
         {
             LOG_WARN("RX: Timeout, aborting read");
-            readPromise->resolve(ReadResult::fail(TIMEOUT)); // Provide the missing argument list for the class template "Result"
+            isResolving = true;
+            readPromise->resolve(ReadResult::fail(AsyncSerialError::TIMEOUT));
+            isResolving = false;
             readPromise.reset();
         }
         startTime = now;
     }
 
 public:
-    AsyncStream(UARTBase &stream, unsigned long timeout = 50,
-                char ackValue = 0, bool oddParity = true) : stream(stream), timeout(timeout),
-                                                     ackValue(ackValue), oddParity(oddParity)
+    AsyncSerial(UARTBase &stream, unsigned long timeout = 50,
+                char ackValue = 0, bool oddParity = true, size_t maxTaskQueueSize = 100) : stream(stream), timeout(timeout),
+                                                                                           ackValue(ackValue), oddParity(oddParity),
+                                                                                           maxTaskQueueSize(maxTaskQueueSize)
     {
     }
 
@@ -140,9 +159,12 @@ public:
     {
         auto promise = std::make_shared<ReadPromise>();
 
-        addTask([&, promise]()
-                {   readPromise = promise; 
+        bool ok = addTask([&, promise]()
+                          {   readPromise = promise; 
                     startTime = millis(); });
+
+        if (!ok)
+            promise->resolve(ReadResult::fail(AsyncSerialError::QUEUE_FULL));
 
         return promise;
     }
@@ -151,12 +173,15 @@ public:
     {
         auto promise = std::make_shared<WritePromise>();
 
-        addTask([&, data, promise]()
-                {
+        bool ok = addTask([&, data, promise]()
+                          {
                     lastWriteValue = data;
                     put(data);
                     writePromise = promise;
                     startTime = millis(); });
+
+        if (!ok)
+            promise->resolve(WriteResult::fail(AsyncSerialError::QUEUE_FULL));
 
         return promise;
     }

@@ -15,7 +15,7 @@
 
 void update()
 {
-  avrAckStream.update();
+  avrSerial.update();
   checkScanComplete();
   checkStatusChange();
   locomotionUpdate();
