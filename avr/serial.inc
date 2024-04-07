@@ -4,7 +4,7 @@
 ;
 
 .equ FCPU = 1000000
-.equ SERIAL_BAUD = 4800
+.equ SERIAL_BAUD = 2400
 .equ SERIAL_UBRR = (FCPU / 16 / SERIAL_BAUD) - 1
 
 serial_init:
@@ -29,20 +29,17 @@ serial_write:
 	out UDR, r16
 	ret
 
+
+serial_is_empty:
+	push r16
+	in r16, UCSRA
+	andi r16, 1 << RXC
+	pop r16
+	ret
+
+
 serial_read:
-	sbis UCSRA, RXC
-	rjmp serial_read
 	in r16, UDR
 	ret
 
 
-serial_print_hex:
-	push r16
-	push r17
-	rcall byte_to_hex
-	rcall serial_write
-	mov r16, r17
-	rcall serial_write
-	pop r17
-	pop r16
-	ret

@@ -1,29 +1,42 @@
+#pragma once
 #include <Arduino.h>
 #include <esp_camera.h>
 #include "globals.h"
+#include "channel.h"
 
-void cameraStream()
+void cameraCapture()
 {
-    if (cameraSocketId == NO_SOCKET_ID)
+    if (!cameraOk)
         return;
 
-    AsyncWebSocketClient *client = wsEndpoint.client(cameraSocketId);
-
-    if (!client)
+    if (camSocketId == NO_SOCKET_ID)
         return;
+
+    static unsigned long lastTime = 0;
 
     unsigned long interval = 1000 / cameraFps;
     unsigned long now = millis();
-    if (now - cameraLastTime < interval)
+    if (now - lastTime < interval)
         return;
 
-    cameraLastTime = now;
+    lastTime = now;
 
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb)
         return;
 
-    client->binary((uint8_t *)fb->buf, fb->len);
+    wsEndpoint.binary(camSocketId, fb->buf, fb->len);
+    camSocketId = NO_SOCKET_ID;
 
     esp_camera_fb_return(fb);
+}
+
+void cameraSetFrameSize(framesize_t size)
+{
+    if (!cameraOk)
+        return;
+
+    sensor_t *sensor = esp_camera_sensor_get();
+
+    sensor->set_framesize(sensor, size);
 }

@@ -3,11 +3,24 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
+#define NO_SOCKET_ID UINT32_MAX
+
 class Channel
 {
 public:
   virtual void send(JsonDocument &data) = 0;
   virtual uint32_t socketId() = 0;
+};
+
+class NullChannel : public Channel
+{
+  void send(JsonDocument &data)
+  {
+  }
+  uint32_t socketId()
+  {
+    return NO_SOCKET_ID;
+  }
 };
 
 class SerialChannel : public Channel
@@ -18,7 +31,8 @@ public:
     serializeJson(data, Serial);
     Serial.println();
   }
-  uint32_t socketId() {
+  uint32_t socketId()
+  {
     return NO_SOCKET_ID;
   }
 };
@@ -26,20 +40,20 @@ public:
 class WSChannel : public Channel
 {
 private:
-  AsyncWebSocketClient *client;
+  uint32_t id;
+  AsyncWebSocket *server;
 
 public:
-  WSChannel(AsyncWebSocketClient *client)
-  {
-    this->client = client;
-  }
+  WSChannel(AsyncWebSocketClient *client) : server(client->server()), id(client->id()) {}
+
   void send(JsonDocument &data)
   {
     String output;
     serializeJson(data, output);
-    this->client->text(output);
+    server->text(id, output);
   }
-  uint32_t socketId() {
-    return client->id();
+  uint32_t socketId()
+  {
+    return id;
   }
 };

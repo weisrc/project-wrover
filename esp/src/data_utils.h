@@ -3,7 +3,8 @@
 #include "globals.h"
 #include "channel.h"
 
-void createData(JsonDocument &doc, String type, String data)
+template <typename T>
+void createData(JsonDocument &doc, String type, T data)
 {
   doc["type"] = type;
   doc["data"] = data;
@@ -22,14 +23,16 @@ void broadcast(JsonDocument &doc)
   }
 }
 
-void broadcastData(String type, String data)
+template <typename T>
+void broadcastData(String type, T data)
 {
   JsonDocument doc;
   createData(doc, type, data);
   broadcast(doc);
 }
 
-void sendData(Channel &chan, String type, String data)
+template <typename T>
+void sendData(Channel &chan, String type, T data)
 {
   JsonDocument doc;
   createData(doc, type, data);

@@ -14,6 +14,9 @@ export function VisibleNetworkSetup() {
   async function scan() {
     setNetworks([]);
     setScanning(true);
+
+    // requestEmitter.emit("disconnect", {});
+    // await new Promise((res) => setTimeout(res, 3000));
     requestEmitter.emit("scan", {});
     const response = await responseEmitter.wait("scan");
     const uniqueNetworks: Record<string, NetworkItem> = {};

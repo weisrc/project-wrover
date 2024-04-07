@@ -1,6 +1,8 @@
+#pragma once
 #include <Arduino.h>
 #include <esp_camera.h>
 #include <camera_pins.h>
+#include "globals.h"
 
 void cameraSetup()
 {
@@ -23,12 +25,12 @@ void cameraSetup()
     config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
-    config.xclk_freq_hz = 20000000;
+    config.xclk_freq_hz = 20e6;
     config.frame_size = FRAMESIZE_QVGA;
     config.pixel_format = PIXFORMAT_JPEG;
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
-    config.jpeg_quality = 8;
+    config.jpeg_quality = 18;
     config.fb_count = 1;
 
     if (PWDN_GPIO_NUM != -1)
@@ -39,8 +41,8 @@ void cameraSetup()
 
     esp_err_t err = esp_camera_init(&config);
 
-    if (err != ESP_OK)
+    if (err == ESP_OK)
     {
-        Serial.println("camera failed to init");
+        cameraOk = true;
     }
 }

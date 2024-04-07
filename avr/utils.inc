@@ -14,28 +14,25 @@ delay_loop:
 	pop r16
 	ret
 
-
-; (r16) -> (r16)
-nibble_to_hex:
-	cpi r16, 10
-	brlo nibble_to_hex_ret
-	subi r16, -('A' - '0' - 10)
-nibble_to_hex_ret:
-	subi r16, -'0'
+double_s8_to_u8:
+	cpi r16, 128
+	brlo double_s8_to_u8_skip
+	ldi r16, 127
+double_s8_to_u8_skip:
+	lsl r16
 	ret
 
-; (r16) -> (r16 msd, r17 lsd)
-byte_to_hex:
-	mov r17, r16
-	lsr r16
-	lsr r16
-	lsr r16
-	lsr r16
-	rcall nibble_to_hex
-	push r16
-	mov r16, r17
-	andi r16, $0f
-	rcall nibble_to_hex
-	mov r17, r16
-	pop r16
+; r16 will offset towards r17 by 1
+offset_towards:
+	push r17
+	cp r16, r17
+	breq offset_towards_end
+	brlt offset_towards_inc
+offset_towards_dec:
+	dec r16
+	rjmp offset_towards_end
+offset_towards_inc:
+	inc r16
+offset_towards_end:
+	pop r17
 	ret

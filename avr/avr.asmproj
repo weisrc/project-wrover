@@ -83,6 +83,9 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="dev_utils.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="handle.inc">
       <SubType>Code</SubType>
     </Compile>

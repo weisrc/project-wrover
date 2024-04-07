@@ -1,6 +1,7 @@
 {
     "files.associations": {
         ".dev.vars": "properties",
+        ".prod.vars": "properties",
         "array": "cpp",
         "atomic": "cpp",
         "*.tcc": "cpp",
@@ -49,7 +50,17 @@
         "streambuf": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "ratio": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "list": "cpp",
+        "iostream": "cpp",
+        "queue": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "C_Cpp.vcFormat.indent.lambdaBracesWhenParameter": false
 }

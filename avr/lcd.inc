@@ -19,7 +19,7 @@
 .equ LCD_DIS_CURSOR = $02
 .equ LCD_DIS_BLINK = $01
 
-.equ LCD_CLEAR = $01
+.equ LCD_DIS_CLEAR = $01
 
 .equ LCD_ENTRY = $04
 .equ LCD_ENTRY_INC = $02
@@ -49,7 +49,7 @@ lcd_init:
 	ldi r16, LCD_DIS | LCD_DIS_ON | LCD_DIS_CURSOR | LCD_DIS_BLINK
 	rcall lcd_command
 
-	rcall lcd_clear_command
+	rcall lcd_clear
 
 	ldi r16, LCD_ENTRY | LCD_ENTRY_INC
 	rcall lcd_command
@@ -65,9 +65,12 @@ lcd_command:
 	push r16
 	out LCD_DB, r16
 	in r16, LCD_CTL
+	nop
+	nop
 	ori r16, LCD_EN
 	andi r16, ~LCD_RS
 	out LCD_CTL, r16
+	nop
 	nop
 	nop
 	nop
@@ -94,22 +97,22 @@ lcd_write:
 
 lcd_wait:
 	push r16
-	ldi r16, 15
+	ldi r16, 30
 lcd_wait_loop:
 	dec r16
 	breq lcd_wait_loop
 	pop r16
 	ret
 
-lcd_clear_command:
+lcd_clear:
 	push r16
-	ldi r16, LCD_CLEAR
+	ldi r16, LCD_DIS_CLEAR
 	rcall lcd_command
-lcd_clear_command_wait:
 	ldi r16, 40
+lcd_clear_wait:
 	rcall lcd_wait
 	dec r16
-	breq lcd_clear_command_wait
+	brne lcd_clear_wait
 	pop r16
 	ret
 

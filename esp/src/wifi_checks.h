@@ -4,6 +4,9 @@
 
 #include "globals.h"
 #include "data_utils.h"
+#include "avr_serial.h"
+#include "begin_webserver.h"
+#include "wifi_connection.h"
 
 void checkScanComplete()
 {
@@ -34,5 +37,30 @@ void checkStatusChange()
   {
     lastStatus = status;
     broadcastData("status", String(status));
+
+    if (status == WL_CONNECTED)
+    {
+      avrClear();
+      avrPrint("WiFi Connected:\n");
+      avrPrint(WiFi.localIP().toString());
+      NullChannel chan;
+      beginWebServer(chan);
+    }
+    else if (status == WL_CONNECT_FAILED)
+    {
+      NullChannel chan;
+      disconnect(chan);
+      avrClear();
+      avrPrint("WiFi Failed\nSetup required");
+      LOG_WARN("WiFi connection failed");
+    }
+    else if (status == WL_NO_SSID_AVAIL)
+    {
+      NullChannel chan;
+      disconnect(chan);
+      avrClear();
+      avrPrint("WiFi No SSID\nSetup required");
+      LOG_WARN("No SSID available");
+    }
   }
 }

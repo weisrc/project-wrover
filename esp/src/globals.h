@@ -4,26 +4,29 @@
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
 
-/*
-https://github.com/me-no-dev/ESPAsyncWebServer/blob/master/src/AsyncWebSocket.h#L249
-Zero seems to be used by the first socket. I will therefore use last one.
-*/
-#define NO_SOCKET_ID UINT32_MAX
-#define HALL1 GPIO_NUM_32
-#define HALL2 GPIO_NUM_13
+#include "dual_odometer.h"
+#include "async_serial.h"
+#include "message_queue.h"
+
+#define HALL0 GPIO_NUM_32
+#define HALL1 GPIO_NUM_13
 #define AVR_RX GPIO_NUM_33
 #define AVR_TX GPIO_NUM_14
 
 #define STORAGE_SIZE 2048
+#define HALL_SIZE 2024
+#define AVR_SERIAL_TIMEOUT 100
 
-uint32_t cameraSocketId = NO_SOCKET_ID;
-uint8_t cameraFps = 10;
-unsigned long cameraLastTime = 0;
-
+uint32_t camSocketId = NO_SOCKET_ID;
+int cameraFps = 24;
+bool cameraOk = false;
 bool webServerActive = false;
 bool scanRequested = false;
 wl_status_t lastStatus;
 
 AsyncWebServer webServer(80);
 AsyncWebSocket wsEndpoint("/ws");
-SoftwareSerial avrSerial;
+SoftwareSerial avrSerialBase;
+AsyncSerial avrSerial(avrSerialBase, AVR_SERIAL_TIMEOUT, 0, true);
+DualOdometer odometer(15, 0.043);
+MessageQueue messageQueue;
