@@ -25,8 +25,7 @@ flowchart TD
     web[/Web Application/]
 
     cam[Camera]
-    hall0[Left Wheel\n Hall Effect\n Sensor]
-    hall1[Right Wheel\n Hall Effect\n Sensor]
+    
     sonar0[Front Ultrasonic\n Sensor]
     sonar1[Left Ultrasonic\n Sensor]
     sonar2[Right Ultrasonic\n Sensor]
@@ -37,6 +36,11 @@ flowchart TD
 
     esp[ESP32]
     avr[ATmega8515]
+
+    subgraph ESP 3.3V
+    hall0[Left Wheel\n Hall Effect\n Sensor]
+    hall1[Right Wheel\n Hall Effect\n Sensor]
+    end
 
     subgraph 9V
       hbridge0[Left Wheel\n H-Bridge]
@@ -65,7 +69,7 @@ flowchart TD
 
     esp <-->|ACK Serial| avr
 ```
-*Figure 1. System Diagram*
+*Figure 2.1. System Diagram. The Web Application is not part of the rover. The rest is powered by a 5V battery unless indicated otherwise.*
 
 ## A. Web Application
 
@@ -118,7 +122,36 @@ The ESP32 is the bridge between the Web Application and the ATmega8515. It's fun
 - Communicate with the Web Application via WebSocket
 - Smooth motor control
 
-### B.4. Schematic Diagram
+### B.4. Diagrams
+
+```mermaid
+flowchart TD
+    avr_serial[AVR Serial]
+    event_handler[Request Handler]
+    channel_in[/Input Channel/]
+    channel_out[Output Channel]
+    locomotion[Locomotion]
+    camera_stream[Camera Stream]
+    hall_interrupt[/Hall Interrupts/]
+    dual_odometer[Dual Odometer]
+    wifi[Wifi]
+
+    avr_serial -->|Sonar Data| locomotion
+    hall_interrupt -->|Hall Data| locomotion
+    hall_interrupt -->|Hall Data| dual_odometer
+    locomotion -->|Locomotion Data| channel_out
+
+    channel_in -->|Request| event_handler
+    camera_stream -->|Frame| channel_out
+    wifi -->|Scan/Status| channel_out
+
+    event_handler -->|Request| locomotion
+    event_handler -->|Request| camera_stream
+    event_handler -->|Write LCD & Motor| avr_serial
+    locomotion -->|Request Sonar| avr_serial
+    event_handler -->|Request| wifi
+```
+*Figure B.4.1. ESP32 Code Block Diagram. All parallelograms are information sources.*
 
 ### B.5. Description
 
@@ -326,11 +359,33 @@ To prevent blocking the main loop on the AVR, the request handler on the AVR is 
 
 Single-Shot states will be executed within the same subroutine call and will immediately return to the None state. Read states will be executed over multiple subroutine (one addtional) calls to gather the data (one byte) to set the motors or write to the LCD.
 
+---
+
+## Acknowledgements
+
+### Web Application
+- [Next.js](https://nextjs.org) for static site generation
+- [Shadcn UI](https://ui.shadcn.com) for the UI components
+
+### ESP32
+- [ESP Software Serial](https://github.com/plerup/espsoftwareserial) for more serial ports
+- [ArduinoJson](https://arduinojson.org) for marshalling and unmarshalling JSON
+
+### AVR
+- [AVRA](https://github.com/Ro5bert/avra) for assembly
+- [AVRDude](https://www.nongnu.org/avrdude/) for flashing the hex file
+
+### README.md
+
+- [VSCode Markdown PDF](https://github.com/yzane/vscode-markdown-pdf) for generating the PDF
+- [Mermaid](https://mermaid.js.org) for the code-defined diagrams
+
+<details>
+<summary>MathJax Scripts for PDF generation</summary>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
+</details>
+
 ## License
 
 MIT. Wei. Please see the LICENSE file for more information.
-
-<div style="display: none;">
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
-</div>
