@@ -14,7 +14,7 @@ This project is setup in a monorepo:
 - `./web` contains the code for the web application
 - `./pcb` contains the files for creating the PCB
 
-> This is a school project. Nevertheless, I am open to any feedback and am treating it as one of my personal projects.
+> Disclaimer: This is a school project. Nevertheless, I am open to any feedback and am treating it as one of my personal projects.
 
 ## 2. System Diagram
 
