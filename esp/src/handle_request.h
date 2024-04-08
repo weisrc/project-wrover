@@ -2,14 +2,14 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include "channel.h"
-#include "globals.h"
-#include "data_utils.h"
-#include "wifi_connection.h"
-#include "begin_webserver.h"
 #include "avr_serial.h"
-#include "locomotion.h"
+#include "begin_webserver.h"
 #include "camera_setup.h"
+#include "channel.h"
+#include "data_utils.h"
+#include "globals.h"
+#include "locomotion.h"
+#include "wifi_connection.h"
 
 void handleRequest(Channel &chan, JsonDocument &request)
 {
