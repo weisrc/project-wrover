@@ -14,7 +14,7 @@ This project is setup in a monorepo:
 - `./web` contains the code for the web application
 - `./pcb` contains the files for creating the PCB
 
-> Disclaimer: This is a school project. Nevertheless, I am open to any feedback and am treating it as one of my personal projects.
+> Disclaimer: This is a school project. Nevertheless, I am open to any feedback and am treating it as one of my personal projects. Furthermore, the format of this README is unconventional as it is intended for a school report.
 
 ## 2. System Diagram
 
@@ -25,7 +25,7 @@ flowchart TD
     web[/Web Application/]
 
     cam[Camera]
-    
+
     sonar0[Front Ultrasonic\n Sensor]
     sonar1[Left Ultrasonic\n Sensor]
     sonar2[Right Ultrasonic\n Sensor]
@@ -69,7 +69,8 @@ flowchart TD
 
     esp <-->|ACK Serial| avr
 ```
-*Figure 2.1. System Diagram. The Web Application is not part of the rover. The rest is powered by a 5V battery unless indicated otherwise.*
+
+_Figure 2.1. System Diagram. The Web Application is not part of the rover. The rest is powered by a 5V battery unless indicated otherwise._
 
 ## A. Web Application
 
@@ -91,7 +92,44 @@ Built using Next.js with TypeScript and Shadcn UI Component Library (stored in `
 
 This will be hosted on a seperate server (Raspberry Pi) as the ESP32 will not be connected to the network at first.
 
-### A.4. Schematic Diagram
+### A.4. Diagrams
+
+```mermaid
+flowchart LR
+    response[Response Emitter]
+    request[Request Emitter]
+    user[User Input]
+    esp[ESP32]
+
+    request -->|WebSocket or Serial| esp
+    esp -->|WebSocket or Serial| response
+
+    scan[Scan Network Trigger]
+    scan_table[Scan Network Table]
+    connect[Connect to Network Trigger]
+    camera[Camera Frame Trigger]
+    camera_view[Camera View]
+    motor[Motor Control]
+    locomotion[Locomotion Trigger]
+    locomotion_visual[Locomotion Visual]
+
+    user -->|Connect Form| connect
+    user -->|Button Click| scan
+    user -->|Keyboard| motor
+
+    locomotion -->|Get Locomotion| request
+    response -->|Sonar Distances| locomotion_visual
+    response -->|Restarts| locomotion
+    motor -->|Motor Values| request
+    scan -->|Request| request
+    connect -->|Connect Credentials| request
+    response -->|Nearby Networks| scan_table
+    camera -->|Request| request
+    response -->|Frame| camera_view
+    response -->|Restarts| camera
+```
+
+_Figure A.4.1. Web Application Code Block Diagram._
 
 ### A.5. Description
 
@@ -134,7 +172,7 @@ flowchart TD
     camera_stream[Camera Stream]
     hall_interrupt[/Hall Interrupts/]
     dual_odometer[Dual Odometer]
-    wifi[Wifi]
+    wifi[/Wifi/]
 
     avr_serial -->|Sonar Data| locomotion
     hall_interrupt -->|Hall Data| locomotion
@@ -151,7 +189,9 @@ flowchart TD
     locomotion -->|Request Sonar| avr_serial
     event_handler -->|Request| wifi
 ```
-*Figure B.4.1. ESP32 Code Block Diagram. All parallelograms are information sources.*
+
+_Figure B.4.1. ESP32 Code Block Diagram. All parallelograms are information sources.
+When the WiFi status changes, it will send an unsolicitated response._
 
 ### B.5. Description
 
@@ -174,6 +214,8 @@ flowchart TD
     pivot -->|WSChannel| websocket_out
     pivot -->|SerialChannel| webserial_out
 ```
+
+_Figure B.5.1.1. Request and Response Flow._
 
 #### B.5.2. Acknowledged Serial
 
@@ -210,6 +252,8 @@ sequenceDiagram
     end
 ```
 
+_Figure B.5.3.1. Sequence Diagram of AVR Serial, Async Serial and Promises in ESP32._
+
 #### B.5.4. Transmitting and Receiving Data
 
 ```mermaid
@@ -223,6 +267,8 @@ sequenceDiagram
         avr->>esp: Acknowledgement
     end
 ```
+
+_Figure B.5.4.1. Sequence Diagram of Transmitting and Receiving Data._
 
 #### B.5.5. Smooth Motor Control
 
@@ -273,6 +319,42 @@ Please see `RequestEvents` and `ResponseEvents` Type Records in `web/lib/types.t
 
 Status messages are also sent unsolicitedly to the Web Application when the WiFi status changes.
 
+### B.6. Configuration
+
+To setup the development environment, please use VSCode with the PlatformIO extension. Pulling this repository and opening the `esp` folder will automatically setup the environment. This is tested to work on Linux and Windows.
+
+Please update the value in `esp/src/logger.h` to change the log level.
+
+### B.7. Test Code
+
+Unfortunately, I did not unit test the code for the ESP32. However, while making my own JSON subset parser (Aron for Array JSON) which you will find by closely inspecting the commit history, I did write some test code which I removed as I resolved the issue with the ArduinoJson library.
+
+A lot of the features were progressively implemented and tested manually. To isolate functionalities, I often commented out the setups and the update functions.
+
+### B.8. Test Results
+
+There are no memory leaks.
+
+### B.9. Test Code Description
+
+### B.10. Troubleshooting
+
+#### B.10.1. Memory Leak
+
+After implemented the Async Serial with Promises. I found that the ESP would crash after a few minutes. I subsequently logged the heap memory usage of the ESP to see if there was a memory leak and fortunately, it was the case. I know that the internal implementation of the C++ `std::shared_ptr` used reference couting.
+
+Originally, the Promise listeners will not get destroyed after the it is resolved as I thought it wasn't necessary to destroy them as a resolved promise cannot be resolved again. However, `Promise::both` will add listeners to two promises that references the other promise. Therefore, this creates a circular reference and the two promises will never be destroyed as they are referencing each other despite being resolved. Hence, the destruction of the listeners when the promise is resolved fixed the issue.
+
+#### B.10.2. ESP-AVR Serial Corruption
+
+The data sent between the ESP32 and the ATmega8515 will sometimes be corrupted and lead to sending characters to the LCD or changing the motor speed. To address this, I added a parity. However, it wasn't enough. Therefore, I changed the circuit.
+
+Since the ESP32 is 3.3V and the ATmega8515 is 5V, I used a voltage divider to convert the 5V to 3.3V for the ESP32 RX. For the ESP32 TX, I connected it directly to the ATmega8515 RX hoping it will be interpreted as a high signal. However, this was not always the case. Therefore, I conneected it instead to a TTL buffer (two inverters) to convert the 3.3V to 5V. This alleviated the issue.
+
+Since the communication with the AVR is done via SoftwareSerial and therefore interrupts. I know that other interrupts can skew the timing of the SoftwareSerial. I am not certain about the implementation of the AsyncWebServer, but I suspect that it may be using interrupts for WiFi. Therefore, I moved the JSON parsing to the main loop by creating the Message Queue. Further research into the underlying implementation is needed to confirm this.
+
+All of this is done in hope of reducing the number of corrupted frames. I also changed the mode keys to be more unique and hence more entropy to reduce the chance of mode misinterpretation.
+
 ## C. AVR (ATmega8515)
 
 ### C.3. Objective
@@ -289,7 +371,43 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - Generate the waveforms for the speaker
 - Stop the motors when obstacles are detected
 
-### C.4. Schematic Diagram
+### C.4. Diagrams
+
+```mermaid
+flowchart TD
+    serial_in[Serial RX Interrupt]
+    serial_out[Serial TX]
+    serial_in_buffer[Serial RX Buffer]
+    serial_out_buffer[Serial TX Buffer]
+    ultrasonic[Ultrasonic Sensors]
+    lcd[LCD]
+    handle[Request Handler]
+    speaker[Speaker]
+    timer_overflow[Timer 1 Overflow]
+    smooth_motor[Smooth Motor Speed]
+    loop[Main Loop]
+    left_motor[Left Motor]
+    right_motor[Right Motor]
+
+    serial_in .->|Append in buffer| serial_in_buffer
+    serial_in_buffer -->|Mode Key or Value| handle
+    loop -->|If buffer not empty| serial_in_buffer
+    timer_overflow -->|Update Distance| ultrasonic
+    ultrasonic -->|Distance| handle
+    handle -->|Set Desired Speed| smooth_motor
+    handle -->|LCD Write or Command| lcd
+    handle -->|Waveform OC0| speaker
+    handle .->|Append Distance Word| serial_out_buffer
+
+    loop -->|If TX buffer not empty| serial_out_buffer
+    serial_out_buffer -->|Send Byte| serial_out
+
+    loop -->|Update Motor| smooth_motor
+    smooth_motor -->|OC1A PWM\n and Direction| left_motor
+    smooth_motor -->|OC1B PWM\n and Direction| right_motor
+```
+
+_Figure C.4.1. AVR Code Block Diagram. If a dashed connection is used, then the flow of information ends at the head of the arrow. Furthermore, an arrow label starting with `if` must be satisfied to 'flow' and do not convey any information._
 
 ### C.5. Description
 
@@ -303,7 +421,7 @@ $D_{cm}=\frac{T_{us}}{2 \times 29.154}$
 
 $D_{cm}=\frac{T_{us}}{58.308}$
 
-*Table 1. The calculated distance and the actual distance.*
+_Table C.5.1.1. The calculated distance and the actual distance._
 
 | Actual Distance (cm) | Time (us) | Calculated Distance (cm) | % Error |
 | -------------------- | --------- | ------------------------ | ------- |
@@ -330,6 +448,7 @@ This is implemented using the USART. The ATmega8515 will send an acknowledgement
 To prevent blocking the main loop when sending a message, both read and write are implemented with circular buffers of 128 bytes. This is done because before writing to UDR, the buffer must be empty. Therefore, this operation may be blocking.
 
 Both Head and Tail pointers are 8-bit and their operation differs depending on the operation. So there are 4 pointers in total:
+
 - Head Pointers: The pointers that writes to the buffer.
   - RX: When the ATmega8515 receives a byte from the USART.
   - TX: When the code wants to send a byte to the USART.
@@ -357,21 +476,26 @@ To prevent blocking the main loop on the AVR, the request handler on the AVR is 
   - Sonar2: Read right ultrasonic sensor (2 bytes will be sent subsequently)
   - Clear: Clear the LCD character buffer
 
-Single-Shot states will be executed within the same subroutine call and will immediately return to the None state. Read states will be executed over multiple subroutine (one addtional) calls to gather the data (one byte) to set the motors or write to the LCD.
+Single-Shot states will be executed within the same subroutine call and will immediately return to the None state. Read states will be executed over multiple subroutine (one addtional) calls to gather the data (one byte) to set a motor speed or write to the LCD.
 
----
+#### C.6. Configuration
 
-## Acknowledgements
+To setup the development environment, please use Atmel Studio on Windows or AVRA and AVRDude on Linux. Please use the Makefile in the `avr` folder to compile and run the code on Linux.
+
+## 11. References
 
 ### Web Application
+
 - [Next.js](https://nextjs.org) for static site generation
 - [Shadcn UI](https://ui.shadcn.com) for the UI components
 
 ### ESP32
+
 - [ESP Software Serial](https://github.com/plerup/espsoftwareserial) for more serial ports
 - [ArduinoJson](https://arduinojson.org) for marshalling and unmarshalling JSON
 
 ### AVR
+
 - [AVRA](https://github.com/Ro5bert/avra) for assembly
 - [AVRDude](https://www.nongnu.org/avrdude/) for flashing the hex file
 
@@ -385,6 +509,8 @@ Single-Shot states will be executed within the same subroutine call and will imm
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
 </details>
+
+---
 
 ## License
 
