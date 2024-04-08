@@ -2,6 +2,7 @@
 #include <unity.h>
 
 #include "promise_test.h"
+#include "vec2_test.h"
 
 void setup()
 {
@@ -12,6 +13,20 @@ void setup()
   RUN_TEST(test_promise_thenShouldChain);
   RUN_TEST(test_promise_pairShouldCombine);
   RUN_TEST(test_promise_raceShouldCombine);
+
+  RUN_TEST(test_vec2_shouldAdd);
+  RUN_TEST(test_vec2_shouldTranslate);
+  RUN_TEST(test_vec2_shouldScale);
+  RUN_TEST(test_vec2_shouldNormalize);
+  RUN_TEST(test_vec2_shouldLength2);
+  RUN_TEST(test_vec2_shouldLength);
+  RUN_TEST(test_vec2_shouldClone);
+  RUN_TEST(test_vec2_shouldSubtract);
+  RUN_TEST(test_vec2_shouldMultiply);
+  RUN_TEST(test_vec2_shouldPolar);
+  RUN_TEST(test_vec2_shouldRotate);
+  RUN_TEST(test_vec2_shouldSetDirection);
+  RUN_TEST(test_vec2_shouldZero);
 
   UNITY_END();
 }

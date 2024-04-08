@@ -21,8 +21,8 @@ void test_promise_finallyShouldBeCalled()
 
   promise.resolve(123);
 
-  TEST_ASSERT_EQUAL(thenCalled, true);
-  TEST_ASSERT_EQUAL(thenValue, 123);
+  TEST_ASSERT_TRUE(thenCalled);
+  TEST_ASSERT_EQUAL(123, thenValue);
 }
 
 /**
@@ -44,8 +44,8 @@ void test_promise_thenShouldChain()
 
   promise.resolve(123);
 
-  TEST_ASSERT_EQUAL(thenCalled, true);
-  TEST_ASSERT_EQUAL(thenValue, 246);
+  TEST_ASSERT_TRUE(thenCalled);
+  TEST_ASSERT_EQUAL(246, thenValue);
 }
 
 /**
@@ -67,12 +67,12 @@ void test_promise_pairShouldCombine()
 
   promiseA->resolve(123);
 
-  TEST_ASSERT_EQUAL(thenCalled, false);
+  TEST_ASSERT_FALSE(thenCalled);
 
   promiseB->resolve(123);
 
-  TEST_ASSERT_EQUAL(thenCalled, true);
-  TEST_ASSERT_EQUAL(thenValue, 246);
+  TEST_ASSERT_TRUE(thenCalled);
+  TEST_ASSERT_EQUAL(246, thenValue);
 }
 
 /**
@@ -96,12 +96,10 @@ void test_promise_raceShouldCombine()
       });
 
   promiseA->resolve(123);
-
-  TEST_ASSERT_EQUAL(thenCalled, true);
-  TEST_ASSERT_EQUAL(thenValue, 123);
-
+  TEST_ASSERT_TRUE(thenCalled);
+  TEST_ASSERT_EQUAL_MESSAGE(123, thenValue, "Value should from A");
   promiseB->resolve(456);
 
-  TEST_ASSERT_EQUAL(thenValue,
-                    123);  // in this case, only the value from the first promise should be used
+  // in this case, only the value from the first promise should be used
+  TEST_ASSERT_EQUAL_MESSAGE(123, thenValue, "Value should remain from A");
 }
