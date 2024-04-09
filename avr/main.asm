@@ -41,7 +41,8 @@ main:
 	rcall serial_init
 	rcall sonar_init
 	rcall motor_init
-	rcall timer_init
+	rcall timer0_init
+	rcall timer1_init
 	rcall handle_init
 
 	ldi ZH, high(boot_msg << 1) ; print the boot message

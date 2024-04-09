@@ -1,0 +1,19 @@
+hole sizes:
+0.8 mm
+1.0 mm
+1.2 mm
+1.4 mm
+1.5 mm
+2.0 mm
+3.0 mm (tell supervisor)
+
+pad diameter: (mils)
+no smaller than 70. 80 suggested
+
+trace about 25 mils.
+
+PCB thickness: 1 oz
+board size: 6x9 inch
+machine size: 10x12 inch
+
+4 holes for alignment on double sided.
