@@ -19,7 +19,7 @@ This project is setup in a monorepo:
 
 ### 1.1. About Comments
 
-Only AVR is commented as it is written in assembly and is somewhat difficult to understand. The code for the ESP32 and the Web Application is written in C++ and TypeScript respectively. Therefore, the code is self-explanatory and is commented only when necessary. Furthermore, most functions, variables and subroutines are named descriptively.
+Only AVR is commented as it is written in assembly and is somewhat difficult to understand. The code for the ESP32 and the Web Application is written in C++ and TSX (TypeScript XML) respectively. Therefore, the code is self-explanatory and is commented only when necessary. Furthermore, most functions, variables and subroutines are named descriptively.
 
 ## 2. System Diagram
 
