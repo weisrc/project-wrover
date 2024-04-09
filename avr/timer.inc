@@ -1,5 +1,9 @@
+; Author: Wei
+; Timer 1 initialization
+
 .equ TIMER_TOP = $8000
 
+; initialize timer 1
 timer_init:
 	push r16
 

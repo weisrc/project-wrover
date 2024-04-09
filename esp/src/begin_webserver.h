@@ -1,7 +1,7 @@
 #pragma once
-#include "globals.h"
 #include "channel.h"
 #include "data_utils.h"
+#include "globals.h"
 
 void beginWebServer(Channel &chan)
 {

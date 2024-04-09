@@ -1,17 +1,17 @@
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
 #include <StreamUtils.h>
 
+#include "avr_serial.h"
 #include "camera_setup.h"
 #include "camera_stream.h"
-#include "avr_serial.h"
 #include "globals.h"
-#include "wifi_checks.h"
-#include "web_server.h"
 #include "handle_request.h"
 #include "locomotion.h"
 #include "logger.h"
+#include "web_server.h"
+#include "wifi_checks.h"
 
 void update()
 {

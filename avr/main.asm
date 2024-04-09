@@ -34,25 +34,25 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
-	ldi r16, 20
+	ldi r16, 20 ; wait a bit
 	rcall delay
 
-	rcall lcd_init
+	rcall lcd_init ; initialize the submodules
 	rcall serial_init
 	rcall sonar_init
 	rcall motor_init
 	rcall timer_init
 	rcall handle_init
 
-	ldi ZH, high(boot_msg << 1)
+	ldi ZH, high(boot_msg << 1) ; print the boot message
 	ldi ZL, low(boot_msg << 1)
 	rcall lcd_print
 
-	sei
+	sei ; enable interrupts
 
 loop:
-	rcall handle
-	rcall motor_update
+	rcall handle ; handle incoming commands
+	rcall motor_update ; smooth motor update
 	rcall serial_update ; only required for ack_serial
 	rjmp loop
 

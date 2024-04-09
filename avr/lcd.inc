@@ -1,4 +1,5 @@
-
+; Author: Wei
+; LCD utility functions
 
 .equ LCD_DB = PORTA
 .equ LCD_CTL = PORTC
@@ -29,6 +30,7 @@
 
 .cseg
 
+; Initialize the LCD, follows the initialization sequence in the datasheet
 lcd_init:
 	push r16
 
@@ -61,40 +63,45 @@ lcd_init:
 	ret
 
 
+; send a command to the LCD
+; r16: command
 lcd_command:
 	push r16
-	out LCD_DB, r16
+	out LCD_DB, r16 ; output command to data bus
 	in r16, LCD_CTL
 	nop
 	nop
-	ori r16, LCD_EN
-	andi r16, ~LCD_RS
-	out LCD_CTL, r16
+	ori r16, LCD_EN ; set enable
+	andi r16, ~LCD_RS ; enter command mode
+	out LCD_CTL, r16 ; output to control port
 	nop
 	nop
 	nop
 	nop
-	andi r16, ~LCD_EN
+	andi r16, ~LCD_EN ; clear enable
 	out LCD_CTL, r16
 	rcall lcd_wait
 	pop r16
 	ret
 
+; send a character to the LCD
+; r16: character
 lcd_write:
 	push r16
-	out LCD_DB, r16
+	out LCD_DB, r16 ; output character to data bus
 	in r16, LCD_CTL
-	ori r16, LCD_EN | LCD_RS
+	ori r16, LCD_EN | LCD_RS ; set enable and RS
 	out LCD_CTL, r16
 	nop
 	nop
 	nop
-	andi r16, ~LCD_EN
+	andi r16, ~LCD_EN ; clear enable
 	out LCD_CTL, r16
 	rcall lcd_wait
 	pop r16
 	ret
 
+; wait for the LCD to process the action
 lcd_wait:
 	push r16
 	ldi r16, 30
@@ -104,6 +111,7 @@ lcd_wait_loop:
 	pop r16
 	ret
 
+; clear the LCD
 lcd_clear:
 	push r16
 	ldi r16, LCD_DIS_CLEAR
@@ -116,16 +124,17 @@ lcd_clear_wait:
 	pop r16
 	ret
 
-
+; print a string to the LCD
+; Z: string
 lcd_print:
 	push r16
 lcd_print_loop:
 	lpm r16, Z+
 	cpi r16, 0
-	breq lcd_print_end
-	cpi r16, LCD_LF
-	breq lcd_print_lf
-	rcall lcd_write
+	breq lcd_print_end ; end of string
+	cpi r16, LCD_LF ; line feed
+	breq lcd_print_lf ; go to the second line
+	rcall lcd_write ; write character
 	rjmp lcd_print_loop
 lcd_print_lf:
 	rcall lcd_second
@@ -134,6 +143,7 @@ lcd_print_end:
 	pop r16
 	ret
 
+; go to the second line
 lcd_second:
 	push r16
 	ldi r16, $80 + $40

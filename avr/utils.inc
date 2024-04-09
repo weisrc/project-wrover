@@ -1,3 +1,6 @@
+; Author: Wei
+; Miscelaneous utility functions
+
 .equ DELAY_50 = 12340
 
 ; delay subroutine
@@ -14,6 +17,8 @@ delay_loop:
 	pop r16
 	ret
 
+; double signed 8-bit to unsigned 8-bit
+; r16: signed 8-bit -> ~ 2 * r16 unsigned 8-bit
 double_s8_to_u8:
 	cpi r16, 128
 	brlo double_s8_to_u8_skip
@@ -22,6 +27,7 @@ double_s8_to_u8_skip:
 	lsl r16
 	ret
 
+; offset towards
 ; r16 will offset towards r17 by 1
 offset_towards:
 	push r17

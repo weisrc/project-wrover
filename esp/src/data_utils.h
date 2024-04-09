@@ -1,7 +1,8 @@
 #pragma once
 #include <ArduinoJson.h>
-#include "globals.h"
+
 #include "channel.h"
+#include "globals.h"
 
 template <typename T>
 void createData(JsonDocument &doc, String type, T data)

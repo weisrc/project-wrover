@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
 
 #define NO_SOCKET_ID UINT32_MAX
 
@@ -14,9 +14,7 @@ public:
 
 class NullChannel : public Channel
 {
-  void send(JsonDocument &data)
-  {
-  }
+  void send(JsonDocument &data) {}
   uint32_t socketId()
   {
     return NO_SOCKET_ID;

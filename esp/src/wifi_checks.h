@@ -2,15 +2,14 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include "globals.h"
-#include "data_utils.h"
 #include "avr_serial.h"
 #include "begin_webserver.h"
+#include "data_utils.h"
+#include "globals.h"
 #include "wifi_connection.h"
 
 void checkScanComplete()
 {
-
   if (!scanRequested || WiFi.scanComplete() < 0)
     return;
 
