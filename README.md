@@ -170,6 +170,10 @@ _Figure A.8.2. Web Application Camera View. This is sent in JPEG format frame by
 
 This is in other words a manual integration test.
 
+### A.10. Troubleshooting
+
+There are no major troubleshooting instances. The only issue was with the ESP32 Unresponsive WebSocket. Please see the ESP32 section for more information.
+
 ## B. ESP32
 
 ### B.3. Objective
@@ -356,7 +360,7 @@ Please update the value in `esp/src/logger.h` to change the log level.
 
 ### B.7. Test Code
 
-Please see the `test` folder for the test code.
+Please see the `esp/test` directory for the test code.
 
 Unit testing is done on Vec2 class and the Promise class. Integration testing is done on the AsyncSerial for getting the ultrasonic distance readings.
 
@@ -560,6 +564,18 @@ To setup the development environment, please use Atmel Studio on Windows or AVRA
 ### C.7. Test Code
 
 The AVR's serial is tested using the ESP32's integration test for getting the ultrasonic sensor readings.
+
+### C.8. Test Results
+
+The AVR passed the integration test as the ESP32 was able to get the ultrasonic sensor readings.
+
+### C.9. Test Code Description
+
+Please see the ESP32 section for the test code description.
+
+### C.10. Troubleshooting
+
+The related troubleshooting is written in the ESP32 section.
 
 ## 11. Libraries and Tools
 
