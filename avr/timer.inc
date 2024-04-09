@@ -3,18 +3,8 @@
 
 .equ TIMER_TOP = $8000
 
-timer0_init:
-	push r16
-
-	in r16, TCCR0
-	ori r16, (1 << WGM01) ; mode 2, ctc
-	out TCCR0, r16
-
-	pop r16
-	ret
-
 ; initialize timer 1
-timer1_init:
+timer_init:
 	push r16
 
 	in r16, TCCR1A

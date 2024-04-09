@@ -41,13 +41,16 @@ main:
 	rcall serial_init
 	rcall sonar_init
 	rcall motor_init
-	rcall timer0_init
-	rcall timer1_init
+	rcall timer_init
+	rcall speaker_init
 	rcall handle_init
 
 	ldi ZH, high(boot_msg << 1) ; print the boot message
 	ldi ZL, low(boot_msg << 1)
 	rcall lcd_print
+
+	ldi r16, 100
+	rcall speaker_on
 
 	sei ; enable interrupts
 
@@ -65,8 +68,7 @@ boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
 .include "timer.inc"
 .include "motor.inc"
 .include "lcd.inc"
-; .include "serial.inc"
-; .include "buffered_serial.inc"
+.include "speaker.inc"
 .include "ack_serial.inc"
 .include "handle.inc"
 .include "dev_utils.inc"
