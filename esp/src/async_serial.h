@@ -25,7 +25,7 @@ private:
   unsigned long timeout;
   char ackValue;
   bool oddParity = false;
-  size_t maxTaskQueueSize = 100;
+  size_t maxTaskQueueSize = 256;
   bool isResolving = false;
 
   std::list<std::function<void()>> taskQueue;

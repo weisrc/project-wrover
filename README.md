@@ -13,8 +13,9 @@ This project is setup in a monorepo:
 - `./avr` contains the code for the ATmega8515
 - `./web` contains the code for the web application
 - `./pcb` contains the files for creating the PCB
+- `./images` contains the images used in this README
 
-> Disclaimer: This is a school project. Nevertheless, I am open to any feedback and am treating it as one of my personal projects. Furthermore, the format of this README is unconventional as it is intended for a school report.
+> Disclaimer: This is a school project. Nevertheless, I am open to any feedback (PR or issues) and am treating it as one of my personal projects. Furthermore, the format of this README is unconventional as it is intended for a school report. Please use the main account repository for PRs and issues.
 
 ## 2. System Diagram
 
@@ -145,6 +146,30 @@ Please see `web/lib/dual-odometer.ts` for the implementation of the Dual Odomete
 
 The calculation is also done on the Web Appllication as it allows the user to easily calibrate and fine-tune the odometer's paramters as all the data is stored in memory. Therefore, by adjusting the parameters, the user will see the sample points change on the canvas. The ESP32 will also calculate the current relative position, but it doesn't store the hall data history.
 
+### A.6. Configuration
+
+Please install Node.js with the right version found in package.json. Then run `npm ci` to install the required dependencies.
+
+To run the development server, run `npm run dev`. To build the production version, run `npm run build`.
+
+### A.7. Test Code
+
+The test code is the entire application itself. The application is tested by running it and interacting with it manually.
+
+### A.8. Test Results
+
+![Web Sonar Map](images/web_sonar_map.png)
+
+_Figure A.8.1. Web Application Sonar Map. This is data sampled by the AVR, requested by the ESP32 and sent to the Web Application along with the Hall Effect sensor information. This is a straight hallway with stairs on the left._
+
+![Web Camera View](images/web_camera_view.png)
+
+_Figure A.8.2. Web Application Camera View. This is sent in JPEG format frame by frame (Motion JPEG)_
+
+### A.9. Test Code Description
+
+This is in other words a manual integration test.
+
 ## B. ESP32
 
 ### B.3. Objective
@@ -161,6 +186,10 @@ The ESP32 is the bridge between the Web Application and the ATmega8515. It's fun
 - Smooth motor control
 
 ### B.4. Diagrams
+
+![ESP Module Schematic Diagram](images/esp_schematic.png)
+
+_Figure B.4.1. ESP Module Schematic Diagram._
 
 ```mermaid
 flowchart TD
@@ -327,15 +356,41 @@ Please update the value in `esp/src/logger.h` to change the log level.
 
 ### B.7. Test Code
 
-Unfortunately, I did not unit test the code for the ESP32. However, while making my own JSON subset parser (Aron for Array JSON) which you will find by closely inspecting the commit history, I did write some test code which I removed as I resolved the issue with the ArduinoJson library.
+Please see the `test` folder for the test code.
 
-A lot of the features were progressively implemented and tested manually. To isolate functionalities, I often commented out the setups and the update functions.
+Unit testing is done on Vec2 class and the Promise class. Integration testing is done on the AsyncSerial for getting the ultrasonic distance readings.
 
 ### B.8. Test Results
 
-There are no memory leaks.
+All tests passed.
+
+_Code Block B.8.1. Test Results._
+```
+test/unity_config.cpp:13: test_promise_finallyShouldBeCalled    [PASSED]
+test/unity_config.cpp:14: test_promise_thenShouldChain  [PASSED]
+test/unity_config.cpp:15: test_promise_pairShouldCombine        [PASSED]
+test/unity_config.cpp:16: test_promise_raceShouldCombine        [PASSED]
+test/unity_config.cpp:18: test_vec2_shouldAdd   [PASSED]
+test/unity_config.cpp:19: test_vec2_shouldTranslate     [PASSED]
+test/unity_config.cpp:20: test_vec2_shouldScale [PASSED]
+test/unity_config.cpp:21: test_vec2_shouldNormalize     [PASSED]
+test/unity_config.cpp:22: test_vec2_shouldLength2       [PASSED]
+test/unity_config.cpp:23: test_vec2_shouldLength        [PASSED]
+test/unity_config.cpp:24: test_vec2_shouldClone [PASSED]
+test/unity_config.cpp:25: test_vec2_shouldSubtract      [PASSED]
+test/unity_config.cpp:26: test_vec2_shouldMultiply      [PASSED]
+test/unity_config.cpp:27: test_vec2_shouldPolar [PASSED]
+test/unity_config.cpp:28: test_vec2_shouldRotate        [PASSED]
+test/unity_config.cpp:29: test_vec2_shouldSetDirection  [PASSED]
+test/unity_config.cpp:30: test_vec2_shouldZero  [PASSED]
+test/unity_config.cpp:32: test_avr_serial_shouldGetSonarReadings        [PASSED]
+```
 
 ### B.9. Test Code Description
+
+Vec2 class is tested using the Unity testing framework, not the Game Engine. The tests on Vec2 ensure that its methods are working as expected and free of issues. The same can be said for the Promise class.
+
+As for the AsyncSerial, the test is done to ensure that the AVR is responding correcting upon receiving a request for the ultrasonic sensor readings. Then the ESP will need to properly read the value and resolve the promise.
 
 ### B.10. Troubleshooting
 
@@ -355,6 +410,10 @@ Since the communication with the AVR is done via SoftwareSerial and therefore in
 
 All of this is done in hope of reducing the number of corrupted frames. I also changed the mode keys to be more unique and hence more entropy to reduce the chance of mode misinterpretation.
 
+#### B.10.3. ESP WebSocket Unresponsive
+
+Early on, the camera frames were sent based on an interval. Eventually, the WebSocket would become unresponsive. This is because the ESP32 was attempting to send faster than it can transmit, filling its internal buffer. Therefore, I changed the implementation to send the next frame only after the previous frame has been sent. This is done by client asking for the next frame after receiving the previous frame. As a result, the framerate is now dependent on the network speed.
+
 ## C. AVR (ATmega8515)
 
 ### C.3. Objective
@@ -372,6 +431,22 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - Stop the motors when obstacles are detected
 
 ### C.4. Diagrams
+
+![AVR Schematic Diagram](images/avr_schematic.png)
+
+_Figure C.4.1. AVR Schematic Diagram._
+
+![Motor Logic Schematic](images/motor_logic_schematic.png)
+
+_Figure C.4.2. Motor Logic Schematic Diagram._
+
+![Ultrasonic Sensor Schematic](images/sonar_schematic.png)
+
+_Figure C.4.3. Ultrasonic Sensor Schematic Diagram._
+
+![Speaker Amplifier Schematic](images/speaker_schematic.png)
+
+_Figure C.4.4. Speaker Amplifier Schematic Diagram._
 
 ```mermaid
 flowchart TD
@@ -482,17 +557,26 @@ Single-Shot states will be executed within the same subroutine call and will imm
 
 To setup the development environment, please use Atmel Studio on Windows or AVRA and AVRDude on Linux. Please use the Makefile in the `avr` folder to compile and run the code on Linux.
 
-## 11. References
+### C.7. Test Code
+
+The AVR's serial is tested using the ESP32's integration test for getting the ultrasonic sensor readings.
+
+## 11. Libraries and Tools
 
 ### Web Application
+
+Please see `web/package.json` for the list of dependencies.
 
 - [Next.js](https://nextjs.org) for static site generation
 - [Shadcn UI](https://ui.shadcn.com) for the UI components
 
 ### ESP32
 
+Please see `esp/platformio.ini` for the list of dependencies.
+
 - [ESP Software Serial](https://github.com/plerup/espsoftwareserial) for more serial ports
 - [ArduinoJson](https://arduinojson.org) for marshalling and unmarshalling JSON
+- [ESP Async Web Server](https://github.com/me-no-dev/ESPAsyncWebServer) for the WebSocket server
 
 ### AVR
 

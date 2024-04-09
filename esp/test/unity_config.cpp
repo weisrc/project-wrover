@@ -3,6 +3,7 @@
 
 #include "promise_test.h"
 #include "vec2_test.h"
+#include "avr_serial_test.h"
 
 void setup()
 {
@@ -27,6 +28,8 @@ void setup()
   RUN_TEST(test_vec2_shouldRotate);
   RUN_TEST(test_vec2_shouldSetDirection);
   RUN_TEST(test_vec2_shouldZero);
+
+  RUN_TEST(test_avr_serial_shouldGetSonarReadings);
 
   UNITY_END();
 }

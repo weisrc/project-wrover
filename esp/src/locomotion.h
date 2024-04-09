@@ -61,11 +61,7 @@ void locomotionReply(Channel &chan)
 
 int8_t shiftTowards(int8_t current, int8_t target)
 {
-  if (current < target)
-    return current + 1;
-  else if (current > target)
-    return current - 1;
-  return current;
+  return current + constrain(target - current, -10, 10);
 }
 
 void sonarUpdate()
@@ -104,44 +100,28 @@ void sonarUpdate()
 void motorUpdate()
 {
   static unsigned long lastSampleTime = 0;
-  static int8_t motor0SmoothSpeed = 0;
-  static int8_t motor1SmoothSpeed = 0;
+  static int8_t motor0SmoothSpeed = 1;
+  static int8_t motor1SmoothSpeed = 1;
 
   unsigned long now = millis();
 
   if (now - lastSampleTime < 50)
     return;
 
+  lastSampleTime = now;
+
   if (motor0SmoothSpeed != motor0Speed)
   {
-    int8_t motor0NextSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
-
-    auto closure = [motor0NextSpeed](WriteResult result)
-    {
-      if (result.isOk())
-      {
-        motor0SmoothSpeed = motor0NextSpeed;
-        motor0Reverse = motor0SmoothSpeed < 0;
-      }
-    };
-
-    avrSend(MODE_MOTOR0, motor0NextSpeed)->finally(closure);
+    motor0SmoothSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
+    motor0Reverse = motor0SmoothSpeed < 0;
+    avrSend(MODE_MOTOR0, motor0SmoothSpeed);
   }
 
   if (motor1SmoothSpeed != motor1Speed)
   {
-    int8_t motor1NextSpeed = shiftTowards(motor1SmoothSpeed, motor1Speed);
-
-    auto closure = [motor1NextSpeed](WriteResult result)
-    {
-      if (result.isOk())
-      {
-        motor1SmoothSpeed = motor1NextSpeed;
-        motor1Reverse = motor1SmoothSpeed < 0;
-      }
-    };
-
-    avrSend(MODE_MOTOR1, motor1NextSpeed)->finally(closure);
+    motor1SmoothSpeed = shiftTowards(motor1SmoothSpeed, motor1Speed);
+    motor1Reverse = motor1SmoothSpeed < 0;
+    avrSend(MODE_MOTOR1, motor1SmoothSpeed);
   }
 }
 
