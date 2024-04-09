@@ -1,3 +1,5 @@
+; Author: Wei
+; Utility for development
 
 ; (r16) -> (r16)
 nibble_to_hex:

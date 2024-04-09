@@ -569,6 +569,8 @@ To setup the development environment, please use Atmel Studio on Windows or AVRA
 
 The AVR's serial is tested using the ESP32's integration test for getting the ultrasonic sensor readings.
 
+Nevertheless, there were different versions of the serial code created in order to reach the current state. The first version was blocking and the second version was non-blocking with the circular buffer. The current and final version is non-blocking and acknowledges the received byte. The older versions can be found in `avr/old`.
+
 ### C.8. Test Results
 
 The AVR passed the integration test as the ESP32 was able to get the ultrasonic sensor readings.

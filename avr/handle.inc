@@ -1,3 +1,5 @@
+; Author: Wei
+; Command Handler simple state machine
 
 .equ MODE_NONE = 100
 .equ MODE_SONAR0 = 101
@@ -12,13 +14,14 @@
 
 .dseg
 
-MODE: .byte 1
+MODE: .byte 1 ; curent mode/state
 
 .cseg
 
+; handle_init
 handle_init:
 	push r16
-	ldi r16, MODE_NONE
+	ldi r16, MODE_NONE ; initial mode
 	sts MODE, r16
 	pop r16
 	ret
@@ -29,10 +32,10 @@ handle:
 	push r17
 
 	rcall serial_is_empty
-	breq handle_end
+	breq handle_end ; no data to read
 	rcall serial_read
 
-	lds r17, MODE
+	lds r17, MODE ; jump table
 	cpi r17, MODE_NONE
 	breq handle_none
 	cpi r17, MODE_MOTOR0
@@ -50,7 +53,7 @@ handle_none:
 	cpi r16, MODE_LAST
 	brsh handle_none_end
 	sts MODE, r16
-	rcall handle_single
+	rcall handle_single ; handle single shot commands
 handle_none_end:
 	rjmp handle_end
 
@@ -96,7 +99,7 @@ handle_single:
 	rjmp handle_single_end
 
 handle_single_sonar0:
-	lds r16, SONAR_DELTA0H
+	lds r16, SONAR_DELTA0H ; send sonar data
 	rcall serial_write
 	lds r16, SONAR_DELTA0L
 	rcall serial_write
@@ -116,7 +119,7 @@ handle_single_sonar2:
 	rcall serial_write
 	rjmp handle_single_done
 
-handle_single_clear:
+handle_single_clear: ; clear lcd
 	rcall lcd_clear
 	rjmp handle_single_done
 
