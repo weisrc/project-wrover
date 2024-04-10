@@ -15,12 +15,6 @@ This project is setup in a monorepo:
 - `./pcb` contains the files for creating the PCB
 - `./images` contains the images used in this README
 
-> Disclaimer: This is a school project. Nevertheless, I am open to any feedback (PR or issues) and am treating it as one of my personal projects. Furthermore, the format of this README is unconventional as it is intended for a school report. Please use the main account repository for PRs and issues.
-
-### 1.1. About Comments
-
-Only AVR is commented as it is written in assembly and is somewhat difficult to understand. The code for the ESP32 and the Web Application is written in C++ and TSX (TypeScript XML) respectively. Therefore, the code is self-explanatory and is commented only when necessary. Furthermore, most functions, variables and subroutines are named descriptively.
-
 ## 2. System Diagram
 
 Only the Web Application is not part of the Rover itself. All of the components are powered by a 5V power supply, except for the motors which are powered by a 9V power supply.
