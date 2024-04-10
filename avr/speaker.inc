@@ -22,7 +22,7 @@ speaker_on:
 	push r16
 	out OCR0, r16
 	in r16, TCCR0
-	ori r16, 1 << CS00 ; /8
+	ori r16, 2 << CS00 ; /8
 	out TCCR0, r16
 	pop r16
 	ret

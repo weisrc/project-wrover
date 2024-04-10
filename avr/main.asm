@@ -49,7 +49,7 @@ main:
 	ldi ZL, low(boot_msg << 1)
 	rcall lcd_print
 
-	ldi r16, 100
+	ldi r16, 5
 	rcall speaker_on
 
 	sei ; enable interrupts
