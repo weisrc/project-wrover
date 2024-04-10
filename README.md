@@ -524,7 +524,7 @@ This is implemented using the USART. The ATmega8515 will send an acknowledgement
 
 To prevent blocking the main loop when sending a message, both read and write are implemented with circular buffers of 128 bytes. This is done because before writing to UDR, the buffer must be empty. Therefore, this operation may be blocking.
 
-Both Head and Tail pointers are 8-bit and their operation differs depending on the operation. So there are 4 pointers in total:
+Both Head and Tail pointers are 8-bit and their purpose differs depending on the operation. So there are 4 pointers in total:
 
 - Head Pointers: The pointers that writes to the buffer.
   - RX: When the ATmega8515 receives a byte from the USART.
