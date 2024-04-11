@@ -81,13 +81,14 @@ Built using Next.js with TypeScript and Shadcn UI Component Library (stored in `
   - Calculate the relative position of the rover from the starting point using the wheel hall effect sensors
   - WASD controls
 - View the camera feed
-  - Change the camera resolution
-  - Change the camera FPS
+  - Request and display the camera frames
+  - Change the camera resolution (TODO)
+  - Change the camera FPS (TODO)
 - Visualize the distances from the ultrasonic sensors
   - Draw the sample points
 - Initial WiFi Setup
   - Send the WiFi credentials to the ESP32 via Serial
-- Communciate with the rover via WebSocket and Serial
+- Communciate with the rover via WebSocket or Serial
 
 This will be hosted on a seperate server (Raspberry Pi) as the ESP32 will not be connected to the network at first.
 
@@ -367,6 +368,7 @@ Unit testing is done on Vec2 class and the Promise class. Integration testing is
 All tests passed.
 
 _Code Block B.8.1. Test Results._
+
 ```
 test/unity_config.cpp:13: test_promise_finallyShouldBeCalled    [PASSED]
 test/unity_config.cpp:14: test_promise_thenShouldChain  [PASSED]
@@ -429,8 +431,8 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - Communicate with the ESP32 via Acknowledged Serial
 - Display the data on the LCD
 - Smooth motor control
-- Generate the waveforms for the speaker
-- Stop the motors when obstacles are detected
+- Generate the waveforms for the speaker (TODO)
+- Stop the motors when obstacles are detected (TODO)
 
 ### C.4. Diagrams
 
