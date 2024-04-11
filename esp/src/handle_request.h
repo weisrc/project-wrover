@@ -16,6 +16,11 @@
 #include "locomotion.h"
 #include "wifi_connection.h"
 
+/**
+ * Handle request function
+ * @param chan Channel to send the repsonse
+ * @param request JSON request data
+*/
 void handleRequest(Channel &chan, JsonDocument &request)
 {
   String type = request["type"];
