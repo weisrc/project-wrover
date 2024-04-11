@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Request handler for Channel commands
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>

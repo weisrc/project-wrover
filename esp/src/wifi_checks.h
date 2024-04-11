@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * WiFi checks
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -8,6 +13,9 @@
 #include "globals.h"
 #include "wifi_connection.h"
 
+/**
+ * Check if WiFi scan is complete and send the results
+ */
 void checkScanComplete()
 {
   if (!scanRequested || WiFi.scanComplete() < 0)
@@ -29,6 +37,9 @@ void checkScanComplete()
   broadcast(reply);
 }
 
+/**
+ * Check if WiFi status has changed and print a message accordingly
+ */
 void checkStatusChange()
 {
   wl_status_t status = WiFi.status();
@@ -48,7 +59,8 @@ void checkStatusChange()
     else if (status == WL_CONNECT_FAILED)
     {
       NullChannel chan;
-      disconnect(chan);
+      disconnect(chan);  // disconnect if connection failed to prevent reconnect loop and trigger
+                         // rate limit
       avrClear();
       avrPrint("WiFi Failed\nSetup required");
       LOG_WARN("WiFi connection failed");

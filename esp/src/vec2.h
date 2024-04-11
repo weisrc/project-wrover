@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * 2D vector class, standalone and can be used in any C++ project
+ */
+
 #pragma once
 #include <cmath>
 

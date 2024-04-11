@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * Global variables/singletons
+ * Created to prevent circular dependencies
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>

@@ -128,7 +128,7 @@ flowchart LR
     response -->|Restarts| camera
 ```
 
-_Figure A.4.1. Web Application Code Block Diagram._
+_Figure A.4.1. Web Application Code Block Diagram. Camera Frames are only sent via WebSocket._
 
 ### A.5. Description
 

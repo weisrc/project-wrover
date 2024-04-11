@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Generic camera setup function
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <camera_pins.h>
@@ -5,6 +10,9 @@
 
 #include "globals.h"
 
+/**
+ * Camera setup function
+ */
 void cameraSetup()
 {
   camera_config_t config;

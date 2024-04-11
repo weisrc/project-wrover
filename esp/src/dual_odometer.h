@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Dual odometer class
+ */
+
 #pragma once
 #include "vec2.h"
 
@@ -10,6 +15,11 @@ public:
   Vec2 left;
   Vec2 right;
 
+  /**
+   * Initialize the dual odometer
+   * @param radius the distance from a wheel to the center
+   * @param delta how many radians to move with the opposite wheel as the pivot
+   */
   DualOdometer(float radius, float delta)
   {
     this->radius = radius;

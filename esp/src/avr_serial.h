@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Utility functions for communicating with the AVR
+ */
+
 #pragma once
 #include <Arduino.h>
 
@@ -17,6 +22,9 @@ enum AvrMode
   MODE_LAST = 109
 };
 
+/**
+ * Initialize the AVR serial connection
+ */
 void avrSerialSetup()
 {
   avrSerialBase.begin(4800, SWSERIAL_8O1, AVR_RX, AVR_TX);
@@ -29,6 +37,11 @@ void avrSerialSetup()
   }
 }
 
+/**
+ * Send a key and value bytes to the AVR
+ * @param mode the mode to send (key)
+ * @param data the data to send (value)
+ */
 std::shared_ptr<WritePromise> avrSend(AvrMode mode, char data)
 {
   String str;
@@ -37,11 +50,11 @@ std::shared_ptr<WritePromise> avrSend(AvrMode mode, char data)
   return avrSerial.write(str);
 }
 
-std::shared_ptr<WritePromise> avrLCDSecond()
-{
-  return avrSend(MODE_COMMAND, 0x80 + 0x40);
-}
-
+/**
+ * Print a string to the LCD screen
+ * @param str the string to print
+ * @return a promise that resolves when the write is complete
+ */
 std::shared_ptr<WritePromise> avrPrint(String str)
 {
   String converted;
@@ -64,6 +77,9 @@ std::shared_ptr<WritePromise> avrPrint(String str)
   return avrSerial.write(converted);
 }
 
+/**
+ * Clear the LCD screen
+ */
 std::shared_ptr<WritePromise> avrClear()
 {
   return avrSerial.write(MODE_CLEAR);
@@ -71,6 +87,10 @@ std::shared_ptr<WritePromise> avrClear()
 
 typedef Result<uint16_t, AsyncSerialError> WordResult;
 
+/**
+ * Read a word (16-bit) from the AVR
+ * @return a promise that resolves to a WordResult
+ */
 std::shared_ptr<Promise<WordResult>> avrReadWord()
 {
   auto closure = [](Pair<ReadResult, ReadResult> pair)
@@ -83,6 +103,11 @@ std::shared_ptr<Promise<WordResult>> avrReadWord()
   return avrSerial.read()->pair(avrSerial.read())->then<WordResult>(closure);
 }
 
+/**
+ * Read a sonar distance value from the AVR
+ * @param mode the mode to read from
+ * @return a promise that resolves to a WordResult
+ */
 std::shared_ptr<Promise<WordResult>> avrSonar(AvrMode mode)
 {
   avrSerial.write(mode);

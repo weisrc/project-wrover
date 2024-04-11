@@ -5,7 +5,7 @@
 
 /**
  * Test Vec2 add method.
-*/
+ */
 void test_vec2_shouldAdd()
 {
   Vec2 a(1, 2);
@@ -18,7 +18,7 @@ void test_vec2_shouldAdd()
 
 /**
  * Test Vec2 subtract method.
-*/
+ */
 void test_vec2_shouldSubtract()
 {
   Vec2 a(3, 4);
@@ -31,7 +31,7 @@ void test_vec2_shouldSubtract()
 
 /**
  * Test Vec2 multiply method.
-*/
+ */
 void test_vec2_shouldMultiply()
 {
   Vec2 a(1, 2);
@@ -44,7 +44,7 @@ void test_vec2_shouldMultiply()
 
 /**
  * Test Vec2 translate method.
-*/
+ */
 void test_vec2_shouldTranslate()
 {
   Vec2 a(1, 2);
@@ -57,7 +57,7 @@ void test_vec2_shouldTranslate()
 
 /**
  * Test Vec2 scale method.
-*/
+ */
 void test_vec2_shouldScale()
 {
   Vec2 a(1, 2);
@@ -69,7 +69,7 @@ void test_vec2_shouldScale()
 
 /**
  * Test Vec2 normalize method.
-*/
+ */
 void test_vec2_shouldNormalize()
 {
   Vec2 a(3, 4);
@@ -81,7 +81,7 @@ void test_vec2_shouldNormalize()
 
 /**
  * Test Vec2 length squared method.
-*/
+ */
 void test_vec2_shouldLength2()
 {
   Vec2 a(3, 4);
@@ -92,7 +92,7 @@ void test_vec2_shouldLength2()
 
 /**
  * Test Vec2 length method.
-*/
+ */
 void test_vec2_shouldLength()
 {
   Vec2 a(3, 4);
@@ -103,7 +103,7 @@ void test_vec2_shouldLength()
 
 /**
  * Test Vec2 clone method.
-*/
+ */
 void test_vec2_shouldClone()
 {
   Vec2 a(3, 4);
@@ -115,7 +115,7 @@ void test_vec2_shouldClone()
 
 /**
  * Test Vec2 between method.
-*/
+ */
 void test_vec2_shouldBetween()
 {
   Vec2 a(1, 1);
@@ -128,7 +128,7 @@ void test_vec2_shouldBetween()
 
 /**
  * Test Vec2 direction method.
-*/
+ */
 void test_vec2_shouldDirection()
 {
   Vec2 a(1, 1);
@@ -139,7 +139,7 @@ void test_vec2_shouldDirection()
 
 /**
  * Test Vec2 setDirection method.
-*/
+ */
 void test_vec2_shouldSetDirection()
 {
   Vec2 a(2, 0);
@@ -151,7 +151,7 @@ void test_vec2_shouldSetDirection()
 
 /**
  * Test Vec2 rotate method.
-*/
+ */
 void test_vec2_shouldRotate()
 {
   Vec2 a(1, 0);
@@ -163,7 +163,7 @@ void test_vec2_shouldRotate()
 
 /**
  * Test Vec2 zero method.
-*/
+ */
 void test_vec2_shouldZero()
 {
   Vec2 a = Vec2::zero();
@@ -174,7 +174,7 @@ void test_vec2_shouldZero()
 
 /**
  * Test Vec2 polar method.
-*/
+ */
 void test_vec2_shouldPolar()
 {
   Vec2 a = Vec2::polar(M_PI, 1);

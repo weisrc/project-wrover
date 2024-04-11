@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * WiFi connection functions
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -6,6 +11,11 @@
 #include "channel.h"
 #include "data_utils.h"
 
+/**
+ * Connect to a WiFi network
+ * @param chan the channel to send the response
+ * @param request the JSON request
+ */
 void connect(Channel &chan, JsonDocument &request)
 {
   String ssid = request["ssid"];
@@ -49,6 +59,10 @@ void connect(Channel &chan, JsonDocument &request)
   }
 }
 
+/**
+ * Disconnect from the current WiFi network
+ * @param chan the channel to send the response
+ */
 void disconnect(Channel &chan)
 {
   WiFi.disconnect();
@@ -59,6 +73,9 @@ void disconnect(Channel &chan)
   sendData(chan, "disconnect", "ok");
 }
 
+/**
+ * Auto connect to a WiFi network stored in EEPROM
+ */
 void autoConnect()
 {
   avrClear();

@@ -1,3 +1,10 @@
+/**
+ * @author Wei
+ * Utility logging macros to quickly enable/disable logging
+ * Implemented as macros to avoid overhead when logging is disabled
+ * Hopefully the compiler will optimize out the unused branches
+ */
+
 #pragma once
 
 #include <Arduino.h>
