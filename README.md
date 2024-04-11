@@ -609,9 +609,3 @@ Please see `esp/platformio.ini` for the list of dependencies.
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
 </details>
-
----
-
-## License
-
-MIT. Wei. Please see the LICENSE file for more information.
