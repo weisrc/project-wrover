@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * SerialSetup component to connect to serial port.
+ */
+
 "use client";
 
 import {

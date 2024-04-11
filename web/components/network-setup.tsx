@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Network setup component.
+ */
+
 "use client";
 
 import {

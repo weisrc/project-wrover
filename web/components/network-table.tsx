@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * NetworkTable component for displaying nearby networks.
+ */
+
 "use client";
 
 import {

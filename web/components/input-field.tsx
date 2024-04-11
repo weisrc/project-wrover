@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * InputField component
+ */
+
 "use client";
 
 import { Input } from "@/components/ui/input";

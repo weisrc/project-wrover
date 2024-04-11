@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Remote view component to control the robot remotely.
+ */
+
 import { requestEmitter } from "@/lib/common";
 import { MapCanvas } from "./map-canvas";
 import { CameraView } from "./camera-view";

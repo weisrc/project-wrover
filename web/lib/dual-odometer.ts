@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * DualOdometer class
+ * Similar to the one for the ESP32
+ */
+
 import { Vec2 } from "./vec2";
 
 export class DualOdometer {

@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Setup component
+ */
+
 "use client";
 
 import { useState } from "react";

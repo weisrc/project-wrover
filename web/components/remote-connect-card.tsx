@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Remote Connect Card to connect with the IP address of the robot.
+ */
+
 "use client";
 
 import {

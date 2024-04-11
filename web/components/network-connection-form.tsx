@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * NetworkConnectionForm component
+ * Form for connecting to a network
+ */
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -12,17 +18,13 @@ import {
 } from "@/components/ui/select";
 
 import {
-  AUTH_MODE_KEYS,
   AUTH_MODE_MAP,
-  AUTH_MODE_NAMES,
   AuthMode,
-  ConnectEvent,
-  ConnectEventMethod,
-  NetworkItem,
+  ConnectEventMethod
 } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { InputField } from "./input-field";
-import { useRouter } from "next/navigation";
 
 export function NetworkConnectionForm({
   ssid,

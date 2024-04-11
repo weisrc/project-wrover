@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Type definitions for mostly the communication protocol.
+ */
+
 export type ConnectEvent = {
   ssid: string;
 } & (

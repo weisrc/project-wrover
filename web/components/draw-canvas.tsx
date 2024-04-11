@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * DrawCanvas component
+ * Resizes the canvas to fit the parent div and calls the draw function to render the canvas
+ */
+
 import { HTMLAttributes, useEffect, useRef } from "react"
 
 export type DrawFunction = (ctx: CanvasRenderingContext2D, width: number, height: number) => void
