@@ -8,6 +8,8 @@
 .equ MOTOR1_REV = PD7
 .equ MOTOR_MODE = PORTD
 
+.equ MOTOR_AVOID_DELTA = 5
+
 .dseg
 
 MOTOR_UPDATE_COUNTER: .byte 1
@@ -39,6 +41,19 @@ motor_init:
 	ret
 
 
+; set r17 to 0 if positive and sonar0 too small
+motor_avoid:
+	cpi r17, 0
+	brlt motor_avoid_end
+	push r16
+	lds r16, SONAR_DELTA0H
+	cpi r16, MOTOR_AVOID_DELTA
+	pop r16
+	brsh motor_avoid_end
+	clr r17
+motor_avoid_end:
+	ret
+
 ; update motor
 motor_update:
 	push r16
@@ -47,17 +62,19 @@ motor_update:
 	andi r16, $7f
 	sts MOTOR_UPDATE_COUNTER, r16
 	brne motor_update_end ; only update every 128 calls
+
 	push r17
 	lds r16, MOTOR0_CURRENT
 	lds r17, MOTOR0_TARGET
+	rcall motor_avoid
 	rcall offset_towards ; slowly move current towards target
 	rcall motor0_set
 
 	lds r16, MOTOR1_CURRENT
 	lds r17, MOTOR1_TARGET
+	rcall motor_avoid
 	rcall offset_towards ; slowly move current towards target
 	rcall motor1_set
-
 	pop r17
 motor_update_end:
 	pop r16
