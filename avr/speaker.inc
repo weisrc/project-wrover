@@ -1,6 +1,8 @@
 ; Author: Wei
 ; Speaker control utilities
 
+.cseg
+
 ; init the speaker
 speaker_init:
 	push r16
@@ -31,7 +33,7 @@ speaker_on:
 speaker_off:
 	push r16
 	in r16, TCCR0
-	andi r16, ~(8 << CS00)
+	andi r16, ~(2 << CS00)
 	out TCCR0, r16
 	pop r16
 	ret

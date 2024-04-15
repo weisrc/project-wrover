@@ -42,3 +42,14 @@ offset_towards_inc:
 offset_towards_end:
 	pop r17
 	ret
+
+; copy a cstring from Z to X
+copy_cstring_zx:
+	push r16
+copy_cstring_zx_loop:
+	lpm r16, Z+
+	st X+, r16
+	cpi r16, 0
+	brne copy_cstring_zx_loop
+	pop r16
+	ret

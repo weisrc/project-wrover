@@ -43,14 +43,16 @@ main:
 	rcall motor_init
 	rcall timer_init
 	rcall speaker_init
+	rcall player_init
+	rcall tunes_init
 	rcall handle_init
 
-	ldi ZH, high(boot_msg << 1) ; print the boot message
-	ldi ZL, low(boot_msg << 1)
+	ldi ZH, high(BOOT_MSG << 1) ; print the boot message
+	ldi ZL, low(BOOT_MSG << 1)
 	rcall lcd_print
 
-	ldi r16, 100
-	rcall speaker_on
+	ldi r16, TUNES_XP_STARTUP_HEAD
+	rcall player_set
 
 	sei ; enable interrupts
 
@@ -58,10 +60,12 @@ loop:
 	rcall handle ; handle incoming commands
 	rcall motor_update ; smooth motor update
 	rcall serial_update ; only required for ack_serial
+	rcall player_update
+	rcall tunes_motor_update
 	rjmp loop
 
 
-boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
+BOOT_MSG: .db "WRover AVR", LF, "Waiting ESP...", 0
 
 .include "utils.inc"
 .include "sonar.inc"
@@ -72,4 +76,7 @@ boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
 .include "ack_serial.inc"
 .include "handle.inc"
 .include "dev_utils.inc"
+.include "notes.inc"
+.include "player.inc"
+.include "tunes.inc"
 .exit
