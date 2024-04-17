@@ -2,6 +2,7 @@
 
 import { RemoteConnectCard } from "@/components/remote-connect-card";
 import { RemoteView } from "@/components/remote-view";
+import { RoverAsciiArt } from "@/components/rover-ascii-art";
 import { useState } from "react";
 
 export default function Remote() {
@@ -12,9 +13,10 @@ export default function Remote() {
       {connected ? (
         <RemoteView />
       ) : (
-        <div className="flex flex-col items-center h-screen pt-16">
+        <>
           <RemoteConnectCard onConnectionChange={setConnected} />
-        </div>
+          <RoverAsciiArt />
+        </>
       )}
     </>
   );

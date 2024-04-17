@@ -15,8 +15,7 @@ import {
 
 import { NAME } from "@/lib/common";
 import { connectWebSocket } from "@/lib/connect-web-socket";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -53,7 +52,7 @@ export function RemoteConnectCard(props: {
     }
   }, [])
 
-  return (
+  return <>
     <Card className="border-none shadow-none">
       <CardHeader>
         <CardTitle>{NAME} Remote Connection</CardTitle>
@@ -90,5 +89,5 @@ export function RemoteConnectCard(props: {
         </Button>
       </CardContent>
     </Card>
-  );
+  </>
 }

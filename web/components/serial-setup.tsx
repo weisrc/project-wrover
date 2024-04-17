@@ -19,12 +19,18 @@ import Link from "next/link";
 
 import { connectSerial } from "@/lib/connect-serial";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function SerialSetup(props: {
   onConnectionChange: (connected: boolean) => void;
 }) {
 
   const router = useRouter();
+  const [serialSupported, setSerialSupported] = useState(false);
+
+  useEffect(() => {
+    setSerialSupported(!!navigator.serial)
+  })
 
   return (
     <Card className="border-none shadow-none">
@@ -35,12 +41,14 @@ export function SerialSetup(props: {
           <Link href="https://caniuse.com/web-serial" className="underline">
             Web Serial API
           </Link>{" "}
-          compatible browser.
+          compatible browser.{" "}
+          {serialSupported ? "This browser supports the Web Serial API." : "Unfortunately, your browser doesn't support it. Please use a different browser."}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Button
           className="mr-1"
+          disabled={!serialSupported}
           onClick={async () => {
             await connectSerial(props.onConnectionChange);
           }}
