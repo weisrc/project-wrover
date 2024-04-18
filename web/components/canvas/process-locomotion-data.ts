@@ -2,7 +2,7 @@ import { DualOdometer } from "@/lib/dual-odometer";
 import { LocomotionData } from "@/lib/types";
 import { Vector2 } from "three";
 
-const SONAR_TO_M = 1 / 58e2
+export const SONAR_TO_M = 1 / 58e2
 
 export type ProcessedLocomotionData = {
   points: Vector2[];
@@ -12,7 +12,9 @@ export type ProcessedLocomotionData = {
 
 export function processLocomotionData(
   data: LocomotionData[],
-
+  frontOffset: number,
+  leftOffset: number,
+  rightOffset: number
 ): ProcessedLocomotionData {
 
   const radius = 0.15;
@@ -42,19 +44,19 @@ export function processLocomotionData(
     rotations.push(rotation);
 
     points.push(
-      new Vector2(item.sonar[0] * SONAR_TO_M, 0)
-        .rotateAround(new Vector2(0, 0), rotation + Math.PI * 1.5)
+      new Vector2(item.sonar[0] * SONAR_TO_M + frontOffset, 0)
+        .rotateAround(new Vector2(0, 0), rotation + Math.PI / 2)
         .add(position)
     );
 
     points.push(
-      new Vector2(item.sonar[1] * SONAR_TO_M, 0)
+      new Vector2(item.sonar[1] * SONAR_TO_M + leftOffset, 0)
         .rotateAround(new Vector2(0, 0), rotation - Math.PI)
         .add(position)
     );
 
     points.push(
-      new Vector2(item.sonar[2] * SONAR_TO_M, 0)
+      new Vector2(item.sonar[2] * SONAR_TO_M + rightOffset, 0)
         .rotateAround(new Vector2(0, 0), rotation)
         .add(position)
     );

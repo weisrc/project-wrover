@@ -3,42 +3,67 @@
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { LocomotionData } from "@/lib/types";
 import { Box, OrbitControls, Point } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import { Euler, Vector2, Vector3 } from "three";
-import { processLocomotionData } from "./process-locomotion-data";
+import { SONAR_TO_M, processLocomotionData } from "./process-locomotion-data";
 import { Rover } from "./rover";
 import testData from "./test-locomotion-data.json"
 
 export function MapScene() {
   const [position, setPosition] = useState(new Vector3(0, 0, 0));
-  const [rotation, setRotation] = useState(new Euler());
+  const [rotation, setRotation] = useState(0)
+  const [smoothRotation, setSmoothRotation] = useState(0)
   const [data, setData] = useState<LocomotionData[]>([]);
   const [points, setPoints] = useState<Vector2[]>([]);
 
   const [roverWidth] = useState(0.2)
   const [roverLength] = useState(0.15)
+  const [roverOffset] = useState(new Vector3(0, 0, -0.05))
   const [distanceFront, setDistanceFront] = useState(0)
   const [distanceLeft, setDistanceLeft] = useState(0)
   const [distanceRight, setDistanceRight] = useState(0)
 
+  const frontOffset = roverLength / 2 - roverOffset.z
+  const sideOffset = roverWidth / 2
+
+  useFrame(() => {
+    console.log(smoothRotation)
+    const adjusted = rotation >= 0 ? rotation : rotation + 2 * Math.PI
+    const smoothed = (smoothRotation + adjusted) / 2
+    setSmoothRotation(smoothed)
+  })
+
   useEffect(() => {
-    const { points, path, rotations } = processLocomotionData(data);
+    const { points, path, rotations } = processLocomotionData(data,
+      frontOffset,
+      sideOffset,
+      sideOffset
+    );
     const lastPosition = path.at(-1);
 
-    console.log("points", points);
     setPoints(points)
+
+    const sonar = data.at(-1)?.sonar
+
+    if (sonar) {
+      setDistanceFront(sonar[0] * SONAR_TO_M)
+      setDistanceLeft(sonar[1] * SONAR_TO_M)
+      setDistanceRight(sonar[2] * SONAR_TO_M)
+    }
 
     if (lastPosition) {
       setPosition(new Vector3(lastPosition.x, 0, lastPosition.y));
     }
-    setRotation(new Euler(0, rotations.at(-1), 0));
+    const lastRotation = rotations.at(-1)
+    if (lastRotation) {
+      setRotation(lastRotation);
+    }
   }, [data]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const item = testData.shift()
-      console.log(item)
       if (item) {
         data.push(item as LocomotionData)
         setData(data.slice())
@@ -73,7 +98,7 @@ export function MapScene() {
 
   return (
     <>
-      <group rotation={rotation}>
+      <group rotation={new Euler(0, smoothRotation, 0)}>
         <group position={position.clone().negate()}>
           {points.map((p, i) => {
             return <Box scale={0.05} position={[p.x, 0, p.y]} key={i} />
@@ -88,7 +113,7 @@ export function MapScene() {
         distanceFront={distanceFront}
         distanceLeft={distanceLeft}
         distanceRight={distanceRight}
-        offset={new Vector3(0, 0, 0.05)}
+        offset={roverOffset}
       />
     </>
   );
@@ -97,7 +122,9 @@ export function MapScene() {
 export function MapCanvas3D() {
   return (
     <div className="h-screen">
-      <Canvas style={{ background: "black" }} camera={{ position: [0, 2, 2] }}>
+      <Canvas
+        style={{ background: "black" }}
+        camera={{ position: [0, 2, -2] }}>
         <MapScene />
         <OrbitControls />
         <ambientLight intensity={0.7} />

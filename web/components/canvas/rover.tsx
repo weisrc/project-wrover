@@ -16,7 +16,7 @@ export type RoverProps = {
 };
 
 export function Rover(props: RoverProps) {
-  const halfLength = props.length / 2 - props.offset.z
+  const halfLength = props.length / 2 + props.offset.z
   const halfWidth = props.width / 2;
 
   return (
@@ -27,17 +27,16 @@ export function Rover(props: RoverProps) {
       </mesh>
       <pointLight position={[0, 1, 0]} intensity={1} />
       <RoverRay
-        start={new Vector3(0, 0, -halfLength)}
-        end={new Vector3(0, 0, -props.distanceFront - halfLength)}
+        start={new Vector3(0, 0, halfLength)}
+        end={new Vector3(0, 0, props.distanceFront - halfLength)}
+      />
+      <RoverRay
+        start={new Vector3(-halfWidth, 0, 0)}
+        end={new Vector3(-props.distanceLeft - halfWidth, 0, 0)}
       />
       <RoverRay
         start={new Vector3(halfWidth, 0, 0)}
-        end={new Vector3(props.distanceLeft + halfWidth, 0, 0)}
-      />
-
-      <RoverRay
-        start={new Vector3(-halfWidth, 0, 0)}
-        end={new Vector3(-props.distanceRight - halfWidth, 0, 0)}
+        end={new Vector3(props.distanceRight + halfWidth, 0, 0)}
       />
     </group>
   );
