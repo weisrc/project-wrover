@@ -1,56 +1,77 @@
-import { Canvas, useFrame } from "@react-three/fiber"
-import { Line, OrbitControls, PerspectiveCamera } from "@react-three/drei"
-import * as THREE from "three";
-import { useState } from "react";
-import { LineGeometry } from "three/examples/jsm/Addons.js";
+"use client";
 
-type RoverProps = {
-    position: THREE.Vector3
-    rotation: THREE.Euler
-}
+import { requestEmitter, responseEmitter } from "@/lib/common";
+import { LocomotionData } from "@/lib/types";
+import { OrbitControls } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { useEffect, useState } from "react";
+import { Euler, Vector3 } from "three";
+import { processLocomotionData } from "./process-locomotion-data";
+import { Rover } from "./rover";
 
-export function Rover({ position, rotation }: RoverProps) {
-    return <mesh position={position} rotation={rotation}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color='orange' />
-        <Line
-            points={[
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 0, -10)
-            ]}
-            lineWidth={2}
-            dashed
-        />
-        <Line
-            points={[
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(10, 0, 0)
-            ]}
-            lineWidth={2}
-            dashed
-        />
-        <Line
-            points={[
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(-10, 0, 0)
-            ]}
-            lineWidth={2}
-            dashed
-        />
-    </mesh>
+export function MapScene() {
+  const [position, setPosition] = useState(new Vector3(0, 0, 0));
+  const [rotation, setRotation] = useState(new Euler());
+  const [data, setData] = useState<LocomotionData[]>([]);
+
+  useEffect(() => {
+    const { points, path, rotations } = processLocomotionData(data);
+    const lastPosition = path.at(-1);
+
+    console.log("points", points);
+
+    if (lastPosition) {
+      setPosition(new Vector3(lastPosition.x, 0, lastPosition.y));
+    }
+    setRotation(new Euler(0, rotations.at(-1), 0));
+  }, [data]);
+
+  useEffect(() => {
+    function onLocomotion(item: LocomotionData) {
+      setData((data) => {
+        data.push(item);
+        return data;
+      });
+      requestLocomotion();
+    }
+
+    function requestLocomotion() {
+      setTimeout(() => {
+        requestEmitter.emit("locomotion", {});
+      }, 100);
+    }
+
+    requestLocomotion();
+
+    responseEmitter.on("locomotion", onLocomotion);
+
+    return () => {
+      responseEmitter.off("locomotion", onLocomotion);
+    };
+  }, []);
+
+  return (
+    <>
+      <Rover
+        width={0.2}
+        height={0.05}
+        length={0.2}
+        distanceFront={1}
+        distanceLeft={1}
+        distanceRight={1}
+      />
+    </>
+  );
 }
 
 export function MapCanvas3D() {
-
-    const [position, setPosition] = useState(new THREE.Vector3(0, 0, 0));
-    const [rotation, setRotation] = useState(new THREE.Euler())
-
-
-    return <>
-        <Canvas>
-            <ambientLight intensity={Math.PI / 2} />
-            <Rover position={position} rotation={rotation} />
-            <OrbitControls target={position} />
-        </Canvas>
-    </>
+  return (
+    <div className="h-screen">
+      <Canvas style={{ background: "black" }} camera={{ position: [0, 2, 2] }}>
+        <MapScene />
+        <OrbitControls />
+        <ambientLight intensity={0.7} />
+      </Canvas>
+    </div>
+  );
 }

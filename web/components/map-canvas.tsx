@@ -34,11 +34,13 @@ function drawSonarRays(
   const circleRadius = 3;
   const center = rawCenter.add(offset);
 
-  for (let i = 0; i < angles.length; i++) { // there are three sonar sensors at different angles
+  for (let i = 0; i < angles.length; i++) {
+    // there are three sonar sensors at different angles
     const distance = sonar[i] / 58;
     const point = Vec2.polar(angles[i] + angle, distance).add(center);
 
-    if (last) { // draw the sonar rays and distances
+    if (last) {
+      // draw the sonar rays and distances
       ctx.beginPath();
       ctx.strokeStyle = "pink";
       ctx.moveTo(center.x, center.y);
@@ -69,7 +71,7 @@ const data: LocomotionData[] = [];
 /**
  * MapCanvas component
  * @param props MapCanvasProps
- * @returns 
+ * @returns
  */
 export function MapCanvas(props: MapCanvasProps) {
   useEffect(() => {
@@ -78,6 +80,7 @@ export function MapCanvas(props: MapCanvasProps) {
         data.shift();
       }
       data.push(item);
+      console.log("data is here", data);
       requestLocomotion();
     }
 
@@ -106,7 +109,8 @@ export function MapCanvas(props: MapCanvasProps) {
     const screenCenter = new Vec2(width / 2, height / 2);
     offset ??= screenCenter;
 
-    for (let i = 0; i < data.length; i++) { // draw the samples
+    for (let i = 0; i < data.length; i++) {
+      // draw the samples
       const item = data[i];
       const isLast = i === data.length - 1;
       let moved = false;
@@ -122,14 +126,16 @@ export function MapCanvas(props: MapCanvasProps) {
         const which = char.toLowerCase();
         const backwards = char !== which;
 
-        if (which === "l") { // move the odometer accordingly
+        if (which === "l") {
+          // move the odometer accordingly
           meter.moveLeft(backwards);
         } else if (which === "r") {
           meter.moveRight(backwards);
         }
       }
 
-      if (!moved && !isLast) { // dont draw the samples when robot is not moving unless it is the last sample
+      if (!moved && !isLast) {
+        // dont draw the samples when robot is not moving unless it is the last sample
         continue;
       }
 
