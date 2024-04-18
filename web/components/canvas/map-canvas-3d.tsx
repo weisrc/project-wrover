@@ -13,8 +13,14 @@ import testData from "./test-locomotion-data.json"
 export function MapScene() {
   const [position, setPosition] = useState(new Vector3(0, 0, 0));
   const [rotation, setRotation] = useState(new Euler());
-  const [data, setData] = useState<LocomotionData[]>(testData as LocomotionData[]);
+  const [data, setData] = useState<LocomotionData[]>([]);
   const [points, setPoints] = useState<Vector2[]>([]);
+
+  const [roverWidth] = useState(0.2)
+  const [roverLength] = useState(0.15)
+  const [distanceFront, setDistanceFront] = useState(0)
+  const [distanceLeft, setDistanceLeft] = useState(0)
+  const [distanceRight, setDistanceRight] = useState(0)
 
   useEffect(() => {
     const { points, path, rotations } = processLocomotionData(data);
@@ -28,6 +34,18 @@ export function MapScene() {
     }
     setRotation(new Euler(0, rotations.at(-1), 0));
   }, [data]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const item = testData.shift()
+      console.log(item)
+      if (item) {
+        data.push(item as LocomotionData)
+        setData(data.slice())
+      }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     function onLocomotion(item: LocomotionData) {
@@ -55,17 +73,22 @@ export function MapScene() {
 
   return (
     <>
-      {points.map((p, i) => {
-        return <Box scale={0.05} position={[p.x, 0, p.y]} key={i}/>
-      })}
-      
+      <group rotation={rotation}>
+        <group position={position.clone().negate()}>
+          {points.map((p, i) => {
+            return <Box scale={0.05} position={[p.x, 0, p.y]} key={i} />
+          })}
+        </group>
+      </group>
+
       <Rover
-        width={0.2}
+        width={roverWidth}
         height={0.05}
-        length={0.2}
-        distanceFront={1}
-        distanceLeft={1}
-        distanceRight={1}
+        length={roverLength}
+        distanceFront={distanceFront}
+        distanceLeft={distanceLeft}
+        distanceRight={distanceRight}
+        offset={new Vector3(0, 0, 0.05)}
       />
     </>
   );
