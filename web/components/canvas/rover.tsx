@@ -1,6 +1,6 @@
 "use client";
 
-import { Billboard, Line, ScreenSizer, Text } from "@react-three/drei";
+import { Billboard, Html, Line, ScreenSizer, Text } from "@react-three/drei";
 import { Vector3, Euler } from "three";
 
 export type RoverProps = {
@@ -50,13 +50,11 @@ export function RoverRay(props: RoverRayProps) {
 
   return (
     <>
-      <Billboard position={props.start.clone().add(props.end).divideScalar(2)}>
-        <ScreenSizer>
-          <Text fontSize={16} color="white">
-            {distance.toFixed(2)}m
-          </Text>
-        </ScreenSizer>
-      </Billboard>
+      <Html
+        position={props.start.clone().add(props.end).divideScalar(2)}
+        className="text-white select-none text-sm">
+        {distance.toFixed(2)}m
+      </Html>
       <Line color="gray" points={[props.start, props.end]} lineWidth={2} />
     </>
   );
