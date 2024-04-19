@@ -34,10 +34,6 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
-	ldi r16, 20 ; wait a bit
-	rcall delay
-
-	rcall lcd_init ; initialize the submodules
 	rcall serial_init
 	rcall sonar_init
 	rcall motor_init
@@ -46,6 +42,10 @@ main:
 	rcall player_init
 	rcall tunes_init
 	rcall handle_init
+
+	ldi r16, 20 ; wait a bit for the lcd
+	rcall delay
+	rcall lcd_init ; initialize the submodules
 
 	ldi ZH, high(BOOT_MSG << 1) ; print the boot message
 	ldi ZL, low(BOOT_MSG << 1)
@@ -62,6 +62,7 @@ loop:
 	rcall serial_update ; only required for ack_serial
 	rcall player_update
 	rcall tunes_motor_update
+	rcall tunes_sonar_update
 	rjmp loop
 
 

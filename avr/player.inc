@@ -117,7 +117,11 @@ player_play_end:
 ; play the player at r16
 player_set:
     push r16
+	lds r16, PLAYER_ACTIVE
+	cpi r16, 0
+	brne player_set_end
     sts PLAYER_HEAD, r16
     rcall player_play
+player_set_end:
     pop r16
     ret

@@ -2,9 +2,9 @@
 ; File containing some tunes
 
 TUNES_START:
-TUNES_METRO: .db    NOTE_FAS | NOTE_W, NOTE_FAS | NOTE_H, \
-                    NOTE_SI | NOTE_W, NOTE_SI | NOTE_H, \
-                    NOTE_FAHS | NOTE_W, NOTE_FAHS | NOTE_W, 0
+TUNES_METRO: .db    NOTE_FAS | NOTE_W, \
+                    NOTE_SI | NOTE_W, \
+                    NOTE_FAHS | NOTE_W, NOTE_FAHS | NOTE_Q, 0
 
 TUNES_XP_STARTUP: .db   NOTE_REHS | NOTE_W, \
                         NOTE_RES | NOTE_H, \
@@ -15,6 +15,7 @@ TUNES_XP_STARTUP: .db   NOTE_REHS | NOTE_W, \
 
 .equ TUNES_METRO_HEAD = (TUNES_METRO - TUNES_START) << 1
 .equ TUNES_XP_STARTUP_HEAD = (TUNES_XP_STARTUP - TUNES_START) << 1
+.equ MIN_SONAR_DISTANCE_H = 2
 
 .cseg
 
@@ -66,3 +67,28 @@ tunes_motor_update_end:
     pop r17
     pop r16
     ret
+
+tunes_sonar_update:
+	push r16
+
+	lds r16, SONAR_DELTA0H
+	cpi r16, MIN_SONAR_DISTANCE_H
+	brlo tunes_sonar_update_play
+
+	lds r16, SONAR_DELTA1H
+	cpi r16, MIN_SONAR_DISTANCE_H
+	brlo tunes_sonar_update_play
+
+	lds r16, SONAR_DELTA2H
+	cpi r16, MIN_SONAR_DISTANCE_H
+	brlo tunes_sonar_update_play
+
+	rjmp tunes_sonar_update_end
+
+tunes_sonar_update_play:
+	ldi r16, TUNES_METRO_HEAD
+	rcall player_set
+
+tunes_sonar_update_end:
+	pop r16
+	ret
