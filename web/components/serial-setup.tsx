@@ -20,17 +20,18 @@ import Link from "next/link";
 import { connectSerial } from "@/lib/connect-serial";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export function SerialSetup(props: {
   onConnectionChange: (connected: boolean) => void;
 }) {
-
   const router = useRouter();
   const [serialSupported, setSerialSupported] = useState(false);
 
   useEffect(() => {
-    setSerialSupported(!!navigator.serial)
-  })
+    setSerialSupported(!!navigator.serial);
+  });
 
   return (
     <Card className="border-none shadow-none">
@@ -42,7 +43,16 @@ export function SerialSetup(props: {
             Web Serial API
           </Link>{" "}
           compatible browser.{" "}
-          {serialSupported ? "This browser supports the Web Serial API." : "Unfortunately, your browser doesn't support it. Please use a different browser."}
+          {!serialSupported && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                Your browser does not support the Web Serial API. Please use a
+                compatible browser.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>

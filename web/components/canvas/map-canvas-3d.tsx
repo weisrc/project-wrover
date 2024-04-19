@@ -2,95 +2,97 @@
 
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { LocomotionData } from "@/lib/types";
-import { Box, OrbitControls, Point } from "@react-three/drei";
+import { OrbitControls, Plane, Sphere } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useState } from "react";
-import { Euler, Vector2, Vector3 } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
+import {
+  LineSegment,
+  getLineSegmentsFromPoints,
+  mergeAndFilterPoints,
+  mergeLineSegments,
+} from "./point-utils";
 import { SONAR_TO_M, processLocomotionData } from "./process-locomotion-data";
 import { Rover } from "./rover";
-import testData from "./test-locomotion-data.json"
 
 export function MapScene() {
   const [position, setPosition] = useState(new Vector3(0, 0, 0));
-  const [rotation, setRotation] = useState(0)
-  const [smoothRotation, setSmoothRotation] = useState(0)
+  const [rotation, setRotation] = useState(new Quaternion());
+  const [smoothRotation, setSmoothRotation] = useState(new Quaternion());
   const [data, setData] = useState<LocomotionData[]>([]);
-  const [points, setPoints] = useState<Vector2[]>([]);
+  const [lines, setLines] = useState<LineSegment[]>([]);
 
-  const [roverWidth] = useState(0.2)
-  const [roverLength] = useState(0.15)
-  const [roverOffset] = useState(new Vector3(0, 0, -0.05))
-  const [distanceFront, setDistanceFront] = useState(0)
-  const [distanceLeft, setDistanceLeft] = useState(0)
-  const [distanceRight, setDistanceRight] = useState(0)
+  const [roverWidth] = useState(0.2);
+  const [roverLength] = useState(0.15);
+  const [roverOffset] = useState(new Vector3(0, 0, -0.05));
+  const [distanceFront, setDistanceFront] = useState(0);
+  const [distanceLeft, setDistanceLeft] = useState(0);
+  const [distanceRight, setDistanceRight] = useState(0);
 
-  const frontOffset = roverLength / 2 - roverOffset.z
-  const sideOffset = roverWidth / 2
+  const [pointer, setPointer] = useState<Vector3 | null>(null);
+
+  const frontOffset = roverLength / 2 - roverOffset.z;
+  const sideOffset = roverWidth / 2;
 
   useFrame(() => {
-    console.log(smoothRotation)
-    const adjusted = rotation >= 0 ? rotation : rotation + 2 * Math.PI
-    const smoothed = (smoothRotation + adjusted) / 2
-    setSmoothRotation(smoothed)
-  })
+    smoothRotation.slerp(rotation, 0.1);
+    setSmoothRotation(smoothRotation.clone());
+  });
 
   useEffect(() => {
-    const { points, path, rotations } = processLocomotionData(data,
+    const { points, path, rotations } = processLocomotionData(
+      data,
       frontOffset,
       sideOffset,
       sideOffset
     );
+    console.log(data);
     const lastPosition = path.at(-1);
 
-    setPoints(points)
-
-    const sonar = data.at(-1)?.sonar
-
-    if (sonar) {
-      setDistanceFront(sonar[0] * SONAR_TO_M)
-      setDistanceLeft(sonar[1] * SONAR_TO_M)
-      setDistanceRight(sonar[2] * SONAR_TO_M)
+    let tempPoints = points;
+    tempPoints = mergeAndFilterPoints(tempPoints, 0.03);
+    let tempLines = getLineSegmentsFromPoints(tempPoints, 0.2);
+    for (let i = 0; i < 100; i++) {
+      const nextLines = mergeLineSegments(tempLines, 0.2);
+      if (nextLines.length === tempLines.length) {
+        break;
+      }
+      tempLines = nextLines;
     }
+    setLines(tempLines);
 
     if (lastPosition) {
       setPosition(new Vector3(lastPosition.x, 0, lastPosition.y));
     }
-    const lastRotation = rotations.at(-1)
+    const lastRotation = rotations.at(-1);
     if (lastRotation) {
-      setRotation(lastRotation);
+      setRotation(new Quaternion().setFromEuler(new Euler(0, lastRotation, 0)));
     }
   }, [data]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const item = testData.shift()
-      if (item) {
-        data.push(item as LocomotionData)
-        setData(data.slice())
-      }
-    }, 100)
-    return () => clearInterval(interval)
-  }, [])
+  function handleLocomotionData(item: LocomotionData) {
+    const { sonar } = item;
+    setDistanceFront(sonar[0] * SONAR_TO_M);
+    setDistanceRight(sonar[1] * SONAR_TO_M);
+    setDistanceLeft(sonar[2] * SONAR_TO_M);
+    if (item.hall) {
+      data.push(item);
+      setData([...data]);
+    }
+  }
 
   useEffect(() => {
     function onLocomotion(item: LocomotionData) {
-      setData((data) => {
-        data.push(item);
-        return data;
-      });
+      handleLocomotionData(item);
       requestLocomotion();
     }
-
     function requestLocomotion() {
       setTimeout(() => {
         requestEmitter.emit("locomotion", {});
       }, 100);
     }
-
     requestLocomotion();
-
     responseEmitter.on("locomotion", onLocomotion);
-
     return () => {
       responseEmitter.off("locomotion", onLocomotion);
     };
@@ -98,11 +100,30 @@ export function MapScene() {
 
   return (
     <>
-      <group rotation={new Euler(0, smoothRotation, 0)}>
+      <group quaternion={smoothRotation}>
         <group position={position.clone().negate()}>
-          {points.map((p, i) => {
-            return <Box scale={0.05} position={[p.x, 0, p.y]} key={i} />
+          {lines.map((p, i) => {
+            const center = p.start.clone().add(p.end).multiplyScalar(0.5);
+            center.z = center.y;
+            center.y = 0.1;
+            return (
+              <mesh
+                key={i}
+                position={center}
+                rotation={
+                  new Euler(
+                    0,
+                    -Math.atan2(p.end.y - p.start.y, p.end.x - p.start.x),
+                    0
+                  )
+                }
+              >
+                <boxGeometry args={[p.start.distanceTo(p.end), 0.2, 0.05]} />
+                <meshStandardMaterial color="#ccc" />
+              </mesh>
+            );
           })}
+          <gridHelper args={[100, 100, "dimgray", "dimgray"]} />
         </group>
       </group>
 
@@ -113,21 +134,43 @@ export function MapScene() {
         distanceFront={distanceFront}
         distanceLeft={distanceLeft}
         distanceRight={distanceRight}
+        position={new Vector3(0, 0.025, 0)}
         offset={roverOffset}
       />
+
+      <Plane
+        args={[100, 100]}
+        rotation={new Euler(-Math.PI / 2, 0, 0)}
+        onPointerMove={(e) => {
+          e.point.x *= -1;
+          e.point.y = 1;
+          setPointer(e.point);
+        }}
+        onPointerLeave={() => {
+          setPointer(null);
+        }}
+      >
+        <meshStandardMaterial color="gray" />
+      </Plane>
+      <pointLight position={pointer ?? [0, 1, 0]} intensity={1} />
     </>
   );
 }
 
 export function MapCanvas3D() {
   return (
-    <div className="h-screen">
-      <Canvas
-        style={{ background: "black" }}
-        camera={{ position: [0, 2, -2] }}>
-        <MapScene />
-        <OrbitControls />
-        <ambientLight intensity={0.7} />
+    <div className="w-full h-full">
+      <Canvas style={{ background: "black" }} camera={{ position: [0, 2, -2] }}>
+        <group scale={[-1, 1, 1]}>
+          <MapScene />
+          <OrbitControls
+            mouseButtons={{
+              LEFT: 0,
+              MIDDLE: 2,
+            }}
+          />
+          <ambientLight intensity={1} />
+        </group>
       </Canvas>
     </div>
   );

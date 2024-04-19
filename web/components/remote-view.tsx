@@ -4,9 +4,29 @@
  */
 
 import { requestEmitter } from "@/lib/common";
-import { MapCanvas } from "./map-canvas";
-import { CameraView } from "./camera-view";
 import { useEffect } from "react";
+import { CameraView } from "./camera-view";
+import { MapCanvas3D } from "./canvas/map-canvas-3d";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "./ui/resizable";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuSeparator,
+  ContextMenuCheckboxItem,
+  ContextMenuRadioGroup,
+  ContextMenuLabel,
+  ContextMenuRadioItem,
+} from "@radix-ui/react-context-menu";
+import { ContextMenuShortcut } from "./ui/context-menu";
 
 export function RemoteView() {
   useEffect(() => {
@@ -69,9 +89,23 @@ export function RemoteView() {
   }, []);
 
   return (
-    <div>
-      <MapCanvas className="inset-0 fixed" />
-      <CameraView className="fixed bottom-0 right-0" />
+    <div className="h-screen">
+      <ResizablePanelGroup direction="vertical">
+        <ResizablePanel>
+          <MapCanvas3D />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel>
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel>Test</ResizablePanel>
+            <ResizableHandle withHandle />
+
+            <ResizablePanel>
+              <CameraView className="h-full" />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
       {/* <Input
         type="number"
         onChange={(e) => {

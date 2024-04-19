@@ -1,7 +1,7 @@
 "use client";
 
-import { Billboard, Html, Line, ScreenSizer, Text } from "@react-three/drei";
-import { Vector3, Euler } from "three";
+import { Box, Html, Line } from "@react-three/drei";
+import { Euler, Vector3 } from "three";
 
 export type RoverProps = {
   position?: Vector3;
@@ -12,20 +12,19 @@ export type RoverProps = {
   width: number;
   height: number;
   length: number;
-  offset: Vector3
+  offset: Vector3;
 };
 
 export function Rover(props: RoverProps) {
-  const halfLength = props.length / 2 + props.offset.z
+  const halfLength = props.length / 2 + props.offset.z;
   const halfWidth = props.width / 2;
 
   return (
     <group position={props.position} rotation={props.rotation}>
       <mesh position={props.offset}>
         <boxGeometry args={[props.width, props.height, props.length]} />
-        <meshStandardMaterial color="lightgray" />
+        <meshNormalMaterial />
       </mesh>
-      <pointLight position={[0, 1, 0]} intensity={1} />
       <RoverRay
         start={new Vector3(0, 0, halfLength)}
         end={new Vector3(0, 0, props.distanceFront - halfLength)}
@@ -54,10 +53,26 @@ export function RoverRay(props: RoverRayProps) {
     <>
       <Html
         position={props.start.clone().add(props.end).divideScalar(2)}
-        className="text-white select-none text-sm">
+        className="text-white select-none text-sm"
+      >
         {distance.toFixed(2)}m
       </Html>
-      <Line color="gray" points={[props.start, props.end]} lineWidth={2} />
+      <Box
+        args={[distance, 0.005, 0.005]}
+        position={props.start.clone().add(props.end).divideScalar(2)}
+        rotation={
+          new Euler(
+            0,
+            -Math.atan2(
+              props.end.z - props.start.z,
+              props.end.x - props.start.x
+            ),
+            0
+          )
+        }
+      >
+        <meshBasicMaterial color={"lime"}/>
+      </Box>
     </>
   );
 }
