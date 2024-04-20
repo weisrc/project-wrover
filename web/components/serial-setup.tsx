@@ -27,7 +27,7 @@ export function SerialSetup(props: {
   onConnectionChange: (connected: boolean) => void;
 }) {
   const router = useRouter();
-  const [serialSupported, setSerialSupported] = useState(false);
+  const [serialSupported, setSerialSupported] = useState(true);
 
   useEffect(() => {
     setSerialSupported(!!navigator.serial);

@@ -20,7 +20,7 @@ export function processLocomotionData(
   sideCutoffDistance = 3
 ): ProcessedLocomotionData {
   const radius = 0.15;
-  const delta = 0.035;
+  const delta = 0.036;
 
   const path: Vector2[] = [];
   const rotations: number[] = [];
@@ -56,8 +56,8 @@ export function processLocomotionData(
     rotations.push(rotation);
 
     const frontDistance = item.sonar[0] * SONAR_TO_M;
-    const leftDistance = item.sonar[1] * SONAR_TO_M;
-    const rightDistance = item.sonar[2] * SONAR_TO_M;
+    const rightDistance = item.sonar[1] * SONAR_TO_M;
+    const leftDistance = item.sonar[2] * SONAR_TO_M;
 
     if (frontDistance < frontCutoffDistance) {
       const item = new Vector2(frontDistance + frontOffset, 0)

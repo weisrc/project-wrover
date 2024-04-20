@@ -3,8 +3,14 @@
  * Remote view component to control the robot remotely.
  */
 
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { requestEmitter } from "@/lib/common";
-import { useEffect } from "react";
+import { MouseEventHandler, useEffect, useRef } from "react";
 import { CameraView } from "./camera-view";
 import { MapCanvas3D } from "./canvas/map-canvas-3d";
 import {
@@ -12,21 +18,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "./ui/resizable";
-import {
-  ContextMenu,
-  ContextMenuTrigger,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSub,
-  ContextMenuSubTrigger,
-  ContextMenuSubContent,
-  ContextMenuSeparator,
-  ContextMenuCheckboxItem,
-  ContextMenuRadioGroup,
-  ContextMenuLabel,
-  ContextMenuRadioItem,
-} from "@radix-ui/react-context-menu";
-import { ContextMenuShortcut } from "./ui/context-menu";
+import { CAMERA_FRAME_SIZES } from "@/lib/camera-frame-sizes";
 
 export function RemoteView() {
   useEffect(() => {
@@ -94,16 +86,29 @@ export function RemoteView() {
         <ResizablePanel>
           <MapCanvas3D />
         </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel>
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel>Test</ResizablePanel>
-            <ResizableHandle withHandle />
-
-            <ResizablePanel>
+        <ResizableHandle className="bg-slate-500" />
+        <ResizablePanel className="flex h-full">
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
               <CameraView className="h-full" />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              {CAMERA_FRAME_SIZES.map((item, i) => {
+                return (
+                  <ContextMenuItem
+                    key={i}
+                    onClick={() => {
+                      requestEmitter.emit("setCameraFrameSize", {
+                        size: item.value,
+                      });
+                    }}
+                  >
+                    {item.label}
+                  </ContextMenuItem>
+                );
+              })}
+            </ContextMenuContent>
+          </ContextMenu>
         </ResizablePanel>
       </ResizablePanelGroup>
       {/* <Input

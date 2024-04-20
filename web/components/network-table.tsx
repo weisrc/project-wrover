@@ -58,9 +58,9 @@ export function NetworkTable({ networks }: { networks: NetworkItem[] }) {
 
 export function NetworkTableSkeleton() {
   return (
-    <div className="flex flex-col w-[600px] gap-2">
+    <div className="flex flex-col w-full gap-2">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton className="h-16" key={i} />
+        <Skeleton className="h-16 w-full" key={i} />
       ))}
     </div>
   );

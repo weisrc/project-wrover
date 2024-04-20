@@ -42,6 +42,7 @@ export type RequestEvents = {
   status: {};
   begin: {};
   setCameraFPS: { fps: number };
+  setCameraFrameSize: { size: number };
   motor: { m0: number, m1: number };
   locomotion: {};
   capture: {};
