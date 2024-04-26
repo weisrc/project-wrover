@@ -16,8 +16,8 @@
 
 #define HALL0 GPIO_NUM_32
 #define HALL1 GPIO_NUM_13
-#define AVR_RX GPIO_NUM_33
-#define AVR_TX GPIO_NUM_14
+#define AVR_RX GPIO_NUM_14
+#define AVR_TX GPIO_NUM_33
 
 #define STORAGE_SIZE 2048
 #define HALL_SIZE 2024

@@ -34,10 +34,11 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
+	rcall timer_init
+	rcall motor_init
+
 	rcall serial_init
 	rcall sonar_init
-	rcall motor_init
-	rcall timer_init
 	rcall speaker_init
 	rcall player_init
 	rcall tunes_init
