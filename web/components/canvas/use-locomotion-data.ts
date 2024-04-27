@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { SONAR_TO_M } from "./process-locomotion-data";
 import testData from "./test-locomotion-data.json";
 
-export function useLocomotionData() {
+export function useLocomotionStates() {
   const [distanceFront, setDistanceFront] = useState(0);
   const [distanceLeft, setDistanceLeft] = useState(0);
   const [distanceRight, setDistanceRight] = useState(0);
   const [data, setData] = useState<LocomotionData[]>([]);
 
-  function handleLocomotionData(item: LocomotionData) {
+  function add(item: LocomotionData) {
     const { sonar } = item;
     setDistanceFront(sonar[0] * SONAR_TO_M);
     setDistanceRight(sonar[1] * SONAR_TO_M);
@@ -21,16 +21,36 @@ export function useLocomotionData() {
     }
   }
 
+  return { distanceFront, distanceLeft, distanceRight, data, add };
+}
+
+export function useTestLocomotionData() {
+  const { distanceFront, distanceLeft, distanceRight, data, add } =
+    useLocomotionStates();
+
   useEffect(() => {
     const interval = setInterval(() => {
       const item = testData.shift();
       if (item) {
-        handleLocomotionData(item as LocomotionData);
+        add(item as LocomotionData);
       }
     }, 100);
 
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  return { distanceFront, distanceLeft, distanceRight, data };
+}
+
+export function useLocomotionData() {
+  const { distanceFront, distanceLeft, distanceRight, data, add } =
+    useLocomotionStates();
+
+  useEffect(() => {
     function onLocomotion(item: LocomotionData) {
-    //   handleLocomotionData(item);
+      add(item);
       requestLocomotion();
     }
     function requestLocomotion() {
@@ -42,7 +62,6 @@ export function useLocomotionData() {
     responseEmitter.on("locomotion", onLocomotion);
     return () => {
       responseEmitter.off("locomotion", onLocomotion);
-      clearInterval(interval);
     };
   }, []);
 
