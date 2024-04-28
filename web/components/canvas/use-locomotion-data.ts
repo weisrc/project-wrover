@@ -28,16 +28,16 @@ export function useTestLocomotionData() {
   const { distanceFront, distanceLeft, distanceRight, data, add } =
     useLocomotionStates();
 
-  useEffect(() => {
+  useEffect(() => { // run once ideally when use hook is called
     const interval = setInterval(() => {
-      const item = testData.shift();
+      const item = testData.shift(); // get the first item
       if (item) {
         add(item as LocomotionData);
       }
-    }, 100);
+    }, 100); // every 100ms
 
     return () => {
-      clearInterval(interval);
+      clearInterval(interval); // clear the interval on cleanup
     };
   }, []);
 

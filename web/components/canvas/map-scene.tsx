@@ -5,7 +5,7 @@ import { Vector3 } from "three";
 import { EnvironmentGroup } from "./environment-group";
 import { PlanePointer } from "./plane-pointer";
 import { Rover } from "./rover";
-import { useLocomotionData } from "./use-locomotion-data";
+import { useLocomotionData, useTestLocomotionData } from "./use-locomotion-data";
 import { useProcessedData } from "./use-processed-data";
 
 export function MapScene() {
@@ -17,7 +17,7 @@ export function MapScene() {
   const sideOffset = roverWidth / 2;
 
   const { data, distanceFront, distanceLeft, distanceRight } =
-    useLocomotionData();
+    useTestLocomotionData();
 
   const { position, rotation, lines } = useProcessedData(
     data,
