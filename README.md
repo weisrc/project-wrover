@@ -579,7 +579,7 @@ Please see the ESP32 section for the test code description.
 
 The related troubleshooting is written in the ESP32 section.
 
-## 11. Libraries and Tools
+## 11. References
 
 ### Web Application
 
@@ -600,6 +600,14 @@ Please see `esp/platformio.ini` for the list of dependencies.
 
 - [AVRA](https://github.com/Ro5bert/avra) for assembly
 - [AVRDude](https://www.nongnu.org/avrdude/) for flashing the hex file
+
+### Datasheets
+
+- [ATmega8515](https://ww1.microchip.com/downloads/en/DeviceDoc/doc2512.pdf)
+- [LM386](https://www.ti.com/lit/ds/symlink/lm386.pdf)
+- [DRV5023](https://www.ti.com/lit/ds/symlink/drv5023.pdf)
+- [HC-SR04](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
+- [L298N H-Bridge](https://www.handsontec.com/dataspecs/L298N%20Motor%20Driver.pdf)
 
 ### README.md
 
