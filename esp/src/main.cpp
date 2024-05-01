@@ -87,6 +87,8 @@ void setup()
 
   LOG_INFO("Starting WRover ESP...");
 
+  // sleepUpdate(1000);
+
   avrClear();
   avrPrint("WRover ESP\nStarting...");
 

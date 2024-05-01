@@ -17,7 +17,7 @@ export function MapScene() {
   const sideOffset = roverWidth / 2;
 
   const { data, distanceFront, distanceLeft, distanceRight } =
-    useTestLocomotionData();
+    useLocomotionData();
 
   const { position, rotation, lines } = useProcessedData(
     data,

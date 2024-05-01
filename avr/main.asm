@@ -44,30 +44,30 @@ main:
 	rcall tunes_init
 	rcall handle_init
 
+	ldi r16, TUNES_XP_STARTUP_HEAD
+	rcall player_set
+
 	ldi r16, 20 ; wait a bit for the lcd
 	rcall delay
 	rcall lcd_init ; initialize the submodules
 
 	ldi ZH, high(BOOT_MSG << 1) ; print the boot message
 	ldi ZL, low(BOOT_MSG << 1)
-	rcall lcd_print
-
-	ldi r16, TUNES_XP_STARTUP_HEAD
-	rcall player_set
+	; rcall lcd_print
 
 	sei ; enable interrupts
 
 loop:
 	rcall handle ; handle incoming commands
-	rcall motor_update ; smooth motor update
 	rcall serial_update ; only required for ack_serial
+	rcall motor_update ; smooth motor update
 	rcall player_update
 	rcall tunes_motor_update
 	rcall tunes_sonar_update
 	rjmp loop
 
 
-BOOT_MSG: .db "WRover AVR", LF, "Waiting ESP...", 0
+BOOT_MSG: .db "WRover AVR!", LF, "Waiting ESP...", 0
 
 .include "utils.inc"
 .include "sonar.inc"

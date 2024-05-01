@@ -56,7 +56,7 @@ private:
   {
     if (taskQueue.size() >= maxTaskQueueSize)
     {
-      LOG_WARN("Async task queue full");
+      LOG_DEBUG("Async task queue full");
       return false;
     }
     /*
@@ -164,7 +164,7 @@ private:
   }
 
 public:
-  AsyncSerial(UARTBase &stream, unsigned long timeout = 50, char ackValue = 0,
+  AsyncSerial(UARTBase &stream, unsigned long timeout = 100, char ackValue = 0,
               bool oddParity = true, size_t maxTaskQueueSize = 100)
       : stream(stream),
         timeout(timeout),

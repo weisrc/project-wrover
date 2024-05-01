@@ -21,7 +21,7 @@
 
 #define STORAGE_SIZE 2048
 #define HALL_SIZE 2024
-#define AVR_SERIAL_TIMEOUT 100
+#define AVR_SERIAL_TIMEOUT 500
 
 uint32_t camSocketId = NO_SOCKET_ID;
 int cameraFps = 24;
