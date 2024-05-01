@@ -34,14 +34,15 @@ main:
 	ldi R16, high(RAMEND)
     out SPH, R16
 
-	rcall timer_init
-	rcall motor_init
-
-	rcall serial_init
-	rcall sonar_init
 	rcall speaker_init
 	rcall player_init
 	rcall tunes_init
+
+	rcall timer_init
+	rcall motor_init
+	rcall sonar_init
+	
+	rcall serial_init
 	rcall handle_init
 
 	ldi r16, TUNES_XP_STARTUP_HEAD
@@ -53,7 +54,7 @@ main:
 
 	ldi ZH, high(BOOT_MSG << 1) ; print the boot message
 	ldi ZL, low(BOOT_MSG << 1)
-	; rcall lcd_print
+	rcall lcd_print
 
 	sei ; enable interrupts
 
