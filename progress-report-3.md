@@ -262,7 +262,9 @@ The hall sensor were not working. The hall sensor output needs to be pulled up t
 
 Furthermore, the two left-most pins of the LCD are flipped on the schematic. This was fixed by flipping them when the LCD is connected to the board via jumper wires. If this was not done, it would short 5V to ground directly. Fortunately, the LCD was not damaged.
 
-> Note: Both the Schematic and the PCB board are free of these issues. Therefore, they are slightly different from  the physical PCB presented in this project.
+Another issue was that the ground of the AND gate and the NOT gate were not connected to the system ground. This lead to the wheels and the serial connection to not be working sometimes. This is fixed on the PCB by using a jumper wire. Again, this issue is not present in the current schematic and the PCB board files.
+
+> Note: Both the Schematic and the PCB board files are free of these issues. Therefore, they are slightly different from  the physical PCB presented in this project.
 
 ## 11. References
 
