@@ -29,8 +29,8 @@ export function useProcessedData(
     const lastPosition = path.at(-1);
 
     let tempPoints = points;
-    tempPoints = mergeAndFilterPoints(tempPoints, 0.03);
-    let tempLines = getLineSegmentsFromPoints(tempPoints, 0.2);
+    // tempPoints = mergeAndFilterPoints(tempPoints, 4);
+    let tempLines = getLineSegmentsFromPoints(tempPoints, 1);
     for (let i = 0; i < 100; i++) {
       const nextLines = mergeLineSegments(tempLines, 0.2);
       if (nextLines.length === tempLines.length) {

@@ -56,7 +56,7 @@ export function useLocomotionData() {
     function requestLocomotion() {
       setTimeout(() => {
         requestEmitter.emit("locomotion", {});
-      }, 100);
+      }, 50);
     }
     requestLocomotion();
     responseEmitter.on("locomotion", onLocomotion);

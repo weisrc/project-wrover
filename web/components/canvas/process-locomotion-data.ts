@@ -31,11 +31,12 @@ export function processLocomotionData(
   let time = 0;
 
   for (const item of data) {
-    time += 0.001;
 
     if (!item.hall) {
       continue;
     }
+
+    time += 0.001;
 
     for (const char of item.hall) {
       const which = char.toLowerCase();

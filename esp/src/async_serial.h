@@ -56,7 +56,7 @@ private:
   {
     if (taskQueue.size() >= maxTaskQueueSize)
     {
-      LOG_DEBUG("Async task queue full");
+      LOG_INFO("Async task queue full");
       return false;
     }
     /*
