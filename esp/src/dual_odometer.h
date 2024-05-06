@@ -58,4 +58,20 @@ public:
     this->left = center.subtract(offset);
     this->right = center.add(offset);
   }
+
+  void configure(Vec2 left, Vec2 right, float delta)
+  {
+    this->left = left;
+    this->right = right;
+    this->delta = delta;
+    this->radius = left.clone().subtract(right).length() / 2;
+  }
+
+  DualOdometer clone()
+  {
+    DualOdometer clone(this->radius, this->delta);
+    clone.left = this->left.clone();
+    clone.right = this->right.clone();
+    return clone;
+  }
 };

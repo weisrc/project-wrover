@@ -17,6 +17,7 @@
 #include "logger.h"
 #include "web_server.h"
 #include "wifi_checks.h"
+#include "navigation.h"
 
 /**
  * Update function intended to be called in the loop
@@ -30,6 +31,7 @@ void update()
   motorUpdate();
   sonarUpdate();
   cameraCapture();
+  navigationUpdate();
   wsEndpoint.cleanupClients();
 
   if (!messageQueue.empty())  // process messages from the message queue

@@ -6,21 +6,21 @@
 export type ConnectEvent = {
   ssid: string;
 } & (
-    | {
+  | {
       auth: "open";
     }
-    | {
+  | {
       auth: "wpa2";
       password: string;
     }
-    | {
+  | {
       auth: "wpa2_enterprise";
       method: ConnectEventMethod;
       identity: string;
       username: string;
       password: string;
     }
-  );
+);
 
 export type ConnectEventMethod = "peap" | "ttls" | "tls";
 
@@ -31,6 +31,11 @@ export type NetworkItem = [
   channel: number,
   bssid: string
 ];
+
+export interface IVec2 {
+  x: number;
+  y: number;
+}
 
 export type RequestEvents = {
   connect: ConnectEvent;
@@ -43,15 +48,18 @@ export type RequestEvents = {
   begin: {};
   setCameraFPS: { fps: number };
   setCameraFrameSize: { size: number };
-  motor: { m0: number, m1: number };
+  motor: { m0: number; m1: number };
   locomotion: {};
   capture: {};
+  navigate: IVec2;
+  configureOdometer: { left: IVec2; right: IVec2; delta: number };
 };
 
 export type SonarData = [number, number, number];
 export type LocomotionData = {
-  hall: string, sonar: SonarData
-}
+  hall: string;
+  sonar: SonarData;
+};
 
 export type ResponseEvents = {
   scan: { networks: NetworkItem[] };

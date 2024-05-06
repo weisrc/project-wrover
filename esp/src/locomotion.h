@@ -11,19 +11,6 @@
 #include "data_utils.h"
 #include "globals.h"
 
-int8_t motor0Speed = 0;  // target speed
-int8_t motor1Speed = 0;
-
-uint16_t sonar0Average = 0;
-uint16_t sonar1Average = 0;
-uint16_t sonar2Average = 0;
-
-bool hall0Changed = false;
-bool hall1Changed = false;
-bool motor0Reverse = false;
-bool motor1Reverse = false;
-String hall;  // string with LRlr for hall data
-
 void setMotor(Channel &chan, JsonDocument &request)
 {
   motor0Speed = request["m0"].as<int8_t>();
@@ -67,9 +54,9 @@ void locomotionReply(Channel &chan)
   data["type"] = "locomotion";
   data["hall"] = hall;
   JsonArray sonars = data["sonar"].to<JsonArray>();
-  sonars.add(sonar0Average);
-  sonars.add(sonar1Average);
-  sonars.add(sonar2Average);
+  sonars.add(sonar0Distance);
+  sonars.add(sonar1Distance);
+  sonars.add(sonar2Distance);
   chan.send(data);
   hall.clear();
 }
@@ -92,7 +79,7 @@ void sonarUpdate()
   static unsigned long lastSampleTime = 0;
   unsigned long now = millis();
 
-  if (now - lastSampleTime < 100)  // sample every 100ms
+  if (now - lastSampleTime < 200)  // sample every 100ms
     return;
 
   lastSampleTime = now;
@@ -100,19 +87,19 @@ void sonarUpdate()
   auto closure0 = [](WordResult result)
   {
     if (result.isOk())
-      sonar0Average = result.getValue();
+      sonar0Distance = result.getValue();
   };
 
   auto closure1 = [](WordResult result)
   {
     if (result.isOk())
-      sonar1Average = result.getValue();
+      sonar1Distance = result.getValue();
   };
 
   auto closure2 = [](WordResult result)
   {
     if (result.isOk())
-      sonar2Average = result.getValue();
+      sonar2Distance = result.getValue();
   };
 
   avrSonar(MODE_SONAR0)->finally(closure0);
@@ -131,7 +118,7 @@ void motorUpdate()
 
   unsigned long now = millis();
 
-  if (now - lastSampleTime < 50)  // update every 50ms
+  if (now - lastSampleTime < 200)  // update every 50ms
     return;
 
   lastSampleTime = now;

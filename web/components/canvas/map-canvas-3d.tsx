@@ -2,8 +2,8 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useRef } from "react";
-import { MOUSE } from "three";
+import { useContext, useRef, useState } from "react";
+import { MOUSE, Vector3 } from "three";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -11,7 +11,8 @@ import {
   ContextMenuTrigger,
 } from "../ui/context-menu";
 import { MapScene } from "./map-scene";
-import { PlanePointerProvider } from "./plane-pointer";
+import { PlanePointerProvider, usePlanePointer } from "./plane-pointer";
+import { requestEmitter } from "@/lib/common";
 
 export function MapCanvas3D() {
   return (
@@ -23,6 +24,11 @@ export function MapCanvas3D() {
 
 function MapCanvasInner() {
   const triggerRef = useRef<HTMLElement>(null);
+  const { pointer } = usePlanePointer();
+  const [menuAt, setMenuAt] = useState<Vector3 | null>(null);
+
+  const menuAtX = menuAt?.x ?? 0;
+  const menuAtY = menuAt?.z ?? 0;
 
   return (
     <ContextMenu>
@@ -31,6 +37,7 @@ function MapCanvasInner() {
           style={{ background: "black" }}
           camera={{ position: [0, 2, -2] }}
           onContextMenu={(e) => {
+            setMenuAt(pointer ?? menuAt);
             triggerRef.current?.dispatchEvent(
               new MouseEvent("contextmenu", {
                 bubbles: true,
@@ -54,7 +61,16 @@ function MapCanvasInner() {
         </Canvas>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem>Move here</ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => {
+            requestEmitter.emit("navigate", {
+              x: menuAtX,
+              y: menuAtY,
+            });
+          }}
+        >
+          Navigate to ({menuAtX.toFixed(2)}, {menuAtY.toFixed(2)})
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );

@@ -16,11 +16,19 @@
 #include "locomotion.h"
 #include "wifi_connection.h"
 
+Vec2 vecFromJson(JsonObject &json)
+{
+  Vec2 vec;
+  vec.x = json["x"].as<float>();
+  vec.y = json["y"].as<float>();
+  return vec;
+}
+
 /**
  * Handle request function
  * @param chan Channel to send the repsonse
  * @param request JSON request data
-*/
+ */
 void handleRequest(Channel &chan, JsonDocument &request)
 {
   String type = request["type"];
@@ -47,12 +55,27 @@ void handleRequest(Channel &chan, JsonDocument &request)
     cameraFps = constrain(request["fps"].as<int>(), 1, 24);
   else if (type == "setCameraFrameSize")
     cameraSetFrameSize((framesize_t)request["size"].as<int>());
-  else if (type == "motor")
+  else if (type == "motor") {
+    navigationEnabled = false;
     setMotor(chan, request);
+  }
   else if (type == "capture")
     camSocketId = chan.socketId();
   else if (type == "locomotion")
     locomotionReply(chan);
   else if (type == "cameraOk")
     sendData(chan, "cameraOk", cameraOk);
+  else if (type == "configureOdometer")
+  {
+    JsonObject left = request["left"];
+    JsonObject right = request["right"];
+    odometer.configure(vecFromJson(left), vecFromJson(right),
+                       request["delta"].as<float>());
+  }
+  else if (type == "navigate")
+  {
+    navigationEnabled = true;
+    JsonObject target = request.to<JsonObject>();
+    targetPosition = vecFromJson(target);
+  }
 }
