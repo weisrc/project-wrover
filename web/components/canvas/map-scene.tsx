@@ -7,6 +7,7 @@ import { PlanePointer } from "./plane-pointer";
 import { Rover } from "./rover";
 import { useLocomotionData, useTestLocomotionData } from "./use-locomotion-data";
 import { useProcessedData } from "./use-processed-data";
+import { APGroup } from "./ap-group";
 
 export function MapScene() {
   const [roverWidth] = useState(0.2);
@@ -28,6 +29,11 @@ export function MapScene() {
   return (
     <>
       <EnvironmentGroup position={position} lines={lines} rotation={rotation} />
+
+      <APGroup dataset={[
+        [1, 1, 1],
+        [1, 2, 2]
+      ]} params={[1, 1, 1, 1]} rssiOffset={90} rssiScale={0.3} />
 
       <Rover
         width={roverWidth}
