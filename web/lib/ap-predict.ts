@@ -1,10 +1,11 @@
 type N = number
 
-type Data = [N, N, N]
+export type Data = [x: N, y: N, z: N]
+export type Params = [x0: N, y0: N, n: N, p: N]
 
-type DistanceFn<T = N> = (x: N, y: N, x0: N, y0: N) => T
-type RssiFn<T = N> = (x: N, y: N, x0: N, y0: N, n: N, p: N) => T
-type LossFn<T = N> = (x: N, y: N, z: N, x0: N, y0: N, n: N, p: N) => T
+export type DistanceFn<T = N> = (x: N, y: N, x0: N, y0: N) => T
+export type RssiFn<T = N> = (x: N, y: N, x0: N, y0: N, n: N, p: N) => T
+export type LossFn<T = N> = (x: N, y: N, z: N, x0: N, y0: N, n: N, p: N) => T
 
 export const diffSquared = (x: N, x0: N) => {
     return (x - x0) ** 2
@@ -84,9 +85,40 @@ export const loss_dn = loss_drssi_factory(rssi_dn)
 export const loss_dx0 = loss_drssi_factory(rssi_dx0)
 export const loss_dy0 = loss_drssi_factory(rssi_dy0)
 
-export function losses(dataset: Data[], x0: N, y0: N, n: N, p: N) {
-    return dataset.map(([x, y, z]) => {
-        return
-    })
+export function losses(dataset: Data[], [x0, y0, n, p]: Params) {
+    let sum = 0;
+    for (const [x, y, z] of dataset) {
+        sum += loss(x, y, z, x0, y0, n, p)
+    }
+    return sum;
 }
 
+export function grads(dataset: Data[], [x0, y0, n, p]: Params): Params {
+    let dx0 = 0
+    let dy0 = 0
+    let dn = 0
+    let dp = 0
+    for (const [x, y, z] of dataset) {
+        dx0 += loss_dx0(x, y, z, x0, y0, n, p)
+        dy0 += loss_dy0(x, y, z, x0, y0, n, p)
+        dn += loss_dn(x, y, z, x0, y0, n, p)
+        dp += loss_dp(x, y, z, x0, y0, n, p)
+    }
+    return [dx0, dy0, dn, dp]
+}
+
+/**
+ * Perform a gradient descent step, no side effects
+ * @param dataset data goes here
+ * @param params 
+ * @param lr learning rate, how big of step to use
+ * @returns the new params
+ */
+export function step(dataset: Data[], params: Params, lr: N): Params {
+    const gradients = grads(dataset, params)
+    const optimized: Params = [...params]
+    for (let i = 0; i < 4; i++) { // will be unrolled by the V8 optimizer
+        optimized[i] += gradients[i] * lr
+    }
+    return optimized
+}
