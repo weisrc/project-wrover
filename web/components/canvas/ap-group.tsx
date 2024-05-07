@@ -1,7 +1,8 @@
 "use client";
 
 import { Data, Params, rssi } from "@/lib/ap-predict";
-import { Box, Sphere } from "@react-three/drei";
+import { Box } from "@react-three/drei";
+import { Color } from "three";
 
 const array = new Array(50).fill(0).map((_, i) => (i - 25) * 2)
 
@@ -26,9 +27,12 @@ export function APGroup(props: {
       {
         array.map((x) => {
           return array.map((y) => {
-            const h = (rssi(x, y, ...props.params) + props.rssiOffset) * props.rssiScale
-            return <Box position={[x, h, y]} scale={0.1}>
-              <meshStandardMaterial color={[0,1,1]} />
+            const value = rssi(x, y, ...props.params)
+            const h = (value + props.rssiOffset) * props.rssiScale
+            const color = new Color()
+            color.setHSL(value / 90, 1, 0.5)
+            return <Box position={[x, h, y]} scale={0.5}>
+              <meshStandardMaterial color={color} />
             </Box>
           })
         }).flat()
