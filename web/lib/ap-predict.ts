@@ -12,7 +12,7 @@ export const diffSquared = (x: N, x0: N) => {
 }
 
 export const diffSquared_dx0 = (x: N, x0: N) => {
-    return (2 * (x - x0)) * x0
+    return 2 * (x - x0)
 }
 
 export const distanceSum: DistanceFn = (x, y, x0, y0) => {
@@ -32,12 +32,12 @@ export const distance: DistanceFn = (x, y, x0, y0) => {
 }
 
 export const distance_dx0: DistanceFn = (x, y, x0, y0) => {
-    const outer = (0.5 * (distanceSum(x, y, x0, y0)) ** -1.5)
+    const outer = (0.5 * (distanceSum(x, y, x0, y0)) ** -0.5)
     return outer * distanceSum_dx0(x, y, x0, y0)
 }
 
 export const distance_dy0: DistanceFn = (x, y, x0, y0) => {
-    const outer = (0.5 * (distanceSum(x, y, x0, y0)) ** -1.5)
+    const outer = (0.5 * (distanceSum(x, y, x0, y0)) ** -0.5)
     return outer * distanceSum_dy0(x, y, x0, y0)
 }
 
@@ -101,7 +101,7 @@ export function grads(dataset: Data[], [x0, y0, n, p]: Params): Params {
     for (const [x, y, z] of dataset) {
         dx0 += loss_dx0(x, y, z, x0, y0, n, p)
         dy0 += loss_dy0(x, y, z, x0, y0, n, p)
-        dn += loss_dn(x, y, z, x0, y0, n, p)
+        // dn += loss_dn(x, y, z, x0, y0, n, p)
         dp += loss_dp(x, y, z, x0, y0, n, p)
     }
     return [dx0, dy0, dn, dp]
@@ -118,7 +118,7 @@ export function step(dataset: Data[], params: Params, lr: N): Params {
     const gradients = grads(dataset, params)
     const optimized: Params = [...params]
     for (let i = 0; i < 4; i++) { // will be unrolled by the V8 optimizer
-        optimized[i] += gradients[i] * lr
+        optimized[i] -= gradients[i] * lr
     }
     return optimized
 }
