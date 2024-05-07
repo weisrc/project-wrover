@@ -69,7 +69,7 @@ export function PlanePointer() {
           setPointer(null);
         }}
       >
-        <meshStandardMaterial color="gray" />
+        <meshStandardMaterial color="#333" />
       </Plane>
       <pointLight position={pointer ?? [0, 1, 0]} intensity={1} />
     </>
