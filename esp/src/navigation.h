@@ -12,7 +12,7 @@
 #include "globals.h"
 
 /**
- * Some form of Q-learning with a code based scores.
+ * Some form of Q-learning with a code based scores and without the learning.
  */
 void navigationUpdate()
 {
@@ -29,21 +29,23 @@ void navigationUpdate()
     {
       DualOdometer clone = odometer.clone();
 
-      int absM0 = abs(m0);
-      int absM1 = abs(m1);
+      for (int i = 0; i < 5; i++) {
+        int absM0 = abs(m0);
+        int absM1 = abs(m1);
 
-      while (absM0 | absM1)
-      {
-        if (absM0)
+        while (absM0 | absM1)
         {
-          clone.moveLeft(m0 < 0);
-          absM0--;
-        }
+          if (absM0)
+          {
+            clone.moveLeft(m0 < 0);
+            absM0--;
+          }
 
-        if (absM1)
-        {
-          clone.moveRight(m1 < 0);
-          absM1--;
+          if (absM1)
+          {
+            clone.moveRight(m1 < 0);
+            absM1--;
+          }
         }
       }
 
