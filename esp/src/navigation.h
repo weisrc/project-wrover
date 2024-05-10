@@ -11,6 +11,8 @@
 
 #include "globals.h"
 
+#define SONAR_TO_M 5800
+
 /**
  * Some form of Q-learning with a code based scores and without the learning.
  */
@@ -36,7 +38,8 @@ void navigationUpdate()
   {
     for (int m1 = -2; m1 <= 2; m1++)
     {
-      DualOdometer clone = odometer.clone();
+      DualOdometer absolute = odometer.clone();
+      DualOdometer relative = odometer.clone();
 
       for (int i = 0; i < 5; i++) {
         int absM0 = abs(m0);
@@ -46,46 +49,40 @@ void navigationUpdate()
         {
           if (absM0)
           {
-            clone.moveLeft(m0 < 0);
+            bool backwards = m0 < 0;
+            absolute.moveLeft(backwards);
+            relative.moveLeft(backwards);
             absM0--;
           }
 
           if (absM1)
           {
-            clone.moveRight(m1 < 0);
+            bool backwards = m1 < 0;
+            absolute.moveRight(backwards);
+            relative.moveRight(backwards);
             absM1--;
           }
         }
       }
 
-      float score = m0 + m1; // better to move forward
+      float score = 0;
 
+      float distance = absolute.getCenter().subtract(targetPosition).length();
       // score based on distance to target
-      float distance = clone.getCenter().subtract(targetPosition).length();
+      score -= distance;
 
-      if (distance < 1)
-      {
-        score += 100;
-      }
-      else
-      {
-        score -= distance * 100;
-      }
+      float sonar0Score = -SONAR_TO_M / (float)sonar0Distance;
+      float sonar1Score = -SONAR_TO_M / (float)sonar1Distance;
+      float sonar2Score = -SONAR_TO_M / (float)sonar2Distance;
 
-      // front
-      if (sonar0Distance < 1 * 5800 && m0 > 0 && m1 > 0) {
-        score -= 1000;
-      }
+      Vec2 norm = relative.getCenter().normalize();
 
-      // right
-      if (sonar1Distance < 1 * 5800 && m0 > 0 && m1 < 0) {
-        score -= 1000;
-      }
-
-      // left
-      if (sonar2Distance < 1 * 5800 && m0 < 0 && m1 > 0) {
-        score -= 1000;
-      }
+      float sonarScore = 0;
+      sonarScore += min(0.0f, sonar0Score * norm.y); // front
+      sonarScore += min(0.0f, sonar1Score * norm.x); // right
+      sonarScore += min(0.0f, sonar2Score * -norm.x); // left
+      
+      score += sonarScore;
 
       if (score > bestScore)
       {
