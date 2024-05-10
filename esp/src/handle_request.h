@@ -16,14 +16,6 @@
 #include "locomotion.h"
 #include "wifi_connection.h"
 
-Vec2 vecFromJson(JsonObject &json)
-{
-  Vec2 vec;
-  vec.x = json["x"].as<float>();
-  vec.y = json["y"].as<float>();
-  return vec;
-}
-
 /**
  * Handle request function
  * @param chan Channel to send the repsonse
@@ -69,13 +61,15 @@ void handleRequest(Channel &chan, JsonDocument &request)
   {
     JsonObject left = request["left"];
     JsonObject right = request["right"];
-    odometer.configure(vecFromJson(left), vecFromJson(right),
+    Vec2 leftVec = Vec2(left["x"], left["y"]);
+    Vec2 rightVec = Vec2(right["x"], right["y"]);
+    odometer.configure(leftVec, rightVec,
                        request["delta"].as<float>());
   }
   else if (type == "navigate")
   {
     navigationEnabled = true;
-    JsonObject target = request.to<JsonObject>();
-    targetPosition = vecFromJson(target);
+    targetPosition.x = request["x"];
+    targetPosition.y = request["y"];
   }
 }

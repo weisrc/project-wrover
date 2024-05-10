@@ -70,6 +70,7 @@ export type ResponseEvents = {
   socketReady: {};
   binaryData: Blob;
   locomotion: LocomotionData;
+  navigation: { data: "done" };
 };
 
 export const AUTH_MODE_MAP = {

@@ -32,14 +32,14 @@ public:
   {
     int sign = backwards ? -1 : 1;
     float angle = this->left.subtract(this->right).direction();
-    this->left = Vec2::polar(angle + this->delta * sign, this->radius * 2).add(this->right);
+    this->left = Vec2::polar(angle - this->delta * sign, this->radius * 2).add(this->right);
   }
 
   void moveRight(bool backwards = false)
   {
     int sign = backwards ? -1 : 1;
     float angle = this->right.subtract(this->left).direction();
-    this->right = Vec2::polar(angle - this->delta * sign, this->radius * 2).add(this->left);
+    this->right = Vec2::polar(angle + this->delta * sign, this->radius * 2).add(this->left);
   }
 
   float getDirection()

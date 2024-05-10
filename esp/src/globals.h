@@ -37,7 +37,7 @@ SoftwareSerial avrSerialBase;
 AsyncSerial avrSerial(avrSerialBase, AVR_SERIAL_TIMEOUT, 0, true);
 MessageQueue messageQueue;
 
-DualOdometer odometer(16, 0.043);
+DualOdometer odometer(0.16, 0.043);
 bool navigationEnabled = false;
 Vec2 targetPosition;
 
