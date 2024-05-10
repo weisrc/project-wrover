@@ -81,7 +81,7 @@ void navigationUpdate()
       sonarScore += min(0.0f, sonar0Score * norm.y); // front
       sonarScore += min(0.0f, sonar1Score * norm.x); // right
       sonarScore += min(0.0f, sonar2Score * -norm.x); // left
-      score += sonarScore;
+      score += sonarScore * 10;
 
       // punish for going backwards
       score += max(0.0f, norm.y);
