@@ -136,7 +136,7 @@ private:
     else  // handle unexpected data
     {
       LOG_WARN("Unexpected RX: " + String(data) + " (" + String((int)data) + ")");
-      put(ackValue);
+      // put(ackValue);
     }
   }
 
