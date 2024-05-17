@@ -24,6 +24,13 @@
 #define HALL_SIZE 2024
 #define AVR_SERIAL_TIMEOUT 50
 
+enum NavigationMode {
+  OFF,
+  DIRECT,
+  DETOUR_LEFT,
+  DETOUR_RIGHT
+};
+
 uint32_t camSocketId = NO_SOCKET_ID;
 int cameraFps = 24;
 bool cameraOk = false;
@@ -38,7 +45,7 @@ AsyncSerial avrSerial(avrSerialBase, AVR_SERIAL_TIMEOUT, 0, true);
 MessageQueue messageQueue;
 
 DualOdometer odometer(0.16, 0.043);
-bool navigationEnabled = false;
+NavigationMode navigationMode = NavigationMode::OFF;
 Vec2 targetPosition;
 
 int8_t motor0Speed = 0;  // target speed

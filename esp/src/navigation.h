@@ -11,35 +11,24 @@
 
 #include "globals.h"
 
-#define SONAR_TO_M 5800
+#define M_TO_SONAR 5800
 #define SONAR_THRESHOLD 1.0f
 
-/**
- * Some form of Q-learning with a code based scores and without the learning.
- */
-void navigationUpdate()
+float getSonarScore(Vec2 norm)
 {
-  static bool wasNavigationEnabled = false;
+  float sonar0Score = -(M_TO_SONAR * SONAR_THRESHOLD) / (float)sonar0Distance;
+  float sonar1Score = -(M_TO_SONAR * SONAR_THRESHOLD) / (float)sonar1Distance;
+  float sonar2Score = -(M_TO_SONAR * SONAR_THRESHOLD) / (float)sonar2Distance;
 
-  if (wasNavigationEnabled && !navigationEnabled)
-  {
-    broadcastData("navigation", "done");
-  }
+  float sonarScore = 0;
+  sonarScore += min(0.0f, sonar0Score * norm.y);   // front
+  sonarScore += min(0.0f, sonar1Score * norm.x);   // right
+  sonarScore += min(0.0f, sonar2Score * -norm.x);  // left
+  return sonarScore;
+}
 
-  wasNavigationEnabled = navigationEnabled;
-
-  if (!navigationEnabled)
-    return;
-
-  static long int lastTime = 0;
-
-  long int currentTime = millis();
-
-  if (currentTime - lastTime < 100)
-    return;
-
-  lastTime = currentTime;
-
+void navigateTowards(Vec2 towardsPosition)
+{
   int bestM0 = 0;
   int bestM1 = 0;
   float bestScore = -INFINITY;
@@ -82,7 +71,7 @@ void navigationUpdate()
 
       float score = 0;
 
-      Vec2 difference = targetPosition.clone().subtract(absolute.getCenter());
+      Vec2 difference = towardsPosition.clone().subtract(absolute.getCenter());
       Vec2 differenceNorm = difference.clone().normalize();
       float distance = difference.length();
       // score based on distance to target
@@ -94,24 +83,11 @@ void navigationUpdate()
       // Serial.println("Alignment: " + String(alignment));
       score += alignment;
 
-      float sonar0Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar0Distance;
-      float sonar1Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar1Distance;
-      float sonar2Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar2Distance;
-
       Vec2 offset = relative.getCenter();
       score += offset.length();
       Vec2 relativeNorm = offset.clone().normalize();
 
-      float sonarScore = 0;
-      sonarScore += min(0.0f, sonar0Score * relativeNorm.y);   // front
-      sonarScore += min(0.0f, sonar1Score * relativeNorm.x);   // right
-      sonarScore += min(0.0f, sonar2Score * -relativeNorm.x);  // left
-      score += sonarScore;
-
-      // punish for going backwards
-      // score += min(0.0f, relativeNorm.y) * 10;
-
-
+      score += getSonarScore(relativeNorm);      
 
       if (score > bestScore)
       {
@@ -122,16 +98,86 @@ void navigationUpdate()
     }
   }
 
-  float distance = odometer.getCenter().subtract(targetPosition).length();
+  motor0Speed = (int8_t)(bestM0 * 10);
+  motor1Speed = (int8_t)(bestM1 * 10);
+}
+
+/**
+ * Some form of Q-learning with a code based scores and without the learning.
+ */
+void navigationUpdate()
+{
+  static bool wasNavigationEnabled = false;
+
+  const bool navigationEnabled = navigationMode != NavigationMode::OFF;
+  static NavigationMode lastNavigationMode = NavigationMode::OFF;
+
+  if (lastNavigationMode != navigationMode) {
+    Serial.println("navigation mode changed: " + String(navigationMode));
+  }
+
+  lastNavigationMode = navigationMode;
+
+  if (wasNavigationEnabled && !navigationEnabled)
+  {
+    broadcastData("navigation", "done");
+  }
+
+  wasNavigationEnabled = navigationEnabled;
+
+  if (!navigationEnabled)
+    return;
+
+  static long int lastTime = 0;
+
+  long int currentTime = millis();
+
+  if (currentTime - lastTime < 100)
+    return;
+
+  lastTime = currentTime;
+
+  Vec2 currentPosition = odometer.getCenter();
+  Vec2 difference = targetPosition.clone().subtract(currentPosition);
+  float direction = difference.direction();
+  float distance = difference.length();
+
+  switch (navigationMode) {
+    case NavigationMode::DIRECT:
+    {
+      navigateTowards(targetPosition);
+      if (sonar0Distance < 1 * M_TO_SONAR) {
+        if (sonar2Distance > sonar1Distance) {
+          navigationMode = NavigationMode::DETOUR_LEFT;
+        } else {
+          navigationMode = NavigationMode::DETOUR_RIGHT;
+        }
+      }
+      break;
+    }
+    case NavigationMode::DETOUR_LEFT:
+    {
+      navigateTowards(Vec2::polar(direction - M_PI_2, 10).add(currentPosition));
+      if (sonar1Distance > 1 * M_TO_SONAR) {
+        navigationMode = NavigationMode::DIRECT;
+      }
+      break;
+    }
+    case NavigationMode::DETOUR_RIGHT:
+    {
+      navigateTowards(Vec2::polar(direction + M_PI_2, 10).add(currentPosition));
+      if (sonar2Distance > 1 * M_TO_SONAR) {
+        navigationMode = NavigationMode::DIRECT;
+      }
+      break;
+    }
+  }
 
   if (distance < 0.5)
   {
-    navigationEnabled = false;
+    navigationMode = NavigationMode::OFF;
     motor0Speed = 0;
     motor1Speed = 0;
     return;
   }
-
-  motor0Speed = (int8_t)(bestM0 * 10);
-  motor1Speed = (int8_t)(bestM1 * 10);
 }

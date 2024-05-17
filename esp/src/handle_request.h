@@ -48,7 +48,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   else if (type == "setCameraFrameSize")
     cameraSetFrameSize((framesize_t)request["size"].as<int>());
   else if (type == "motor") {
-    navigationEnabled = false;
+    navigationMode = NavigationMode::OFF;
     setMotor(chan, request);
   }
   else if (type == "capture")
@@ -68,7 +68,7 @@ void handleRequest(Channel &chan, JsonDocument &request)
   }
   else if (type == "navigate")
   {
-    navigationEnabled = true;
+    navigationMode = NavigationMode::DIRECT;
     targetPosition.x = request["x"];
     targetPosition.y = request["y"];
   }
