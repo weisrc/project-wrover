@@ -84,7 +84,7 @@ void setup()
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
 
-  wifiSetup();
+  // wifiSetup();
 
   LOG_INFO("Starting AVR serial...");
 
