@@ -18,6 +18,7 @@
 #include "web_server.h"
 #include "wifi_checks.h"
 #include "navigation.h"
+#include "wifi_setup.h"
 
 /**
  * Update function intended to be called in the loop
@@ -82,6 +83,8 @@ void setup()
 
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
+
+  wifiSetup();
 
   LOG_INFO("Starting AVR serial...");
 

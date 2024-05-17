@@ -27,12 +27,14 @@ void connect(Channel &chan, JsonDocument &request)
 
   if (auth == "open")
   {
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid);
     sendData(chan, "connect", "ok");
   }
   else if (auth == "wpa2")
   {
     String password = request["password"];
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     sendData(chan, "connect", "ok");
   }
@@ -50,6 +52,7 @@ void connect(Channel &chan, JsonDocument &request)
       kind = WPA2_AUTH_TLS;
     else if (method == "ttls")
       kind = WPA2_AUTH_TTLS;
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, kind, identity, username, password);
     sendData(chan, "connect", "ok");
   }
