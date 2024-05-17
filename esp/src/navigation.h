@@ -12,7 +12,7 @@
 #include "globals.h"
 
 #define SONAR_TO_M 5800
-#define SONAR_THRESHOLD 0.25f
+#define SONAR_THRESHOLD 1.0f
 
 /**
  * Some form of Q-learning with a code based scores and without the learning.
@@ -35,7 +35,7 @@ void navigationUpdate()
 
   long int currentTime = millis();
 
-  if (currentTime - lastTime < 10)
+  if (currentTime - lastTime < 100)
     return;
 
   lastTime = currentTime;
@@ -50,6 +50,10 @@ void navigationUpdate()
     {
       DualOdometer absolute = odometer.clone();
       DualOdometer relative = odometer.clone();
+
+      if (abs(m0) + abs(m1) < 3) {
+        continue;
+      }
 
       for (int i = 0; i < 10; i++)
       {
@@ -79,28 +83,35 @@ void navigationUpdate()
       float score = 0;
 
       Vec2 difference = targetPosition.clone().subtract(absolute.getCenter());
-      Vec2 differenceNorm = difference.normalize();
+      Vec2 differenceNorm = difference.clone().normalize();
       float distance = difference.length();
       // score based on distance to target
+      // Serial.println("Distance: " + String(distance));
       score -= distance;
 
       // score based on angle to target
-      score += differenceNorm.dot(absolute.forward());
+      float alignment = differenceNorm.dot(absolute.forward());
+      // Serial.println("Alignment: " + String(alignment));
+      score += alignment;
 
       float sonar0Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar0Distance;
       float sonar1Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar1Distance;
       float sonar2Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar2Distance;
 
-      Vec2 relativeNorm = relative.getCenter().normalize();
+      Vec2 offset = relative.getCenter();
+      score += offset.length();
+      Vec2 relativeNorm = offset.clone().normalize();
 
       float sonarScore = 0;
       sonarScore += min(0.0f, sonar0Score * relativeNorm.y);   // front
       sonarScore += min(0.0f, sonar1Score * relativeNorm.x);   // right
       sonarScore += min(0.0f, sonar2Score * -relativeNorm.x);  // left
-      // score += sonarScore;
+      score += sonarScore;
 
       // punish for going backwards
-      score += min(0.0f, relativeNorm.y) * 10;
+      // score += min(0.0f, relativeNorm.y) * 10;
+
+
 
       if (score > bestScore)
       {
