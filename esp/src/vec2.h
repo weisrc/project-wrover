@@ -73,6 +73,11 @@ public:
     return Vec2(x * other.x, y * other.y);
   }
 
+  float dot(Vec2 other)
+  {
+    return x * other.x + y * other.y;
+  }
+
   Vec2 between(Vec2 other)
   {
     const float x = this->x + other.x;

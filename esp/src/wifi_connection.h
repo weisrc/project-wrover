@@ -66,6 +66,8 @@ void connect(Channel &chan, JsonDocument &request)
 void disconnect(Channel &chan)
 {
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_STA);
   JsonDocument empty;
   EepromStream eepromStream(0, STORAGE_SIZE);
   serializeJson(empty, eepromStream);

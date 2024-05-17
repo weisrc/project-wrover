@@ -11,6 +11,12 @@ export type ProcessedLocomotionData = {
   rotations: number[];
 };
 
+let lastMeter: DualOdometer | null = null;
+
+export function getLastMeter() {
+  return lastMeter;
+}
+
 export function processLocomotionData(
   data: LocomotionData[],
   frontOffset: number,
@@ -31,7 +37,6 @@ export function processLocomotionData(
   let time = 0;
 
   for (const item of data) {
-
     if (!item.hall) {
       continue;
     }
@@ -82,5 +87,6 @@ export function processLocomotionData(
     }
   }
 
+  lastMeter = meter;
   return { points, path, rotations };
 }

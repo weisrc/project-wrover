@@ -2,7 +2,7 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { MOUSE, Vector3 } from "three";
 import {
   ContextMenu,
@@ -11,24 +11,40 @@ import {
   ContextMenuTrigger,
 } from "../ui/context-menu";
 import { MapScene } from "./map-scene";
+import { NavigationProvider, useNavigation } from "./navigation-ctx";
 import { PlanePointerProvider, usePlanePointer } from "./plane-pointer";
-import { requestEmitter } from "@/lib/common";
 
 export function MapCanvas3D() {
   return (
-    <PlanePointerProvider>
-      <MapCanvasInner />
-    </PlanePointerProvider>
+    <NavigationProvider>
+      <PlanePointerProvider>
+        <MapCanvasInner />
+      </PlanePointerProvider>
+    </NavigationProvider>
+  );
+}
+
+function NavigateMenuItem({ menuAt }: { menuAt?: Vector3 }) {
+  const menuAtX = menuAt?.x ?? 0;
+  const menuAtY = menuAt?.z ?? 0;
+
+  const [_target, setTarget] = useNavigation();
+
+  return (
+    <ContextMenuItem
+      onClick={() => {
+        setTarget(menuAtX, menuAtY);
+      }}
+    >
+      Navigate to ({menuAtX.toFixed(2)}, {menuAtY.toFixed(2)})
+    </ContextMenuItem>
   );
 }
 
 function MapCanvasInner() {
   const triggerRef = useRef<HTMLElement>(null);
   const { pointer } = usePlanePointer();
-  const [menuAt, setMenuAt] = useState<Vector3 | null>(null);
-
-  const menuAtX = menuAt?.x ?? 0;
-  const menuAtY = menuAt?.z ?? 0;
+  const [menuAt, setMenuAt] = useState<Vector3>();
 
   return (
     <ContextMenu>
@@ -61,16 +77,7 @@ function MapCanvasInner() {
         </Canvas>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem
-          onClick={() => {
-            requestEmitter.emit("navigate", {
-              x: menuAtX,
-              y: menuAtY,
-            });
-          }}
-        >
-          Navigate to ({menuAtX.toFixed(2)}, {menuAtY.toFixed(2)})
-        </ContextMenuItem>
+        <NavigateMenuItem menuAt={menuAt} />
       </ContextMenuContent>
     </ContextMenu>
   );

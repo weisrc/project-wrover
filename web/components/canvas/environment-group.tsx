@@ -3,6 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useState } from "react";
 import { Euler, Quaternion, Vector3 } from "three";
+import { NavigationTarget } from "./navigation-ctx";
 import { LineSegment } from "./point-utils";
 
 function useSmoothRotation(rotation: Quaternion) {
@@ -26,6 +27,7 @@ export function EnvironmentGroup(props: {
   return (
     <group quaternion={smoothRotation}>
       <group position={props.position.clone().negate()}>
+        <NavigationTarget />
         {props.lines.map((p, i) => {
           const center = p.start.clone().add(p.end).multiplyScalar(0.5);
           center.z = center.y;

@@ -12,12 +12,22 @@
 #include "globals.h"
 
 #define SONAR_TO_M 5800
+#define SONAR_THRESHOLD 0.25f
 
 /**
  * Some form of Q-learning with a code based scores and without the learning.
  */
 void navigationUpdate()
 {
+  static bool wasNavigationEnabled = false;
+
+  if (wasNavigationEnabled && !navigationEnabled)
+  {
+    broadcastData("navigation", "done");
+  }
+
+  wasNavigationEnabled = navigationEnabled;
+
   if (!navigationEnabled)
     return;
 
@@ -34,14 +44,15 @@ void navigationUpdate()
   int bestM1 = 0;
   float bestScore = -INFINITY;
 
-  for (int m0 = -2; m0 <= 2; m0++)
+  for (int m0 = -5; m0 <= 5; m0++)
   {
-    for (int m1 = -2; m1 <= 2; m1++)
+    for (int m1 = -5; m1 <= 5; m1++)
     {
       DualOdometer absolute = odometer.clone();
       DualOdometer relative = odometer.clone();
 
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 10; i++)
+      {
         int absM0 = abs(m0);
         int absM1 = abs(m1);
 
@@ -67,24 +78,29 @@ void navigationUpdate()
 
       float score = 0;
 
-      float distance = absolute.getCenter().subtract(targetPosition).length();
+      Vec2 difference = targetPosition.clone().subtract(absolute.getCenter());
+      Vec2 differenceNorm = difference.normalize();
+      float distance = difference.length();
       // score based on distance to target
       score -= distance;
 
-      float sonar0Score = -SONAR_TO_M / (float)sonar0Distance;
-      float sonar1Score = -SONAR_TO_M / (float)sonar1Distance;
-      float sonar2Score = -SONAR_TO_M / (float)sonar2Distance;
+      // score based on angle to target
+      score += differenceNorm.dot(absolute.forward());
 
-      Vec2 norm = relative.getCenter().normalize();
+      float sonar0Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar0Distance;
+      float sonar1Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar1Distance;
+      float sonar2Score = -(SONAR_TO_M * SONAR_THRESHOLD) / (float)sonar2Distance;
+
+      Vec2 relativeNorm = relative.getCenter().normalize();
 
       float sonarScore = 0;
-      sonarScore += min(0.0f, sonar0Score * norm.y); // front
-      sonarScore += min(0.0f, sonar1Score * norm.x); // right
-      sonarScore += min(0.0f, sonar2Score * -norm.x); // left
-      score += sonarScore * 10;
+      sonarScore += min(0.0f, sonar0Score * relativeNorm.y);   // front
+      sonarScore += min(0.0f, sonar1Score * relativeNorm.x);   // right
+      sonarScore += min(0.0f, sonar2Score * -relativeNorm.x);  // left
+      // score += sonarScore;
 
       // punish for going backwards
-      score += max(0.0f, norm.y);
+      score += min(0.0f, relativeNorm.y) * 10;
 
       if (score > bestScore)
       {
@@ -100,12 +116,11 @@ void navigationUpdate()
   if (distance < 0.5)
   {
     navigationEnabled = false;
-    broadcastData("navigation", "done");
     motor0Speed = 0;
     motor1Speed = 0;
     return;
   }
 
-  motor0Speed = (int8_t)(bestM0 * 25);
-  motor1Speed = (int8_t)(bestM1 * 25);
+  motor0Speed = (int8_t)(bestM0 * 10);
+  motor1Speed = (int8_t)(bestM1 * 10);
 }

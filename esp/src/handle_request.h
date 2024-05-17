@@ -63,8 +63,8 @@ void handleRequest(Channel &chan, JsonDocument &request)
     JsonObject right = request["right"];
     Vec2 leftVec = Vec2(left["x"], left["y"]);
     Vec2 rightVec = Vec2(right["x"], right["y"]);
-    odometer.configure(leftVec, rightVec,
-                       request["delta"].as<float>());
+    float delta = request["delta"];
+    odometer.configure(leftVec, rightVec, delta);
   }
   else if (type == "navigate")
   {

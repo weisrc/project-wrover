@@ -44,7 +44,12 @@ public:
 
   float getDirection()
   {
-    return this->right.subtract(this->left).direction();
+    return this->right.subtract(this->left).direction() + M_PI_2;
+  }
+
+  Vec2 forward()
+  {
+    return Vec2::polar(this->getDirection(), 1);
   }
 
   Vec2 getCenter()
