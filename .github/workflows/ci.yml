@@ -12,12 +12,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 20.x
-      - name: Setup
+      - name: Build Web
         run: |
           cd web
           npm ci
-      - name: Build Web Application
-        run: |
           npm run build
           mv build docs
       - name: Push
