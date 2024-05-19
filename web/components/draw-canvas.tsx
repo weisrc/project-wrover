@@ -47,7 +47,7 @@ export function DrawCanvas({ background, draw, ...rest }: DrawCanvasProps) {
             cancelAnimationFrame(handle)
             observer.disconnect()
         }
-    }, [draw])
+    }, [draw, background])
 
     return <div  {...rest} ref={divRef} style={{
         background

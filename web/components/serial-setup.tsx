@@ -31,7 +31,7 @@ export function SerialSetup(props: {
 
   useEffect(() => {
     setSerialSupported(!!navigator.serial);
-  });
+  }, []);
 
   return (
     <Card className="border-none shadow-none">

@@ -63,7 +63,7 @@ export function useLocomotionData() {
     return () => {
       responseEmitter.off("locomotion", onLocomotion);
     };
-  }, []);
+  }, [add]);
 
   return { distanceFront, distanceLeft, distanceRight, data };
 }
