@@ -9,13 +9,15 @@ The Wireless Rover is a two wheeled remote-controlled land vehicle designed to m
 ### Setting up the Web Application
 
 The web application is the remote control and configurer of the Wireless Rover vehicule. There are two options available:
-1. Use the online hosted version courtesy of GitHub pages.
-2. Use the Raspberry PI or any Unix Machine with Docker installed.
+1. Use the online hosted version courtesy of GitHub pages. https://schoolwei.github.io/project-wrover
+2. Use the Raspberry Pi or any machine with Docker installed.
     - MacOS
     - Linux
     - Windows WSL2
 
+### Setting up the Wi-Fi Connection
 
+Please make sure that you have a Wi-Fi connection because the Rover will connect to the Wi-Fi network to be controlled by the web application.
 
 ## 3.0 Specifications
 

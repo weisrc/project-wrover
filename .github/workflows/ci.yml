@@ -16,6 +16,7 @@ jobs:
         run: |
           cd web
           npm ci
+          mv next.pages.config.mjs next.config.mjs
           npm run build
           mv _config.yml build
           mv build ../docs
