@@ -17,6 +17,7 @@ jobs:
           cd web
           npm ci
           npm run build
+          mv _config.yml build
           mv build ../docs
       - name: Push
         env:
