@@ -1,9 +1,18 @@
+/**
+ * @author Wei
+ * Promise implementation inspired by JavaScript Promises
+ * This header file is standalone and can be used in any C++ project
+ */
+
 #pragma once
 #include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
 
+/**
+ * Pair of two values A and B
+ */
 template <typename T, typename U>
 struct Pair
 {
@@ -11,6 +20,10 @@ struct Pair
   U b;
 };
 
+/**
+ * Optional value
+ * Inspired by Java Optional
+ */
 template <typename T>
 class Optional
 {
@@ -44,6 +57,10 @@ public:
   }
 };
 
+/**
+ * Result of an operation
+ * Inspired by Rust Result
+ */
 template <typename V, typename E>
 class Result
 {
@@ -85,14 +102,21 @@ public:
   }
 };
 
+/**
+ * Promise implementation
+ */
 template <typename T>
 class Promise
 {
 private:
   bool resolved = false;
   T value;
-  std::list<std::function<void(T)>> listeners;
+  std::list<std::function<void(T)>> listeners;  // list for O(1) push_back without reallocation
 
+  /**
+   * Add a listener to the promise
+   * @param listener callback function
+   */
   void add(std::function<void(T)> listener)
   {
     if (resolved)
@@ -102,6 +126,11 @@ private:
   }
 
 public:
+  /**
+   * Add a listener to the promise
+   * @param listener callback function
+   * @return a new promise that resolves to the return value of the listener
+   */
   template <typename U>
   std::shared_ptr<Promise<U>> then(std::function<U(T)> cb)
   {
@@ -117,11 +146,22 @@ public:
     return promise;
   }
 
+  /**
+   * Add a listener to the promise
+   * Similar to then, but the callback function returns void
+   * This is for leaf nodes in the promise chain
+   * @param cb callback function
+   */
   void finally(std::function<void(T)> cb)
   {
     add([cb](T value) { cb(value); });
   }
 
+  /**
+   * Add a listener that returns a promise
+   * @param cb callback function
+   * @return a new promise that resolves to the return value of the nested promise
+   */
   template <typename U>
   std::shared_ptr<Promise<U>> then(std::function<std::shared_ptr<Promise<U>>(T)> cb)
   {
@@ -141,6 +181,11 @@ public:
     return promise;
   }
 
+  /**
+   * Combine two promises into a single promise that resolves to a pair of values
+   * @param other the other promise
+   * @return a new promise that resolves to a pair of values
+   */
   template <typename U>
   std::shared_ptr<Promise<Pair<T, U>>> pair(std::shared_ptr<Promise<U>> other)
   {
@@ -175,6 +220,11 @@ public:
     return promise;
   }
 
+  /**
+   * Combine two promises into a single promise that resolves to a pair of optional values
+   * @param other the other promise
+   * @return a new promise that resolves to a pair of optional values
+   */
   template <typename U>
   std::shared_ptr<Promise<Pair<Optional<T>, Optional<U>>>> race(std::shared_ptr<Promise<U>> other)
   {
@@ -201,6 +251,10 @@ public:
     return promise;
   }
 
+  /**
+   * Resolve the promise with a value
+   * @param value the value to resolve with
+   */
   void resolve(T value)
   {
     if (resolved)
@@ -211,9 +265,12 @@ public:
     for (auto listener : listeners)
       listener(value);
 
-    listeners.clear();
+    listeners.clear();  // clear listeners to free memory and prevent memory leak
   }
 
+  /**
+   * Check if the promise is resolved
+   */
   bool isResolved()
   {
     return resolved;

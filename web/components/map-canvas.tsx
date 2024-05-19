@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * MapCanvas component
+ */
+
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { LocomotionData, SonarData } from "@/lib/types";
 import { Vec2 } from "@/lib/vec2";
@@ -9,6 +14,15 @@ export type MapCanvasProps = HTMLAttributes<HTMLDivElement>;
 
 const angles = [-Math.PI / 2, 0, -Math.PI];
 
+/**
+ * Draw the sonar rays, points and distance text
+ * @param ctx Context2D
+ * @param rawCenter center as percieved by the odometer
+ * @param angle angle of the odometer
+ * @param sonar sonar data
+ * @param last is it the last data point
+ * @param offset offset to center the map
+ */
 function drawSonarRays(
   ctx: CanvasRenderingContext2D,
   rawCenter: Vec2,
@@ -21,10 +35,12 @@ function drawSonarRays(
   const center = rawCenter.add(offset);
 
   for (let i = 0; i < angles.length; i++) {
+    // there are three sonar sensors at different angles
     const distance = sonar[i] / 58;
     const point = Vec2.polar(angles[i] + angle, distance).add(center);
 
     if (last) {
+      // draw the sonar rays and distances
       ctx.beginPath();
       ctx.strokeStyle = "pink";
       ctx.moveTo(center.x, center.y);
@@ -35,7 +51,7 @@ function drawSonarRays(
       ctx.fillText(distance.toFixed(1) + "cm", point.x + 20, point.y);
     }
 
-    ctx.beginPath();
+    ctx.beginPath(); // draw the sonar points
     ctx.ellipse(
       point.x,
       point.y,
@@ -52,6 +68,11 @@ function drawSonarRays(
 
 const data: LocomotionData[] = [];
 
+/**
+ * MapCanvas component
+ * @param props MapCanvasProps
+ * @returns
+ */
 export function MapCanvas(props: MapCanvasProps) {
   useEffect(() => {
     function onLocomotion(item: LocomotionData) {
@@ -59,6 +80,7 @@ export function MapCanvas(props: MapCanvasProps) {
         data.shift();
       }
       data.push(item);
+      console.log("data is here", data);
       requestLocomotion();
     }
 
@@ -88,6 +110,7 @@ export function MapCanvas(props: MapCanvasProps) {
     offset ??= screenCenter;
 
     for (let i = 0; i < data.length; i++) {
+      // draw the samples
       const item = data[i];
       const isLast = i === data.length - 1;
       let moved = false;
@@ -104,6 +127,7 @@ export function MapCanvas(props: MapCanvasProps) {
         const backwards = char !== which;
 
         if (which === "l") {
+          // move the odometer accordingly
           meter.moveLeft(backwards);
         } else if (which === "r") {
           meter.moveRight(backwards);
@@ -111,6 +135,7 @@ export function MapCanvas(props: MapCanvasProps) {
       }
 
       if (!moved && !isLast) {
+        // dont draw the samples when robot is not moving unless it is the last sample
         continue;
       }
 
@@ -119,7 +144,7 @@ export function MapCanvas(props: MapCanvasProps) {
       drawSonarRays(ctx, meter.getCenter(), angle, item.sonar, isLast, offset);
     }
 
-    offset = screenCenter.subtract(meter.getCenter());
+    offset = screenCenter.subtract(meter.getCenter()); // update the offset based on new odometer center
   };
 
   return <DrawCanvas draw={draw} {...props} background="black" />;

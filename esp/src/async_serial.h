@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * Acknowledgement based async serial communication using Promises and Task Queue
+ * This also has parity checking
+ */
+
 #pragma once
 
 #include <Arduino.h>
@@ -41,11 +47,16 @@ private:
     LOG_DEBUG("TX: " + String(data) + " (" + String((int)data) + ")");
   }
 
+  /**
+   * Add a task to the task queue
+   * @param task callback function
+   * @return false if the queue is full
+   */
   bool addTask(std::function<void()> task)
   {
     if (taskQueue.size() >= maxTaskQueueSize)
     {
-      LOG_WARN("Async task queue full");
+      LOG_INFO("Async task queue full");
       return false;
     }
     /*
@@ -61,6 +72,9 @@ private:
     return true;
   }
 
+  /**
+   * Process the next task in the queue if available
+   */
   void tryProcessNextTask()
   {
     if (taskQueue.empty())
@@ -74,18 +88,21 @@ private:
     }
   }
 
+  /**
+   * Update the state when data is available
+   */
   void updateWhenAvailable()
   {
     char data = stream.read();
     bool targetParity = oddParity ? stream.parityOdd(data) : stream.parityEven(data);
-    bool parityOk = stream.readParity() == targetParity;
+    bool isParityOk = stream.readParity() == targetParity;
 
-    if (writePromise != nullptr)
+    if (writePromise != nullptr)  // handle ack if writing
     {
-      if (data != lastWriteValue)
+      if (data != lastWriteValue)  // The ack should preferably be an echo of the data sent.
       {
         LOG_WARN("TX ack mismatch: " + String((int)data) + " != " + String((int)lastWriteValue) +
-                 " parityOk: " + String(parityOk));
+                 " isParityOk: " + String(isParityOk));
       }
       else
       {
@@ -100,13 +117,13 @@ private:
       LOG_DEBUG("writePromise: " + String(writePromise != nullptr));
       return;
     }
-    if (!parityOk)
+    if (!isParityOk)
     {
       LOG_WARN("RX: Parity error");
       return;
     }
 
-    if (readPromise != nullptr)
+    if (readPromise != nullptr)  // handle read if reading
     {
       LOG_DEBUG("RX: " + String(data) + " (" + String((int)data) + ")");
       put(ackValue);
@@ -116,17 +133,17 @@ private:
       readPromise.reset();
       return;
     }
-    else
+    else  // handle unexpected data
     {
       LOG_WARN("Unexpected RX: " + String(data) + " (" + String((int)data) + ")");
-      put(ackValue);
+      // put(ackValue);
     }
   }
 
   void updateWhenNotAvailable()
   {
     unsigned long now = millis();
-    if (now - startTime < timeout)
+    if (now - startTime < timeout)  // wait for timeout before resending
       return;
 
     if (writePromise != nullptr)
@@ -135,7 +152,7 @@ private:
                String((int)lastWriteValue) + ")");
       put(lastWriteValue);
     }
-    else if (readPromise != nullptr)
+    else if (readPromise != nullptr)  // if expected data is not received
     {
       LOG_WARN("RX: Timeout, aborting read");
       isResolving = true;
@@ -143,11 +160,11 @@ private:
       isResolving = false;
       readPromise.reset();
     }
-    startTime = now;
+    startTime = now;  // reset the timeout timer
   }
 
 public:
-  AsyncSerial(UARTBase &stream, unsigned long timeout = 50, char ackValue = 0,
+  AsyncSerial(UARTBase &stream, unsigned long timeout = 100, char ackValue = 0,
               bool oddParity = true, size_t maxTaskQueueSize = 100)
       : stream(stream),
         timeout(timeout),
@@ -162,6 +179,10 @@ public:
     return stream.available();
   }
 
+  /**
+   * Read a byte from the stream
+   * @return a promise that resolves to the read byte
+   */
   std::shared_ptr<ReadPromise> read()
   {
     auto promise = std::make_shared<ReadPromise>();
@@ -179,6 +200,11 @@ public:
     return promise;
   }
 
+  /**
+   * Write a byte to the stream
+   * @param data byte to write
+   * @return a promise that resolves if the write is successful
+   */
   std::shared_ptr<WritePromise> write(char data)
   {
     auto promise = std::make_shared<WritePromise>();
@@ -198,6 +224,11 @@ public:
     return promise;
   }
 
+  /**
+   * Write a string to the stream
+   * @param data string to write
+   * @return a promise that resolves if the write is successful
+   */
   std::shared_ptr<WritePromise> write(String data)
   {
     std::shared_ptr<WritePromise> promise;
@@ -211,6 +242,9 @@ public:
     return promise;
   }
 
+  /**
+   * Update and process the next task
+   */
   void update()
   {
     tryProcessNextTask();

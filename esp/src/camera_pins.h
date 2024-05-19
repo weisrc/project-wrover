@@ -1,3 +1,8 @@
+/**
+ * Camera pin mapping found here:
+ * https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Camera/CameraWebServer/camera_pins.h
+ */
+
 #define CAMERA_MODEL_WROVER_KIT
 
 #if defined(CAMERA_MODEL_WROVER_KIT)

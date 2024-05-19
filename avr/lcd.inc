@@ -143,6 +143,15 @@ lcd_print_end:
 	pop r16
 	ret
 
+; go to start
+lcd_start:
+	push r16
+	ldi r16, $80
+	rcall lcd_command
+	pop r16
+	ret
+
+
 ; go to the second line
 lcd_second:
 	push r16

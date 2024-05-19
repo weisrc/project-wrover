@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * 2D vector class, standalone and can be used in any C++ project
+ */
+
 #pragma once
 #include <cmath>
 
@@ -66,6 +71,11 @@ public:
   Vec2 multiply(Vec2 other)
   {
     return Vec2(x * other.x, y * other.y);
+  }
+
+  float dot(Vec2 other)
+  {
+    return x * other.x + y * other.y;
   }
 
   Vec2 between(Vec2 other)

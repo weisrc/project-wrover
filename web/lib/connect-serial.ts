@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Connect serial function
+ */
+
 import { requestEmitter, responseEmitter } from "./common";
 
 async function tryRequestPort() {

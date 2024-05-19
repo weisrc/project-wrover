@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Dual odometer class
+ */
+
 #pragma once
 #include "vec2.h"
 
@@ -10,6 +15,11 @@ public:
   Vec2 left;
   Vec2 right;
 
+  /**
+   * Initialize the dual odometer
+   * @param radius the distance from a wheel to the center
+   * @param delta how many radians to move with the opposite wheel as the pivot
+   */
   DualOdometer(float radius, float delta)
   {
     this->radius = radius;
@@ -22,19 +32,24 @@ public:
   {
     int sign = backwards ? -1 : 1;
     float angle = this->left.subtract(this->right).direction();
-    this->left = Vec2::polar(angle + this->delta * sign, this->radius * 2).add(this->right);
+    this->left = Vec2::polar(angle - this->delta * sign, this->radius * 2).add(this->right);
   }
 
   void moveRight(bool backwards = false)
   {
     int sign = backwards ? -1 : 1;
     float angle = this->right.subtract(this->left).direction();
-    this->right = Vec2::polar(angle - this->delta * sign, this->radius * 2).add(this->left);
+    this->right = Vec2::polar(angle + this->delta * sign, this->radius * 2).add(this->left);
   }
 
   float getDirection()
   {
-    return this->right.subtract(this->left).direction();
+    return this->right.subtract(this->left).direction() + M_PI_2;
+  }
+
+  Vec2 forward()
+  {
+    return Vec2::polar(this->getDirection(), 1);
   }
 
   Vec2 getCenter()
@@ -47,5 +62,21 @@ public:
     Vec2 offset = Vec2::polar(direction, this->radius + M_PI_2);
     this->left = center.subtract(offset);
     this->right = center.add(offset);
+  }
+
+  void configure(Vec2 left, Vec2 right, float delta)
+  {
+    this->left = left;
+    this->right = right;
+    this->delta = delta;
+    this->radius = left.clone().subtract(right).length() / 2;
+  }
+
+  DualOdometer clone()
+  {
+    DualOdometer clone(this->radius, this->delta);
+    clone.left = this->left.clone();
+    clone.right = this->right.clone();
+    return clone;
   }
 };

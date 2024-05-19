@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <unity.h>
 
+#include "avr_serial_test.h"
 #include "promise_test.h"
 #include "vec2_test.h"
-#include "avr_serial_test.h"
 
 void setup()
 {

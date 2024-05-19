@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Main program
+ */
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
@@ -12,7 +17,12 @@
 #include "logger.h"
 #include "web_server.h"
 #include "wifi_checks.h"
+#include "navigation.h"
+#include "wifi_setup.h"
 
+/**
+ * Update function intended to be called in the loop
+ */
 void update()
 {
   avrSerial.update();
@@ -22,9 +32,10 @@ void update()
   motorUpdate();
   sonarUpdate();
   cameraCapture();
+  navigationUpdate();
   wsEndpoint.cleanupClients();
 
-  if (!messageQueue.empty())
+  if (!messageQueue.empty())  // process messages from the message queue
   {
     auto message = messageQueue.get();
     JsonDocument request;
@@ -33,7 +44,7 @@ void update()
       handleRequest(*message.channel, request);
   }
 
-  if (Serial.available())
+  if (Serial.available())  // process serial commands
   {
     SerialChannel chan;
     JsonDocument request;
@@ -48,10 +59,14 @@ void update()
   if (millis() - lastUpdate > 1000)
   {
     lastUpdate = millis();
-    LOG_INFO("Free heap: " + String(ESP.getFreeHeap()));
+    LOG_INFO("Free heap: " + String(ESP.getFreeHeap()));  // print free heap every second
   }
 }
 
+/**
+ * Sleep and handle updates meanwhile
+ * @param timeout sleep time in milliseconds
+ */
 void sleepUpdate(unsigned long timeout)
 {
   unsigned long startTime = millis();
@@ -59,6 +74,9 @@ void sleepUpdate(unsigned long timeout)
     update();
 }
 
+/**
+ * Setup function
+ */
 void setup()
 {
   setCpuFrequencyMhz(240);
@@ -66,11 +84,15 @@ void setup()
   Serial.begin(115200);
   EEPROM.begin(STORAGE_SIZE);
 
+  // wifiSetup();
+
   LOG_INFO("Starting AVR serial...");
 
   avrSerialSetup();
 
   LOG_INFO("Starting WRover ESP...");
+
+  // sleepUpdate(1000);
 
   avrClear();
   avrPrint("WRover ESP\nStarting...");
@@ -91,6 +113,9 @@ void setup()
   autoConnect();
 }
 
+/**
+ * Loop function
+ */
 void loop()
 {
   update();

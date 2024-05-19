@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Request handler for Channel commands
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -11,6 +16,11 @@
 #include "locomotion.h"
 #include "wifi_connection.h"
 
+/**
+ * Handle request function
+ * @param chan Channel to send the repsonse
+ * @param request JSON request data
+ */
 void handleRequest(Channel &chan, JsonDocument &request)
 {
   String type = request["type"];
@@ -37,12 +47,29 @@ void handleRequest(Channel &chan, JsonDocument &request)
     cameraFps = constrain(request["fps"].as<int>(), 1, 24);
   else if (type == "setCameraFrameSize")
     cameraSetFrameSize((framesize_t)request["size"].as<int>());
-  else if (type == "motor")
+  else if (type == "motor") {
+    navigationMode = NavigationMode::OFF;
     setMotor(chan, request);
+  }
   else if (type == "capture")
     camSocketId = chan.socketId();
   else if (type == "locomotion")
     locomotionReply(chan);
   else if (type == "cameraOk")
     sendData(chan, "cameraOk", cameraOk);
+  else if (type == "configureOdometer")
+  {
+    JsonObject left = request["left"];
+    JsonObject right = request["right"];
+    Vec2 leftVec = Vec2(left["x"], left["y"]);
+    Vec2 rightVec = Vec2(right["x"], right["y"]);
+    float delta = request["delta"];
+    odometer.configure(leftVec, rightVec, delta);
+  }
+  else if (type == "navigate")
+  {
+    navigationMode = NavigationMode::DIRECT;
+    targetPosition.x = request["x"];
+    targetPosition.y = request["y"];
+  }
 }

@@ -1,21 +1,26 @@
+/**
+ * @author Wei
+ * Type definitions for mostly the communication protocol.
+ */
+
 export type ConnectEvent = {
   ssid: string;
 } & (
-    | {
+  | {
       auth: "open";
     }
-    | {
+  | {
       auth: "wpa2";
       password: string;
     }
-    | {
+  | {
       auth: "wpa2_enterprise";
       method: ConnectEventMethod;
       identity: string;
       username: string;
       password: string;
     }
-  );
+);
 
 export type ConnectEventMethod = "peap" | "ttls" | "tls";
 
@@ -27,6 +32,11 @@ export type NetworkItem = [
   bssid: string
 ];
 
+export interface IVec2 {
+  x: number;
+  y: number;
+}
+
 export type RequestEvents = {
   connect: ConnectEvent;
   scan: {};
@@ -37,15 +47,19 @@ export type RequestEvents = {
   status: {};
   begin: {};
   setCameraFPS: { fps: number };
-  motor: { m0: number, m1: number };
+  setCameraFrameSize: { size: number };
+  motor: { m0: number; m1: number };
   locomotion: {};
   capture: {};
+  navigate: IVec2;
+  configureOdometer: { left: IVec2; right: IVec2; delta: number };
 };
 
 export type SonarData = [number, number, number];
 export type LocomotionData = {
-  hall: string, sonar: SonarData
-}
+  hall: string;
+  sonar: SonarData;
+};
 
 export type ResponseEvents = {
   scan: { networks: NetworkItem[] };
@@ -56,6 +70,7 @@ export type ResponseEvents = {
   socketReady: {};
   binaryData: Blob;
   locomotion: LocomotionData;
+  navigation: { data: "done" };
 };
 
 export const AUTH_MODE_MAP = {

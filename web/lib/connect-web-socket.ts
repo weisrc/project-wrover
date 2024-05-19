@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Connect web socket
+ */
+
 import { requestEmitter, responseEmitter } from "./common";
 
 let singleton: Promise<void> | undefined;
@@ -11,7 +16,6 @@ export async function connectWebSocket(ip: string) {
 }
 
 async function unsafeConnectWebSocket(ip: string) {
-
   console.log("connect web socket", ip);
   const ws = new WebSocket(`ws://${ip}/ws`);
 
@@ -23,7 +27,6 @@ async function unsafeConnectWebSocket(ip: string) {
 
   ws.onmessage = (event) => {
     if (typeof event.data === "string") {
-
       try {
         const data = JSON.parse(event.data);
         responseEmitter.emit(data.type, data);
@@ -43,5 +46,4 @@ async function unsafeConnectWebSocket(ip: string) {
   ]);
 
   await new Promise((resolve) => setTimeout(resolve, 100));
-
 }

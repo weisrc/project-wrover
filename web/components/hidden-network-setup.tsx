@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * HiddenNetworkSetup component
+ */
+
 import { AuthMode } from "@/lib/types";
 import { useState } from "react";
 import { InputField } from "./input-field";

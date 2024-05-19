@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Common constants and singletons.
+ */
+
 import { EventEmitter } from "./event-emitter";
 import { RequestEvents, ResponseEvents } from "./types";
 

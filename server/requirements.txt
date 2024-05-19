@@ -1,0 +1,4 @@
+netmiko
+mariadb
+fastapi
+uvicorn[standard]

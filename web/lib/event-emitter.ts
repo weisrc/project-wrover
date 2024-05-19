@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Simple event emitter class similar to Node.js EventEmitter or DOM EventTarget.
+ */
+
 type EventMap = Record<string, any>;
 
 type Handler<T> = (data: T) => void;

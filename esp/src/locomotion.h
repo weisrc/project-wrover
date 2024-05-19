@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Handles everything related to movement
+ */
+
 #pragma once
 #include <Arduino.h>
 
@@ -6,70 +11,75 @@
 #include "data_utils.h"
 #include "globals.h"
 
-int8_t motor0Speed = 0;
-int8_t motor1Speed = 0;
-
-#define SONAR_ARRAY_SIZE 5
-
-uint16_t sonar0Average = 0;
-uint16_t sonar1Average = 0;
-uint16_t sonar2Average = 0;
-
-bool hall0Changed = false;
-bool hall1Changed = false;
-bool motor0Reverse = false;
-bool motor1Reverse = false;
-String hall;
-
 void setMotor(Channel &chan, JsonDocument &request)
 {
   motor0Speed = request["m0"].as<int8_t>();
   motor1Speed = request["m1"].as<int8_t>();
 }
 
+/**
+ * Interrupt when hall sensor changes
+ */
 void IRAM_ATTR hall0ISR()
 {
   hall0Changed = true;
 }
 
+/**
+ * Interrupt when hall sensor changes
+ */
 void IRAM_ATTR hall1ISR()
 {
   hall1Changed = true;
 }
 
+/**
+ * Setup hall sensors
+ */
 void hallSensorSetup()
 {
   pinMode(HALL0, INPUT);
   pinMode(HALL1, INPUT);
   attachInterrupt(HALL0, hall0ISR, CHANGE);
   attachInterrupt(HALL1, hall1ISR, CHANGE);
-  hall.reserve(HALL_SIZE);
+  hall.reserve(HALL_SIZE);  // reserve memory in advance to prevent unnecessary reallocations
 }
 
+/**
+ * Reply to locomotion command
+ */
 void locomotionReply(Channel &chan)
 {
   JsonDocument data;
   data["type"] = "locomotion";
   data["hall"] = hall;
   JsonArray sonars = data["sonar"].to<JsonArray>();
-  sonars.add(sonar0Average);
-  sonars.add(sonar1Average);
-  sonars.add(sonar2Average);
+  sonars.add(sonar0Distance);
+  sonars.add(sonar1Distance);
+  sonars.add(sonar2Distance);
   chan.send(data);
   hall.clear();
 }
 
+/**
+ * Shift value towards target by 10
+ * @param current current value
+ * @param target target value
+ */
 int8_t shiftTowards(int8_t current, int8_t target)
 {
   return current + constrain(target - current, -10, 10);
 }
 
+/**
+ * Update sonar data
+ */
 void sonarUpdate()
 {
   static unsigned long lastSampleTime = 0;
   unsigned long now = millis();
 
-  if (now - lastSampleTime < 100)
+  if (now - lastSampleTime < 200)  // sample every 100ms
     return;
 
   lastSampleTime = now;
@@ -77,19 +87,19 @@ void sonarUpdate()
   auto closure0 = [](WordResult result)
   {
     if (result.isOk())
-      sonar0Average = result.getValue();
+      sonar0Distance = result.getValue();
   };
 
   auto closure1 = [](WordResult result)
   {
     if (result.isOk())
-      sonar1Average = result.getValue();
+      sonar1Distance = result.getValue();
   };
 
   auto closure2 = [](WordResult result)
   {
     if (result.isOk())
-      sonar2Average = result.getValue();
+      sonar2Distance = result.getValue();
   };
 
   avrSonar(MODE_SONAR0)->finally(closure0);
@@ -97,20 +107,23 @@ void sonarUpdate()
   avrSonar(MODE_SONAR2)->finally(closure2);
 }
 
+/**
+ * Update motor data smoothly
+ */
 void motorUpdate()
 {
   static unsigned long lastSampleTime = 0;
-  static int8_t motor0SmoothSpeed = 1;
+  static int8_t motor0SmoothSpeed = 1;  // start with 1 to immediately set speed to target 0
   static int8_t motor1SmoothSpeed = 1;
 
   unsigned long now = millis();
 
-  if (now - lastSampleTime < 50)
+  if (now - lastSampleTime < 200)  // update every 50ms
     return;
 
   lastSampleTime = now;
 
-  if (motor0SmoothSpeed != motor0Speed)
+  if (motor0SmoothSpeed != motor0Speed)  // send only if speed has changed
   {
     motor0SmoothSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
     motor0Reverse = motor0SmoothSpeed < 0;
@@ -125,12 +138,15 @@ void motorUpdate()
   }
 }
 
+/**
+ * Update hall data string
+ */
 void locomotionUpdate()
 {
   static unsigned long lastSampleTime = 0;
   unsigned long now = millis();
 
-  if (now - lastSampleTime < 20)
+  if (now - lastSampleTime < 20)  // update every 20ms
     return;
 
   lastSampleTime = now;

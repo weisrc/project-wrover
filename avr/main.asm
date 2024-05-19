@@ -29,44 +29,61 @@ int2_echo: rjmp sonar_echo2
 .org $20
 
 main:
-    ldi R16, low(RAMEND) ; initiate the stack
-	out SPL, R16
+    ldi r16, low(RAMEND) ; initiate the stack
+	out SPL, r16
 	ldi R16, high(RAMEND)
-    out SPH, R16
+    out SPH, r16
 
-	ldi r16, 20 ; wait a bit
-	rcall delay
 
-	rcall lcd_init ; initialize the submodules
-	rcall serial_init
+
+	rcall timer_init
 	rcall sonar_init
 	rcall motor_init
-	rcall timer_init
+	
+	rcall serial_init
 	rcall handle_init
 
-	ldi ZH, high(boot_msg << 1) ; print the boot message
-	ldi ZL, low(boot_msg << 1)
+	rcall speaker_init
+	rcall player_init
+	rcall tunes_init
+
+	
+
+	ldi r16, 20 ; wait a bit for the lcd
+	rcall delay
+	rcall lcd_init ; initialize the submodules
+
+	ldi r16, TUNES_XP_STARTUP_HEAD
+	rcall player_set
+
+	ldi ZH, high(BOOT_MSG << 1) ; print the boot message
+	ldi ZL, low(BOOT_MSG << 1)
 	rcall lcd_print
 
 	sei ; enable interrupts
 
 loop:
 	rcall handle ; handle incoming commands
-	rcall motor_update ; smooth motor update
 	rcall serial_update ; only required for ack_serial
+	rcall motor_update ; smooth motor update
+	rcall player_update
+	rcall tunes_motor_update
+	rcall tunes_sonar_update
 	rjmp loop
 
 
-boot_msg: .db "WRover AVR", LF, "Waiting ESP...", 0
+BOOT_MSG: .db "WRover AVR!", LF, "Waiting ESP...", 0
 
 .include "utils.inc"
 .include "sonar.inc"
 .include "timer.inc"
 .include "motor.inc"
 .include "lcd.inc"
-; .include "serial.inc"
-; .include "buffered_serial.inc"
+.include "speaker.inc"
 .include "ack_serial.inc"
 .include "handle.inc"
 .include "dev_utils.inc"
+.include "notes.inc"
+.include "player.inc"
+.include "tunes.inc"
 .exit

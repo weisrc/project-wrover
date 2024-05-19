@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Utility functions
+ */
+
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 

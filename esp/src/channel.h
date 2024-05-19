@@ -1,3 +1,11 @@
+/**
+ * @author Wei
+ * Channel class is equivalent to Java's interface
+ * NullChannel is a dummy channel that does nothing
+ * SerialChannel is a channel that sends data to Serial
+ * WSChannel is a channel that sends data to a WebSocket client
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -12,6 +20,11 @@ public:
   virtual uint32_t socketId() = 0;
 };
 
+/**
+ * Sink hole for data
+ * This is done for compatibility with functions/methods
+ * using Channel without causing side effects or implementing new code
+ */
 class NullChannel : public Channel
 {
   void send(JsonDocument &data) {}
@@ -21,6 +34,9 @@ class NullChannel : public Channel
   }
 };
 
+/**
+ * Doesn't have a socket ID because it's not a WebSocket client
+ */
 class SerialChannel : public Channel
 {
 public:
@@ -35,6 +51,9 @@ public:
   }
 };
 
+/**
+ * WebSocket channel
+ */
 class WSChannel : public Channel
 {
 private:

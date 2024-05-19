@@ -1,7 +1,24 @@
+/**
+ * @author Wei
+ * Remote view component to control the robot remotely.
+ */
+
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { requestEmitter } from "@/lib/common";
-import { MapCanvas } from "./map-canvas";
+import { MouseEventHandler, useEffect, useRef } from "react";
 import { CameraView } from "./camera-view";
-import { useEffect } from "react";
+import { MapCanvas3D } from "./canvas/map-canvas-3d";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "./ui/resizable";
+import { CAMERA_FRAME_SIZES } from "@/lib/camera-frame-sizes";
 
 export function RemoteView() {
   useEffect(() => {
@@ -64,9 +81,36 @@ export function RemoteView() {
   }, []);
 
   return (
-    <div>
-      <MapCanvas className="inset-0 fixed" />
-      <CameraView className="fixed bottom-0 right-0" />
+    <div className="h-screen">
+      <ResizablePanelGroup direction="vertical">
+        <ResizablePanel>
+          <MapCanvas3D />
+        </ResizablePanel>
+        <ResizableHandle className="bg-slate-500" />
+        <ResizablePanel className="flex h-full">
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <CameraView className="h-full" />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              {CAMERA_FRAME_SIZES.map((item, i) => {
+                return (
+                  <ContextMenuItem
+                    key={i}
+                    onClick={() => {
+                      requestEmitter.emit("setCameraFrameSize", {
+                        size: item.value,
+                      });
+                    }}
+                  >
+                    {item.label}
+                  </ContextMenuItem>
+                );
+              })}
+            </ContextMenuContent>
+          </ContextMenu>
+        </ResizablePanel>
+      </ResizablePanelGroup>
       {/* <Input
         type="number"
         onChange={(e) => {

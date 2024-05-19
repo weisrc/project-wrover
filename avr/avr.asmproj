@@ -98,7 +98,7 @@
     <Compile Include="motor.inc">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="serial.inc">
+    <Compile Include="speaker.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="timer.inc">

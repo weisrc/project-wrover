@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * WiFi connection functions
+ */
+
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -6,6 +11,11 @@
 #include "channel.h"
 #include "data_utils.h"
 
+/**
+ * Connect to a WiFi network
+ * @param chan the channel to send the response
+ * @param request the JSON request
+ */
 void connect(Channel &chan, JsonDocument &request)
 {
   String ssid = request["ssid"];
@@ -17,12 +27,14 @@ void connect(Channel &chan, JsonDocument &request)
 
   if (auth == "open")
   {
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid);
     sendData(chan, "connect", "ok");
   }
   else if (auth == "wpa2")
   {
     String password = request["password"];
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     sendData(chan, "connect", "ok");
   }
@@ -40,6 +52,7 @@ void connect(Channel &chan, JsonDocument &request)
       kind = WPA2_AUTH_TLS;
     else if (method == "ttls")
       kind = WPA2_AUTH_TTLS;
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, kind, identity, username, password);
     sendData(chan, "connect", "ok");
   }
@@ -49,9 +62,15 @@ void connect(Channel &chan, JsonDocument &request)
   }
 }
 
+/**
+ * Disconnect from the current WiFi network
+ * @param chan the channel to send the response
+ */
 void disconnect(Channel &chan)
 {
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_STA);
   JsonDocument empty;
   EepromStream eepromStream(0, STORAGE_SIZE);
   serializeJson(empty, eepromStream);
@@ -59,6 +78,9 @@ void disconnect(Channel &chan)
   sendData(chan, "disconnect", "ok");
 }
 
+/**
+ * Auto connect to a WiFi network stored in EEPROM
+ */
 void autoConnect()
 {
   avrClear();

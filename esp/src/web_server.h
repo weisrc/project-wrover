@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * Web server setup and handlers
+ */
+
 #pragma once
 #include <memory>
 
@@ -5,6 +10,9 @@
 #include "globals.h"
 #include "handle_request.h"
 
+/**
+ * WebSocket event handler for data
+ */
 void onWSEventData(AwsFrameInfo *info, AsyncWebSocketClient *client, uint8_t *data, size_t len)
 {
   if (info->opcode == WS_TEXT)
@@ -15,6 +23,9 @@ void onWSEventData(AwsFrameInfo *info, AsyncWebSocketClient *client, uint8_t *da
   }
 }
 
+/**
+ * WebSocket event handler for connections and data
+ */
 void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg,
                uint8_t *data, size_t len)
 {
@@ -27,6 +38,9 @@ void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     onWSEventData((AwsFrameInfo *)arg, client, data, len);
 }
 
+/**
+ * Web server setup
+ */
 void webServerSetup()
 {
   webServer.on("/", HTTP_GET,

@@ -15,12 +15,6 @@ This project is setup in a monorepo:
 - `./pcb` contains the files for creating the PCB
 - `./images` contains the images used in this README
 
-> Disclaimer: This is a school project. Nevertheless, I am open to any feedback (PR or issues) and am treating it as one of my personal projects. Furthermore, the format of this README is unconventional as it is intended for a school report. Please use the main account repository for PRs and issues.
-
-### 1.1. About Comments
-
-Only AVR is commented as it is written in assembly and is somewhat difficult to understand. The code for the ESP32 and the Web Application is written in C++ and TSX (TypeScript XML) respectively. Therefore, the code is self-explanatory and is commented only when necessary. Furthermore, most functions, variables and subroutines are named descriptively.
-
 ## 2. System Diagram
 
 Only the Web Application is not part of the Rover itself. All of the components are powered by a 5V power supply, except for the motors which are powered by a 9V power supply.
@@ -87,13 +81,14 @@ Built using Next.js with TypeScript and Shadcn UI Component Library (stored in `
   - Calculate the relative position of the rover from the starting point using the wheel hall effect sensors
   - WASD controls
 - View the camera feed
-  - Change the camera resolution
-  - Change the camera FPS
+  - Request and display the camera frames
+  - Change the camera resolution (TODO)
+  - Change the camera FPS (TODO)
 - Visualize the distances from the ultrasonic sensors
   - Draw the sample points
 - Initial WiFi Setup
   - Send the WiFi credentials to the ESP32 via Serial
-- Communciate with the rover via WebSocket and Serial
+- Communciate with the rover via WebSocket or Serial
 
 This will be hosted on a seperate server (Raspberry Pi) as the ESP32 will not be connected to the network at first.
 
@@ -134,7 +129,7 @@ flowchart LR
     response -->|Restarts| camera
 ```
 
-_Figure A.4.1. Web Application Code Block Diagram._
+_Figure A.4.1. Web Application Code Block Diagram. Camera Frames are only sent via WebSocket._
 
 ### A.5. Description
 
@@ -373,6 +368,7 @@ Unit testing is done on Vec2 class and the Promise class. Integration testing is
 All tests passed.
 
 _Code Block B.8.1. Test Results._
+
 ```
 test/unity_config.cpp:13: test_promise_finallyShouldBeCalled    [PASSED]
 test/unity_config.cpp:14: test_promise_thenShouldChain  [PASSED]
@@ -435,8 +431,8 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - Communicate with the ESP32 via Acknowledged Serial
 - Display the data on the LCD
 - Smooth motor control
-- Generate the waveforms for the speaker
-- Stop the motors when obstacles are detected
+- Generate the waveforms for the speaker (TODO)
+- Stop the motors when obstacles are detected (TODO)
 
 ### C.4. Diagrams
 
@@ -530,7 +526,7 @@ This is implemented using the USART. The ATmega8515 will send an acknowledgement
 
 To prevent blocking the main loop when sending a message, both read and write are implemented with circular buffers of 128 bytes. This is done because before writing to UDR, the buffer must be empty. Therefore, this operation may be blocking.
 
-Both Head and Tail pointers are 8-bit and their operation differs depending on the operation. So there are 4 pointers in total:
+Both Head and Tail pointers are 8-bit and their purpose differs depending on the operation. So there are 4 pointers in total:
 
 - Head Pointers: The pointers that writes to the buffer.
   - RX: When the ATmega8515 receives a byte from the USART.
@@ -583,7 +579,7 @@ Please see the ESP32 section for the test code description.
 
 The related troubleshooting is written in the ESP32 section.
 
-## 11. Libraries and Tools
+## 11. References
 
 ### Web Application
 
@@ -605,6 +601,14 @@ Please see `esp/platformio.ini` for the list of dependencies.
 - [AVRA](https://github.com/Ro5bert/avra) for assembly
 - [AVRDude](https://www.nongnu.org/avrdude/) for flashing the hex file
 
+### Datasheets
+
+- [ATmega8515](https://ww1.microchip.com/downloads/en/DeviceDoc/doc2512.pdf)
+- [LM386](https://www.ti.com/lit/ds/symlink/lm386.pdf)
+- [DRV5023](https://www.ti.com/lit/ds/symlink/drv5023.pdf)
+- [HC-SR04](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
+- [L298N H-Bridge](https://www.handsontec.com/dataspecs/L298N%20Motor%20Driver.pdf)
+
 ### README.md
 
 - [VSCode Markdown PDF](https://github.com/yzane/vscode-markdown-pdf) for generating the PDF
@@ -615,9 +619,3 @@ Please see `esp/platformio.ini` for the list of dependencies.
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
 </details>
-
----
-
-## License
-
-MIT. Wei. Please see the LICENSE file for more information.

@@ -1,3 +1,8 @@
+/**
+ * @author Wei
+ * CameraView component
+ */
+
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { useState, useEffect, HTMLAttributes } from "react";
 
@@ -11,24 +16,24 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
         let emitCaptureTimeout: NodeJS.Timeout;
 
         function requestCapture() {
-            if (emitCaptureWaiting) {
+            if (emitCaptureWaiting) { // useEffect is called twice somehow unfortunately, debouncing
                 return;
             }
             clearTimeout(emitCaptureTimeout);
             requestEmitter.emit("capture", {});
             emitCaptureWaiting = true;
-            emitCaptureTimeout = setTimeout(() => {
+            emitCaptureTimeout = setTimeout(() => { // resend if no response after 1 second
                 requestCapture();
                 emitCaptureWaiting = false;
             }, 1000)
         }
 
         const onBinaryData = (data: Blob) => {
-            URL.revokeObjectURL(captureUrl);
+            URL.revokeObjectURL(captureUrl); // revoke the previous object URL to free up space
             const url = URL.createObjectURL(data);
             setCaptureUrl(url);
             emitCaptureWaiting = false;
-            requestCapture();
+            requestCapture(); // request the next frame
         }
 
         requestCapture();
@@ -36,7 +41,7 @@ export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
         responseEmitter.on("binaryData", onBinaryData);
 
         return () => {
-            responseEmitter.off("binaryData", onBinaryData);
+            responseEmitter.off("binaryData", onBinaryData); // remove the event listener
         }
     }, []);
 

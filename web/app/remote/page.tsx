@@ -2,7 +2,8 @@
 
 import { RemoteConnectCard } from "@/components/remote-connect-card";
 import { RemoteView } from "@/components/remote-view";
-import { useState } from "react";
+import { RoverAsciiArt } from "@/components/rover-ascii-art";
+import { Suspense, useState } from "react";
 
 export default function Remote() {
   const [connected, setConnected] = useState(false);
@@ -12,9 +13,12 @@ export default function Remote() {
       {connected ? (
         <RemoteView />
       ) : (
-        <div className="flex flex-col items-center h-screen pt-16">
-          <RemoteConnectCard onConnectionChange={setConnected} />
-        </div>
+        <>
+          <Suspense fallback={<div>Loading...</div>}>
+            <RemoteConnectCard onConnectionChange={setConnected} />
+          </Suspense>
+          <RoverAsciiArt />
+        </>
       )}
     </>
   );

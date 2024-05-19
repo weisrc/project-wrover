@@ -1,3 +1,9 @@
+/**
+ * @author Wei
+ * DualOdometer class
+ * Similar to the one for the ESP32
+ */
+
 import { Vec2 } from "./vec2";
 
 export class DualOdometer {
@@ -12,7 +18,7 @@ export class DualOdometer {
   public moveLeft(backwards = false) {
     const sign = backwards ? -1 : 1;
     const angle = this.left.subtract(this.right).direction();
-    this.left = Vec2.polar(angle + this.delta * sign, this.radius * 2).add(
+    this.left = Vec2.polar(angle - this.delta * sign, this.radius * 2).add(
       this.right
     );
   }
@@ -20,7 +26,7 @@ export class DualOdometer {
   public moveRight(backwards = false) {
     const sign = backwards ? -1 : 1;
     const angle = this.right.subtract(this.left).direction();
-    this.right = Vec2.polar(angle - this.delta * sign, this.radius * 2).add(
+    this.right = Vec2.polar(angle + this.delta * sign, this.radius * 2).add(
       this.left
     );
   }
