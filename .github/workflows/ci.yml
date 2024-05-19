@@ -13,16 +13,18 @@ jobs:
         with:
           node-version: 20.x
       - name: Setup
-        run: npm ci
+        run: |
+          cd web
+          npm ci
       - name: Build Web Application
         run: |
           npm run build
           mv build docs
-          git add .
       - name: Push
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          git add .
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "$MESSAGE"
