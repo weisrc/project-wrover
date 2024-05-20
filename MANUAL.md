@@ -324,7 +324,7 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - The Amplifier will amplify the audio signal from the AVR to the Speaker.
 - The Speaker will play audio feedback.
 - The LCD will display the status of the Rover.
-- The Camera will stream video feed to the Web Application.
+- The Camera will capture the frames for the video feed.
 
 ## 6.0 Circuit Description
 
@@ -423,7 +423,7 @@ Right now, only Microsoft Edge, Google Chrome and Opera support the Web Serial A
 
 Please see `web/lib/dual-odometer.ts` for the implementation of the Dual Odometer.
 
-The calculation is also done on the Web Appllication as it allows the user to easily calibrate and fine-tune the odometer's paramters as all the data is stored in memory. Therefore, by adjusting the parameters, the user will see the sample points change on the canvas. The ESP32 will also calculate the current relative position, but it doesn't store the hall data history.
+The calculation is also done on the Web Appllication as it allows the user to easily calibrate and fine-tune the odometer's paramters as all the data is stored in memory. Therefore, by adjusting the parameters, the user will see the sample points change on the canvas. The ESP32 will also calculate the current relative position, but it doesn't store the hall data history. `web/components/canvas/process-locomotion-data.ts` contains the hook the function to calculate the relative position and the ultrasonic sensor point cloud.
 
 #### 3D Wall Reconstruction
 
@@ -459,6 +459,8 @@ flowchart LR
 ```
 
 _Figure 7.3. Wall Reconstruction Pipeline._
+
+Wall reconstruction is mostly basic Vector Math. The ESP32 will send the hall data and the ultrasonic data to the Web Application. The Web Application will then calculate the relative position of the rover and the distance of the walls. The walls are then visualized on the canvas. Most of the logic is in `web/components/canvas/use-processed-data.ts` in the `useProcessedData` hook.
 
 ### ESP32
 
@@ -567,6 +569,17 @@ The smooth motor value is sent to the ATmega8515 via the Acknowledged Serial. Th
 
 The above values are stored in a string and sent to the Web Application via WebSocket in the `locomotion.hall` string. For more information, please see the ESP32 and Web Communication section.
 
+The below code is an example of the smooth motor control. This code can be found in `esp/src/locomotion.h`. The Web Application will set a `motor0Speed` and the ESP will track its internal smooth motor speed. At every update, it will shift the smooth motor speed towards the motor speed. This is done because the AVR also has smooth motor control, therefore, the ESP will not know when the motor has reversed or not. The ESP will only know the speed of the motor. To reduce the unknowns, the ESP will also do smooth motor control.
+
+```cpp
+if (motor0SmoothSpeed != motor0Speed)  // send only if speed has changed
+{
+    motor0SmoothSpeed = shiftTowards(motor0SmoothSpeed, motor0Speed);
+    motor0Reverse = motor0SmoothSpeed < 0;
+    avrSend(MODE_MOTOR0, motor0SmoothSpeed);
+}
+```
+
 #### Hall Effect Sensors
 
 The hall effect sensor readings are implemented using logical change interrupts. Debouncing is implemented to reduce the number of false positives. A series of alternating magnets are placed on the wheel to trigger the hall effect sensor.
@@ -602,6 +615,69 @@ Please see `RequestEvents` and `ResponseEvents` Type Records in `web/lib/types.t
   - Binary Data (not JSON) is used to send the camera capture frames.
 
 Status messages are also sent unsolicitedly to the Web Application when the WiFi status changes.
+
+#### Click to Move
+
+This feature allows the Rover to semi-automatically move to a location on the map. The Rover will move to the location by itself. The Rover will also attempt avoid obstacles.
+
+The code is in `esp/src/navigation.h`. There are two parts. One is a not stateful and one that is a state machine. The stateless part can be expressed using the following vector field. It is used to move the rover towards a target position. The stateful part is used to avoid obstacles.
+
+$f(X) = M$
+
+Which can be broken down into:
+
+$\Delta{X}=X-X_0$
+
+$V = [X_{ry}, X_{rx}, -X_{rx}]$
+
+$Q_{sonar}=\min(0, -\frac{t}{U}V)$
+
+$Q_{align}=\hat{\Delta{X}}\hat{M}$
+
+$Q_{distance}=||\Delta{X}||$
+
+$Q=Q_{sonar}+Q_{align}+Q_{distance}$
+
+$i,j=\underset{i,j\in[-5,5]}{\operatorname{arg max}} \space Q(X_0=O_0(i,j), X_r=O_r(i,j))$
+
+$M=k[i,j]$
+
+Where: 
+- $U$ is the ultrasonic sensor data.
+  - $U = [d_{front}, d_{right}, d_{left}]$
+- $X$ is the target position.
+- $M$ is the motor speed.
+  - $M = [m_{left}, m_{right}]$
+- $O$ is the odometer function that converts motor movement to position $X$. 
+  - $O_0$ is a clone of the current odometer instance.
+  - $O_r$ is a new odometer instance to get the relative movement.
+- $t$ is the distance threshold.
+- $k$ is the speed factor.
+
+The above only defines how the rover moves towards a target position. However, when there is an obstacle, the rover will attempt to avoid it by using the following:
+
+$\hat{X_{left}}\hat{\Delta{X}}=0$
+
+$\hat{X_{right}}\hat{\Delta{X}}=0$
+
+$X$ is the target position. $X_{left}$ and $X_{right}$ are 90 degrees to the left and right of $X$ respectively. Hence using the following state machine, basic obstacle avoidance can be achieved.
+
+```mermaid
+stateDiagram
+    [*] --> DIRECT
+    DIRECT --> DETOUR_LEFT: F < T & L > R
+    DIRECT --> DETOUR_RIGHT: F < T & R >= L
+    DETOUR_LEFT --> DIRECT: R > T
+    DETOUR_RIGHT --> DIRECT: L > T
+```
+
+_Figure 7.7. Click to Move State Machine._
+
+Where:
+- $F$, $L$, $R$ are the front, left, and right ultrasonic sensor distances respectively.
+- $T$ is the distance threshold.
+
+The behavior that is implemented will try to circle the obstacle with the target position as the center. Then the moment it finds an opening, it will move towards the target position.
 
 ### Atmega8515
 
@@ -641,7 +717,7 @@ flowchart TD
     smooth_motor -->|OC1B PWM\n and Direction| right_motor
 ```
 
-_Figure 7.7. ATmega8515 Software Block Diagram._
+_Figure 7.8. ATmega8515 Software Block Diagram._
 
 #### Reading Ultrasonic Sensors
 
@@ -665,6 +741,23 @@ _Table 7.1. The calculated distance and the actual distance._
 
 There are 3 ultrasonar sensors being used simultaneously. All of the sensors are triggered at the same time. The echos are read using INT0, INT1 and INT2. The 16-bit Timer 1 is used to measure the timestamps of the echo goes high and when the echo goes low. The difference is then calculated to get the time it takes for the echo to return. The sensors are triggered every time the Timer 1 overflows.
 
+The below is an example interrupt service routine for the ultrasonic sensor. This code can be found in `avr/sonar.inc`.
+
+```
+sonar_echo0:
+    ; push to undo side effects
+    sbis PIND, PD2
+    rjmp sonar_echo0_low
+sonar_echo0_high:
+    ; save the time when echo goes high
+    rjmp sonar_echo0_end
+sonar_echo0_low:
+    ; save the time when echo goes low
+sonar_echo0_end:
+    ; pop to undo side effects
+	reti
+```
+
 #### PWM and Smooth Motor Control
 
 Timer 1 is also used to generate the PWM for the motors. OC1A and OC1B are used to control the left and right motors respectively. The duty cycle is controlled by the `OCR1A` and `OCR1B` registers. The duty cycle is then changed by the ESP32 via the Acknowledged Serial.
@@ -672,6 +765,29 @@ Timer 1 is also used to generate the PWM for the motors. OC1A and OC1B are used 
 The actual duty cycle is slowly changed to the desired duty cycle to prevent drawing too much current from the power supply.
 
 The ESP32 will send a signed 8-bit integer to the AVR. If the value is negative, the motor will move in reverse. If the value is positive, the motor will move forward. The absolute value of the integer is the duty cycle.
+
+```asm
+; set motor 0 pwm and direction
+; r16: signed speed
+motor0_set:
+	push r16
+	sts MOTOR0_CURRENT, r16
+	cpi r16, 0
+	brge motor0_set_for
+motor0_set_rev:
+	sbi MOTOR_MODE, MOTOR0_REV ; motor is reversed
+	neg r16 ; absolute value
+	rjmp motor0_set_end
+motor0_set_for:
+	cbi MOTOR_MODE, MOTOR0_REV ; motor is forward
+motor0_set_end:
+	rcall double_s8_to_u8 ; r16 *= 2
+	rcall motor0_speed
+	pop r16
+	ret
+```
+
+The above code block is from `avr/motor.inc`. The `double_s8_to_u8` subroutine is used to double the 8-bit signed integer and convert it to unsigned. In essence, we are taking the magitude and doubling it. The `motor0_speed` subroutine is used to set the duty cycle of the motor.
 
 #### Acknowledged Serial
 
@@ -710,6 +826,23 @@ To prevent blocking the main loop on the AVR, the request handler on the AVR is 
 
 Single-Shot states will be executed within the same subroutine call and will immediately return to the None state. Read states will be executed over multiple subroutine (one addtional) calls to gather the data (one byte) to set a motor speed or write to the LCD.
 
+The following code block enumerates all the AVR modes. This code can be found in `esp/src/avr_serial.h`.
+```cpp
+enum AvrMode
+{
+  MODE_NONE = 100,
+  MODE_SONAR0 = 101,
+  MODE_SONAR1 = 102,
+  MODE_SONAR2 = 103,
+  MODE_MOTOR0 = 104,
+  MODE_MOTOR1 = 105,
+  MODE_WRITE = 106,
+  MODE_COMMAND = 107,
+  MODE_CLEAR = 108,
+  MODE_LAST = 109
+};
+```
+
 #### AVR Speaker and Tune Player
 
 ```mermaid
@@ -727,7 +860,7 @@ flowchart LR
     play_next --> update_return
 ```
 
-_Figure 7.8. Speaker and Tune Player._
+_Figure 7.9. Speaker and Tune Player._
 
 OC0 (PB0) is used to output the waveform to the LM386 amplifier. It is connected to a 9V battery to produce louder sound. There is a filter formed by C2 and R7 to filter out high frequency noise.
 
