@@ -1,8 +1,8 @@
 # Wireless Rover Manual
 
-##### Open Sourced under MIT License at [https://schoolwei.github.io/project-wrover](https://schoolwei.github.io/project-wrover)
+Open Sourced under MIT License at [https://schoolwei.github.io/project-wrover](https://schoolwei.github.io/project-wrover)
 
-<pre style="font-size: 11px; border: none; background: transparent; line-height: 1; page-break-after: always; margin: 150px 64px">
+<pre style="font-size: 11px; border: none; background: transparent; line-height: 1; margin: 150px 64px">
                                                                     ||
                                                   __..--".          ||
                                  __..--""`._..--"" . . . .`.        ||
@@ -39,10 +39,11 @@
                      `-..--"
 </pre>
 
+<div style="page-break-after: always;"></div>
+
 # Table of Contents
 
 - [Wireless Rover Manual](#wireless-rover-manual)
-        - [Source code: https://schoolwei.github.io/project-wrover](#source-code-httpsschoolweigithubioproject-wrover)
 - [Table of Contents](#table-of-contents)
 - [User Guide](#user-guide)
   - [1.0 Introduction](#10-introduction)
@@ -74,6 +75,9 @@
     - [Web Application](#web-application-1)
       - [Initial WiFi Setup](#initial-wifi-setup)
       - [Calculating the Relative Position](#calculating-the-relative-position)
+      - [3D Wall Reconstruction](#3d-wall-reconstruction)
+      - [Apache HTTPD Docker Setup on Raspberry Pi](#apache-httpd-docker-setup-on-raspberry-pi)
+      - [GitHub Pages Continuous Integration Deployment](#github-pages-continuous-integration-deployment)
     - [ESP32](#esp32-2)
       - [Request and Response Flow](#request-and-response-flow)
       - [Acknowledged Serial](#acknowledged-serial)
@@ -82,12 +86,16 @@
       - [Smooth Motor Control](#smooth-motor-control)
       - [Hall Effect Sensors](#hall-effect-sensors)
       - [ESP32 and Web Communication](#esp32-and-web-communication)
+      - [Click to Move](#click-to-move)
     - [Atmega8515](#atmega8515-1)
       - [Reading Ultrasonic Sensors](#reading-ultrasonic-sensors)
       - [PWM and Smooth Motor Control](#pwm-and-smooth-motor-control)
       - [Acknowledged Serial](#acknowledged-serial-1)
       - [AVR and ESP32 Communication](#avr-and-esp32-communication)
+      - [AVR Speaker and Tune Player](#avr-speaker-and-tune-player)
   - [8.0 Testing and Calibration](#80-testing-and-calibration)
+    - [Changing the Speaker volume](#changing-the-speaker-volume)
+    - [Changing the LCD Contrast](#changing-the-lcd-contrast)
   - [9.0 Troubleshooting](#90-troubleshooting)
 - [Appendix](#appendix)
   - [A. Illustrations](#a-illustrations)
@@ -95,12 +103,8 @@
   - [C. Bill of Materials](#c-bill-of-materials)
   - [D. Cost Analysis](#d-cost-analysis)
   - [E. References](#e-references)
-    - [Web Application](#web-application-2)
-    - [ESP32](#esp32-3)
-    - [AVR](#avr-1)
-    - [Datasheets](#datasheets)
-    - [README.md](#readmemd)
 
+<div style="page-break-after: always;"></div>
 
 # User Guide
 
@@ -211,6 +215,8 @@ _Table 1. Specifications of the Wireless Rover._
 |                    | Resolution   | ~2cm     |
 | Camera Framerate   | Maximum      | 30 fps   |
 |                    | Minimum      | 1 fps    |
+
+<div style="page-break-after: always;"></div>
 
 # Technical Guide
 
@@ -462,6 +468,26 @@ _Figure 7.3. Wall Reconstruction Pipeline._
 
 Wall reconstruction is mostly basic Vector Math. The ESP32 will send the hall data and the ultrasonic data to the Web Application. The Web Application will then calculate the relative position of the rover and the distance of the walls. The walls are then visualized on the canvas. Most of the logic is in `web/components/canvas/use-processed-data.ts` in the `useProcessedData` hook.
 
+#### Apache HTTPD Docker Setup on Raspberry Pi
+
+Please see `web/Dockerfile` for more information. This file defines the process to assemble a KVM container. The application runs on port 8080 and 8443. The certificate keys are included in this repository for testing purposes.
+
+First, the builder container is defined to build the web application using the `npm run build` script. The distribution directory is then copied into the final container. The keys in `web/keys` and the configuration file at `web/httpd.conf` is also copied.
+
+To match URLs without the file extension defined. The rewrite engine has been used to attempt to add the `.html` extension to the URL. If the file exists, it will be served. If not, the 404.html file will be served. The following is the relevant configuration in `web/httpd.conf`.
+
+```sh
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+ErrorDocument 404 /404.html
+```
+
+#### GitHub Pages Continuous Integration Deployment
+
+The Web Application is deployed using GitHub Pages. The deployment is done using GitHub Actions. The configuration file can be found in `.github/workflows/ci.yml`. On every push, GitHub will start a container that will execute what is defined inside the workflow. The workflow will build the web application and push its changes to the `ci` branch.
+
 ### ESP32
 
 This module is implemented in C++ using the Arduino framework and the PlatformIO toolchain.
@@ -676,6 +702,9 @@ _Figure 7.7. Click to Move State Machine._
 Where:
 - $F$, $L$, $R$ are the front, left, and right ultrasonic sensor distances respectively.
 - $T$ is the distance threshold.
+- `DIRECT` will use $F(X)$.
+- `DETOUR_LEFT` will use $F(X_{left})$.
+- `DETOUR_RIGHT` will use $F(X_{right})$.
 
 The behavior that is implemented will try to circle the obstacle with the target position as the center. Then the moment it finds an opening, it will move towards the target position.
 
@@ -1004,41 +1033,55 @@ Please see the source code hosted on GitHub at
 
 ## C. Bill of Materials
 
-| Item               | Quantity | Price/Unit (CAD) | Total (CAD) |
-| ------------------ | -------- | ---------------- | ----------- |
-| ESP32              | 1        | 10               | 10          |
-| ATmega8515         | 1        | 5                | 5           |
-| LM386              | 1        | 1                | 1           |
-| DRV5023            | 3        | 1                | 3           |
-| HC-SR04            | 3        | 1                | 3           |
-| L298N              | 1        | 1                | 1           |
-| LCD                | 1        | 5                | 5           |
-| Camera             | 1        | 5                | 5           |
-| 8-ohms Speaker     | 1        | 1                | 1           |
-| PCB                | 1        | 5                | 5           |
-| Potentiometer      | 2        | 1                | 2           |
-| Hall Effect        | 2        | 1                | 2           |
-| Magnet             | 2        | 1                | 2           |
-| 2.2k ohms Resistor | 4        | 0.1              | 0.1         |
-| 3.3k ohms Resistor | 1        | 0.1              | 0.1         |
-| 1.8k ohms Resistor | 1        | 0.1              | 0.1         |
-| 10 ohms Resistor   | 1        | 0.1              | 0.1         |
-| 74HCT04 NOT-Gate   | 1        | 1                | 1           |
-| 74HCT08 AND-Gate   | 1        | 1                | 1           |
+Table 1C. Bill of Materials.
+| Item                       | Quantity | Total (CAD) | URL                                                                                        |
+| -------------------------- | -------- | ----------- | ------------------------------------------------------------------------------------------ |
+| ATmega8515                 | 1        | 5.48        | https://www.digikey.ca/en/products/detail/microchip-technology/ATMEGA8515-16PU/739793      |
+| LM386 Amplifier            | 1        | 2.31        | https://www.digikey.ca/en/products/detail/texas-instruments/LM386M-1-NOPB/148190           |
+| LCD                        | 1        | 17.62       | https://www.digikey.ca/en/products/detail/newhaven-display-intl/NHD-0216K1Z-FL-YBW/1701171 |
+| 2.2k ohms Resistor         | 4        | 0.60        | https://www.digikey.ca/en/products/detail/stackpole-electronics-inc/CF14JT2K20/1741321     |
+| 3.3k ohms Resistor         | 1        | 0.15        | https://www.digikey.ca/en/products/detail/stackpole-electronics-inc/CF14JT3K30/1741376     |
+| 1.8k ohms Resistor         | 1        | 0.15        | https://www.digikey.ca/en/products/detail/stackpole-electronics-inc/CF14JT1K80/1741255     |
+| 10 ohms Resistor           | 1        | 0.94        | https://www.digikey.ca/en/products/detail/bourns-inc/FW20A10R0JA/3777397                   |
+| 74HCT04 NOT-Gate           | 1        | 1.12        | https://www.digikey.ca/en/products/detail/texas-instruments/CD74HCT04E/38238               |
+| 74HCT08 AND-Gate           | 1        | 1.21        | https://www.digikey.ca/en/products/detail/texas-instruments/CD74HCT08E/38240               |
+| 10k ohms Potentiometer     | 1        | 1.60        | https://www.digikey.ca/en/products/detail/bourns-inc./3362P-1-103LF/1088412                |
+| 20k ohms Potentiometer     | 1        | 1.60        | https://www.digikey.ca/en/products/detail/bourns-inc./3362P-1-203LF/1088417                |
+| 8-ohms Speaker             | 1        | 1.98        | https://www.digikey.ca/en/products/detail/soberton-inc./SP-1605/3973691                    |
+| DRV5023 Hall Effect Sensor | 2        | 2.58        | https://www.digikey.ca/en/products/detail/texas-instruments/DRV5023AJQLPGM/5181319         |
+| HC-SR04 Ultrasonic Sensor  | 3        | 18.36       | https://www.digikey.ca/en/products/detail/adafruit-industries-llc/3942/9658069             |
+| Power Switch               | 1        | 3.37        | https://www.digikey.ca/en/products/detail/zf-electronics/CRE22F2BBRLE/446075               |
+| 9V Battery Holder          | 2        | 1.52        | https://www.digikey.ca/en/products/detail/keystone-electronics/232/303804                  |
+| Magnets                    | 50       | 20.77       | https://www.amazon.ca/TRYMAG-Magnets-Neodymium-Whiteboard-Refrigerator/dp/B09S5SMFY4       |
+| Camera                     | 1        | 5           | https://www.amazon.ca/Camera-Aideepen-Wide-Angle-Megapixel-Support/dp/B09XXPX4SP           |
+| ESP32                      | 1        | 21.00       | https://www.amazon.ca/Freenove-ESP32-WROVER-Bluetooth-Compatible-Tutorials/dp/B09BC5CNHM   |
+| USB-C Cable                | 1        | ^           | ^                                                                                          |
+| 4.8V Rechargeable Battery  | 1        | 24.99       | https://www.amazon.ca/4-8V-1800mAh-Battery-Rechargeable-Truck/dp/B083B9FR3D/               |
+| USB-C Extension Cable      | 1        | 12.99       | https://www.amazon.ca/Extension-Female-10Gbps-Extender-Charging/dp/B0CMTB7V7K              |
+| Project Box                | 1        | 21.99       | https://www.amazon.ca/LeMotech-Waterproof-Dustproof-Universal-Enclosure/dp/B0781D5YJH      |
+| L298N Dual H-Bridge        | 1        | 27.99       | https://www.amazon.ca/KeeYees-Controller-Stepper-H-Bridge-Compatible/dp/B07ZT619TD/        |
+| Wheel                      | 2        | ^           | ^                                                                                          |
+| Motor                      | 2        | ^           | ^                                                                                          |
+| Jumper Wires               | ~40      | ^           | ^                                                                                          |
+| PCB                        | 1        | 5           | Bought at school                                                                           |
 
+> Hat (^) indicates that the item is included in the above kit.
 
 ## D. Cost Analysis
 
+Around 195.32 CAD was spent on the project to build a single unit. The most expensive components were the ultrasonic sensors and the ESP32. The least expensive components were the resistors and the LM386 amplifier. This project can be cheaper if all components are bought in bulk.
+
 ## E. References
 
-### Web Application
+**Web Application**
 
 Please see `web/package.json` for the list of dependencies.
 
 - [Next.js](https://nextjs.org) for static site generation
 - [Shadcn UI](https://ui.shadcn.com) for the UI components
+- [React Three Fiber](https://github.com/pmndrs/react-three-fiber) for the 3D rendering
 
-### ESP32
+**ESP32**
 
 Please see `esp/platformio.ini` for the list of dependencies.
 
@@ -1046,12 +1089,12 @@ Please see `esp/platformio.ini` for the list of dependencies.
 - [ArduinoJson](https://arduinojson.org) for marshalling and unmarshalling JSON
 - [ESP Async Web Server](https://github.com/me-no-dev/ESPAsyncWebServer) for the WebSocket server
 
-### AVR
+**AVR**
 
 - [AVRA](https://github.com/Ro5bert/avra) for assembly
 - [AVRDude](https://www.nongnu.org/avrdude/) for flashing the hex file
 
-### Datasheets
+**Datasheets**
 
 - [ATmega8515](https://ww1.microchip.com/downloads/en/DeviceDoc/doc2512.pdf)
 - [LM386](https://www.ti.com/lit/ds/symlink/lm386.pdf)
@@ -1059,7 +1102,7 @@ Please see `esp/platformio.ini` for the list of dependencies.
 - [HC-SR04](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
 - [L298N H-Bridge](https://www.handsontec.com/dataspecs/L298N%20Motor%20Driver.pdf)
 
-### README.md
+**Markdown**
 
 - [VSCode Markdown PDF](https://github.com/yzane/vscode-markdown-pdf) for generating the PDF
 - [Mermaid](https://mermaid.js.org) for the code-defined diagrams

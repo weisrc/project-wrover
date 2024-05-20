@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
 
 body {
   font-family: "Inter", sans-serif;
@@ -8,8 +8,14 @@ p,
 li,
 ul,
 code {
-  font-size: 11pt;
+  font-size: 10pt;
   line-height: 150%;
+}
+
+code,
+blockquote,
+pre {
+  background: transparent;
 }
 
 body > blockquote,
