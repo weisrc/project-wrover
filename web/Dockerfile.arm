@@ -1,0 +1,14 @@
+FROM httpd:2.4-alpine
+
+WORKDIR /app
+
+RUN apk add git
+RUN git clone -b build --single-branch https://github.com/schoolwei/project-wrover.git
+RUN rm -rf /usr/local/apache2/htdocs
+RUN mv project-wrover/docs /usr/local/apache2/htdocs
+COPY keys/cert.pem /usr/local/apache2/conf/server.crt
+COPY keys/key.pem /usr/local/apache2/conf/server.key
+COPY httpd.conf /usr/local/apache2/conf/httpd.conf
+
+EXPOSE 80
+EXPOSE 443
