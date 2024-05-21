@@ -104,6 +104,8 @@ Open Sourced under MIT License at [https://schoolwei.github.io/project-wrover](h
   - [D. Cost Analysis](#d-cost-analysis)
   - [E. References](#e-references)
 
+> Although, there are no page numbers, the Table of Contents is clickable in the PDF version.
+
 <div style="page-break-after: always;"></div>
 
 # User Guide
@@ -1021,7 +1023,7 @@ _Figure 17A. Click to Move._
 
 ![Full Circuit Schematic](images/full_schematic.png)
 
-_Figure 18A. Full Circuit Schematic Diagram._
+_Figure 18A. Circuit Schematic and Wiring Diagram._
 
 ![PCB Ultiboard](images/pcb_ultiboard.png)
 
