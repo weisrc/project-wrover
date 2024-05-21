@@ -16,7 +16,7 @@ jobs:
         run: |
           cd web
           npm ci
-          mv next.pages.config.mjs next.config.mjs
+          mv next.docker.config.mjs next.config.mjs
           npm run build
           mv _config.yml build
           mv build ../docs
@@ -28,4 +28,4 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "$MESSAGE"
-          git push origin main:ci -f
+          git push origin main:build -f
