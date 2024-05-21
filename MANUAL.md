@@ -476,6 +476,8 @@ First, the builder container is defined to build the web application using the `
 
 To match URLs without the file extension defined. The rewrite engine has been used to attempt to add the `.html` extension to the URL. If the file exists, it will be served. If not, the 404.html file will be served. The following is the relevant configuration in `web/httpd.conf`.
 
+For ARM architecture such as the Raspberry Pi, `web/Dockerfile.arm` is used instead because the build steps requires Next.js, however, one of its dependencies in its latest version doesn't support ARM GNUHF. In the new Dockerfile, the build is copied from the `build` branch seen in the below section.
+
 ```sh
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-d
@@ -486,7 +488,7 @@ ErrorDocument 404 /404.html
 
 #### GitHub Pages Continuous Integration Deployment
 
-The Web Application is deployed using GitHub Pages. The deployment is done using GitHub Actions. The configuration file can be found in `.github/workflows/ci.yml`. On every push, GitHub will start a container that will execute what is defined inside the workflow. The workflow will build the web application and push its changes to the `ci` branch.
+The Web Application is deployed using GitHub Pages. The deployment is done using GitHub Actions. The configuration file can be found in `.github/workflows/ci.yml`. On every push, GitHub will start a container that will execute what is defined inside the workflow. The workflow will build the web application and push its changes to the `pages-build` and `build` branches. The `pages-build` is for GitHub pages since all path will have a `project-wrover` prefix.
 
 ### ESP32
 
@@ -944,7 +946,6 @@ There is a potentiometer on the PCB to adjust the contrast of the LCD.
   - If the ultrasonic sensors are too close to the ground, they may read the ground instead of the obstacle.
   - Make sure that the obtacle can bounce the sound back. Some materials absorb sound or reflect it in a different direction.
   - If none of the above works, the ultrasonic sensors may be faulty.
-
 
 # Appendix
 
