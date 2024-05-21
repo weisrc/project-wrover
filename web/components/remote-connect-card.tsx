@@ -50,7 +50,7 @@ export function RemoteConnectCard(props: {
     if (ip) {
       connect(ip);
     }
-  }, [ip]);
+  }, []);
 
   return (
     <>
