@@ -9,7 +9,6 @@ COPY app app
 COPY components components
 COPY lib lib
 COPY public public
-COPY .eslintrc.json next-env.d.ts ./
 COPY tsconfig.json postcss.config.js tailwind.config.ts ./
 COPY next.docker.config.mjs next.config.mjs
 RUN npm run build

@@ -6,45 +6,34 @@
 import { requestEmitter, responseEmitter } from "@/lib/common";
 import { useState, useEffect, HTMLAttributes } from "react";
 
-let emitCaptureWaiting = false;
-
 export function CameraView(props: HTMLAttributes<HTMLImageElement>) {
-    const [captureUrl, setCaptureUrl] = useState("");
+  const [captureUrl, setCaptureUrl] = useState("");
 
-    useEffect(() => {
+  useEffect(() => {
+    let run = true;
 
-        let emitCaptureTimeout: NodeJS.Timeout;
-
-        function requestCapture() {
-            if (emitCaptureWaiting) { // useEffect is called twice somehow unfortunately, debouncing
-                return;
-            }
-            clearTimeout(emitCaptureTimeout);
-            requestEmitter.emit("capture", {});
-            emitCaptureWaiting = true;
-            emitCaptureTimeout = setTimeout(() => { // resend if no response after 1 second
-                requestCapture();
-                emitCaptureWaiting = false;
-            }, 1000)
+    async function start() {
+      while (run) {
+        requestEmitter.emit("capture", {});
+        const data = await Promise.race([
+          responseEmitter.wait("binaryData"),
+          new Promise<undefined>((resolve) => setTimeout(resolve, 100)),
+        ]);
+        if (data) {
+          const url = URL.createObjectURL(data);
+          URL.revokeObjectURL(captureUrl); // revoke the previous object URL to free up space
+          setCaptureUrl(url);
         }
+      }
+    }
 
-        const onBinaryData = (data: Blob) => {
-            URL.revokeObjectURL(captureUrl); // revoke the previous object URL to free up space
-            const url = URL.createObjectURL(data);
-            setCaptureUrl(url);
-            emitCaptureWaiting = false;
-            requestCapture(); // request the next frame
-        }
+    start();
 
-        requestCapture();
+    return () => {
+      run = false;
+      URL.revokeObjectURL(captureUrl);
+    };
+  }, []);
 
-        responseEmitter.on("binaryData", onBinaryData);
-
-        return () => {
-            responseEmitter.off("binaryData", onBinaryData); // remove the event listener
-        }
-    }, []);
-
-    return <img src={captureUrl} {...props} />
-
+  return <img src={captureUrl} {...props} />;
 }

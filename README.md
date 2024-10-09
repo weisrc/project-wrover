@@ -82,8 +82,7 @@ Built using Next.js with TypeScript and Shadcn UI Component Library (stored in `
   - WASD controls
 - View the camera feed
   - Request and display the camera frames
-  - Change the camera resolution (TODO)
-  - Change the camera FPS (TODO)
+  - Change the camera resolution
 - Visualize the distances from the ultrasonic sensors
   - Draw the sample points
 - Initial WiFi Setup
@@ -431,8 +430,8 @@ The ATmega8515 is the locomotion controller of the rover. It's functionalities a
 - Communicate with the ESP32 via Acknowledged Serial
 - Display the data on the LCD
 - Smooth motor control
-- Generate the waveforms for the speaker (TODO)
-- Stop the motors when obstacles are detected (TODO)
+- Generate the waveforms for the speaker
+- Stop the motors when obstacles are detected
 
 ### C.4. Diagrams
 
@@ -557,7 +556,7 @@ To prevent blocking the main loop on the AVR, the request handler on the AVR is 
 
 Single-Shot states will be executed within the same subroutine call and will immediately return to the None state. Read states will be executed over multiple subroutine (one addtional) calls to gather the data (one byte) to set a motor speed or write to the LCD.
 
-#### C.6. Configuration
+### C.6. Configuration
 
 To setup the development environment, please use Atmel Studio on Windows or AVRA and AVRDude on Linux. Please use the Makefile in the `avr` folder to compile and run the code on Linux.
 
