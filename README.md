@@ -1,5 +1,7 @@
 # Wireless Rover Manual
 
+![Wall Reconstruction](images/wall_reconstruction.png)
+
 # Table of Contents
 
 - [Wireless Rover Manual](#wireless-rover-manual)
